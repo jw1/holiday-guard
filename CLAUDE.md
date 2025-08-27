@@ -113,9 +113,30 @@ Follow the Red-Green-Refactor cycle for all new features:
 **Repeat for each small increment of functionality.**
 
 ## Roadmap
-1. Bootstrapped with US federal holiday set (via [bank-holidays](https://github.com/your-org/bank-holidays))
-2. Support multiple calendars with independent rules
-3. Expose CRUD for calendars, rules, overrides
-4. Business-day calculation endpoints
-5. Scheduling for auto-populate jobs
-6. Packaging with Docker
+1. **Phase 1: US Holiday Foundation**
+   - Schedule domain object with country field (US-first approach)
+   - Integration with [bank-holidays](https://github.com/lodenrogue/bank-holidays) library for US federal holiday calculations
+   - Basic Schedule CRUD operations via REST API
+   
+2. **Phase 2: Business Rules**
+   - Support multiple schedules with independent rules
+   - Weekend pattern configuration
+   - Custom holiday overrides (per-schedule and global)
+   
+3. **Phase 3: Business Day Calculations**  
+   - "Next N business days" endpoints
+   - "Previous, next, next-next" style date generation
+   - Auto-populate next year's holidays (cron or manual trigger)
+   
+4. **Phase 4: International Expansion**
+   - Multi-country holiday support (expand beyond US)
+   - Timezone handling for multi-region deployments
+   - Configurable weekend patterns by country
+   
+5. **Phase 5: Production Ready**
+   - Docker packaging with Postgres
+   - Performance optimization and caching
+   - Comprehensive API documentation
+
+## Dependencies
+- **Holiday Calculations**: [bank-holidays](https://github.com/lodenrogue/bank-holidays) - Java library for US federal holiday calculation
