@@ -15,21 +15,28 @@
 	<name>Holiday Guard</name>
 	<description>A REST service for managing holidays and business days</description>
 
-	<url/>
+	<url>https://github.com/jw1/holiday-guard</url>
 
 	<licenses>
-		<license/>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
 	</licenses>
 
 	<developers>
-		<developer/>
+		<developer>
+			<id>jw1</id>
+			<name>James</name>
+			<url>https://github.com/jw1</url>
+		</developer>
 	</developers>
 
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:git://github.com/jw1/holiday-guard.git</connection>
+		<developerConnection>scm:git:ssh://github.com:jw1/holiday-guard.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/jw1/holiday-guard</url>
 	</scm>
 
 	<properties>
@@ -37,6 +44,8 @@
 	</properties>
 
 	<dependencies>
+
+		<!-- spring boot starters -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -54,20 +63,24 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
+		<!-- start with in-memory db -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
+
+		<!-- test dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 
