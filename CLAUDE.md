@@ -81,14 +81,45 @@ Service for managing multiple business calendars with rules for:
 - **Test Coverage**: Aim for >80% coverage on business logic
 - **Test Data**: Use builders or factories for consistent test data
 
+## Established Patterns & Best Practices
+
+### **Testing Patterns**
+- **AssertJ Assertions**: Use `assertThat()` over JUnit assertions for better readability
+- **BDD-Style Comments**: Structure tests with `// given`, `// when`, `// then` comments
+- **Static Validators**: Use `@BeforeAll` with static validator for performance
+- **Method Names**: Use descriptive, behavior-focused test method names
+- **Test Data**: Use `List.of()` and `forEach()` for efficient bulk test data setup
+
+### **Domain Object Patterns**
+- **Lombok Builder**: Use `@Builder` with `@Builder.Default` for default field values
+- **Modern Java**: Leverage `var`, method references, and modern Java features
+- **Validation**: Combine JSR-303 annotations with custom business validation
+- **Audit Fields**: Automatic timestamp handling with JPA lifecycle callbacks
+
+### **Current Implementation Status**
+
+#### ✅ **Completed Layers**
+- **Domain Layer**: `Schedule` entity with full validation and builder pattern
+- **Repository Layer**: `ScheduleRepository` with custom Spring Data JPA queries
+- **Test Infrastructure**: Comprehensive unit and integration tests
+
+#### 🚧 **In Progress** 
+- **Service Layer**: Business logic and validation layer
+- **REST API Layer**: HTTP endpoints with proper error handling
+
+#### 📋 **Next Steps**
+- Bank-holidays library integration
+- Flyway database migrations
+- Production database configuration
+
 ## Database Schema Guidelines
-- **Table Naming**: Use snake_case (e.g., `business_calendars`, `holiday_rules`)
-- **Primary Keys**: Use `id` as BIGINT with auto-increment
-- **Foreign Keys**: Use `{referenced_table}_id` format (e.g., `calendar_id`)
-- **Audit Fields**: Include `created_at` and `updated_at` TIMESTAMP fields
+- **Table Naming**: Use snake_case (e.g., `schedules`, `holiday_rules`)
+- **Primary Keys**: Use `id` as UUID with `GenerationType.UUID`
+- **Foreign Keys**: Use `{referenced_table}_id` format (e.g., `schedule_id`)
+- **Audit Fields**: Include `created_at` and `updated_at` TIMESTAMP fields with `@PrePersist/@PreUpdate`
 - **Boolean Fields**: Use clear names like `is_active`, `is_holiday`
 - **Indexes**: Add indexes for frequently queried columns
-- **Constraints**: Use descriptive constraint names following pattern: `{table}_{column}_{constraint_type}`
+- **Constraints**: Use descriptive constraint names and `unique = true` for business keys
 
 ## TDD Development Flow
 Follow the Red-Green-Refactor cycle for all new features:
@@ -112,11 +143,19 @@ Follow the Red-Green-Refactor cycle for all new features:
 
 **Repeat for each small increment of functionality.**
 
-## Roadmap
+## Implementation Roadmap
+
+### **Current TDD Phases** (Immediate Focus)
+1. **✅ Phase 1: Domain Layer** - Schedule entity with validation and tests
+2. **✅ Phase 2: Repository Layer** - Spring Data JPA with custom queries  
+3. **🚧 Phase 3: Service Layer** - Business logic and validation
+4. **📋 Phase 4: REST API Layer** - HTTP endpoints with error handling
+
+### **Feature Roadmap** (Long-term Goals)
 1. **Phase 1: US Holiday Foundation**
-   - Schedule domain object with country field (US-first approach)
-   - Integration with [bank-holidays](https://github.com/lodenrogue/bank-holidays) library for US federal holiday calculations
-   - Basic Schedule CRUD operations via REST API
+   - ✅ Schedule domain object with country field (US-first approach)
+   - 📋 Integration with [bank-holidays](https://github.com/lodenrogue/bank-holidays) library for US federal holiday calculations
+   - 🚧 Basic Schedule CRUD operations via REST API
    
 2. **Phase 2: Business Rules**
    - Support multiple schedules with independent rules
