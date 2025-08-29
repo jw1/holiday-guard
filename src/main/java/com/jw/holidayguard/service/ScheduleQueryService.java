@@ -7,6 +7,7 @@ import com.jw.holidayguard.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,13 +43,26 @@ public class ScheduleQueryService {
             throw new IllegalArgumentException("Schedule is not active: " + scheduleId);
         }
         
+        // Validate date bounds (reasonable planning horizon)
+        LocalDate queryDate = request.getQueryDate(); // This defaults to today if null
+        LocalDate today = LocalDate.now();
+        LocalDate maxFutureDate = today.plusYears(5); // 5 year planning horizon
+        LocalDate minPastDate = today.minusYears(1);  // 1 year historical data
+        
+        if (queryDate.isAfter(maxFutureDate)) {
+            throw new IllegalArgumentException("Query date too far in future: " + queryDate + " (max: " + maxFutureDate + ")");
+        }
+        if (queryDate.isBefore(minPastDate)) {
+            throw new IllegalArgumentException("Query date too far in past: " + queryDate + " (min: " + minPastDate + ")");
+        }
+        
         // Get active version
         ScheduleVersion activeVersion = scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId)
             .orElseThrow(() -> new IllegalStateException("No active version found for schedule: " + scheduleId));
         
         // Check for overrides first (they take precedence)
         Optional<ScheduleOverride> override = overrideRepository.findActiveOverrideForDate(
-            scheduleId, activeVersion.getId(), request.getQueryDate()
+            scheduleId, activeVersion.getId(), queryDate
         );
         
         boolean shouldRun;
@@ -64,7 +78,7 @@ public class ScheduleQueryService {
         } else {
             // No override - check materialized calendar
             Optional<ScheduleMaterializedCalendar> calendarEntry = materializedCalendarRepository
-                .findByScheduleIdAndVersionIdAndOccursOn(scheduleId, activeVersion.getId(), request.getQueryDate());
+                .findByScheduleIdAndVersionIdAndOccursOn(scheduleId, activeVersion.getId(), queryDate);
             
             if (calendarEntry.isPresent()) {
                 shouldRun = true;
@@ -79,7 +93,7 @@ public class ScheduleQueryService {
         ScheduleQueryLog queryLog = ScheduleQueryLog.builder()
             .scheduleId(scheduleId)
             .versionId(activeVersion.getId())
-            .queryDate(request.getQueryDate())
+            .queryDate(queryDate)
             .shouldRunResult(shouldRun)
             .reason(reason)
             .overrideApplied(overrideApplied)
@@ -91,7 +105,7 @@ public class ScheduleQueryService {
         // Return response
         return new ShouldRunQueryResponse(
             scheduleId,
-            request.getQueryDate(),
+            queryDate,
             shouldRun,
             reason,
             overrideApplied,

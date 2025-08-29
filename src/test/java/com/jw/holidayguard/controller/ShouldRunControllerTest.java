@@ -124,23 +124,54 @@ class ShouldRunControllerTest {
     }
 
     @Test
-    void shouldReturnBadRequestForInvalidPostRequest() throws Exception {
-        // TODO:  if queryDate is missing, should assume "today"... client may simply want to provide clientIdentifier (let's default to being helpful)
-
-        // Given: Invalid request (missing queryDate)
+    void shouldDefaultToTodayWhenQueryDateMissing() throws Exception {
+        // Given: Request with missing queryDate should default to today
         UUID scheduleId = UUID.randomUUID();
+        UUID versionId = UUID.randomUUID();
+        LocalDate today = LocalDate.now();
         
-        ShouldRunQueryRequest invalidRequest = new ShouldRunQueryRequest();
-        invalidRequest.setClientIdentifier("test-client");
-        // queryDate is null - should be invalid
+        ShouldRunQueryRequest request = new ShouldRunQueryRequest();
+        request.setClientIdentifier("test-client");
+        // queryDate is null - should default to today
+        
+        ShouldRunQueryResponse response = new ShouldRunQueryResponse(
+            scheduleId,
+            today,
+            true,
+            "Scheduled to run - found in materialized calendar",
+            false,
+            versionId
+        );
 
-        // When & Then: POST request should return bad request
+        when(service.shouldRunToday(eq(scheduleId), any(ShouldRunQueryRequest.class)))
+            .thenReturn(response);
+
+        // When & Then: POST request should succeed and use today
         mockMvc.perform(post("/api/v1/schedules/{scheduleId}/should-run", scheduleId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.queryDate").value(today.toString()))
+                .andExpect(jsonPath("$.shouldRun").value(true));
     }
 
-    // TODO:  should fail requests for "out of bounds" dates
+    @Test
+    void shouldFailForOutOfBoundsDate() throws Exception {
+        // Given: Request with date too far in future (beyond reasonable planning horizon)
+        UUID scheduleId = UUID.randomUUID();
+        LocalDate farFuture = LocalDate.now().plusYears(10); // 10 years in future
+        
+        ShouldRunQueryRequest request = new ShouldRunQueryRequest(farFuture, "test-client");
+
+        // Mock the service to throw IllegalArgumentException for out-of-bounds date
+        when(service.shouldRunToday(eq(scheduleId), any(ShouldRunQueryRequest.class)))
+                .thenThrow(new IllegalArgumentException("Query date too far in future: " + farFuture + " (max: " + LocalDate.now().plusYears(5) + ")"));
+
+        // When & Then: POST request should return bad request for out of bounds date
+        mockMvc.perform(post("/api/v1/schedules/{scheduleId}/should-run", scheduleId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("INVALID_REQUEST"));
+    }
 }

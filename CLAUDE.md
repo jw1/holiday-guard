@@ -68,6 +68,35 @@ Service for managing multiple business calendars with rules for:
   ```
 - **Resource Naming**: Use plural nouns (`/calendars`, `/holidays`)
 
+### **Core API Endpoints** (Implemented)
+
+#### **Daily Operations** (Primary Use Case)
+```bash
+# Simple "should I run today?" - defaults to today, no request body needed
+GET /api/v1/schedules/{scheduleId}/should-run?client=payroll-service
+
+# Advanced "should I run on specific date?" with full control
+POST /api/v1/schedules/{scheduleId}/should-run
+Body: {"queryDate": "2024-03-15", "clientIdentifier": "report-generator"}
+```
+
+#### **Schedule Management**
+```bash
+# Create schedule with initial rules
+POST /api/v1/schedules
+Body: {
+  "name": "Payroll Schedule",
+  "rules": [{"ruleType": "WEEKDAYS_ONLY", "effectiveFrom": "2024-01-01"}]
+}
+
+# Update schedule rules (creates new version automatically)  
+POST /api/v1/schedules/{scheduleId}/versions
+Body: {
+  "rules": [{"ruleType": "WEEKDAYS_ONLY", "effectiveFrom": "2024-01-01"}],
+  "overrides": [{"overrideDate": "2024-07-04", "action": "SKIP", "reason": "Independence Day"}]
+}
+```
+
 ## Testing Strategy
 - **Unit Tests**: Test business logic in service layer
   - Naming: `ClassNameTest` (e.g., `BusinessDayServiceTest`)
@@ -98,19 +127,41 @@ Service for managing multiple business calendars with rules for:
 
 ### **Current Implementation Status**
 
-#### ✅ **Completed Layers**
-- **Domain Layer**: `Schedule` entity with full validation and builder pattern
-- **Repository Layer**: `ScheduleRepository` with custom Spring Data JPA queries
-- **Test Infrastructure**: Comprehensive unit and integration tests
+#### ✅ **Completed Core Architecture** (Schedule Versioning System)
+- **Domain Layer**: Complete entity model with 6 interconnected entities:
+  - `Schedule` - Core schedule definitions
+  - `ScheduleVersion` - Version tracking for audit trail
+  - `ScheduleRules` - Rule definitions (WEEKDAYS_ONLY, CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN)
+  - `ScheduleOverride` - Exception management (SKIP/FORCE_RUN actions)
+  - `ScheduleMaterializedCalendar` - Pre-computed "should run" dates (performance optimization)
+  - `ScheduleQueryLog` - Complete audit trail of all "should I run today?" queries
 
-#### 🚧 **In Progress** 
-- **Service Layer**: Business logic and validation layer
-- **REST API Layer**: HTTP endpoints with proper error handling
+- **Repository Layer**: Full Spring Data JPA repositories with custom queries for all entities
+- **Service Layer**: Core business logic implemented:
+  - `ScheduleVersionService` - Automatic version management when rules change
+  - `ScheduleQueryService` - Primary "should I run today?" query engine with override precedence
+- **REST API Layer**: Production-ready endpoints:
+  - `ShouldRunController` - Dead simple daily queries (GET for today, POST for specific dates)
+  - `ScheduleVersionController` - Administrative rule management
+- **Database Schema**: Flyway migrations (V001 + V002) with proper constraints and indexes
+- **Test Infrastructure**: Comprehensive test coverage including:
+  - Unit tests for all services (TDD approach)
+  - Integration tests for repositories  
+  - Controller tests with proper mocking
+  - `ScheduleTestDataFactory` utility for consistent test data
+
+#### ✅ **Key Design Patterns Established**
+- **Materialized Calendar Strategy**: Store only "YES" dates, empty result = "NO" (performance optimization)
+- **Override Precedence**: Overrides take priority over base calendar rules
+- **Automatic Versioning**: Client rule updates trigger new versions automatically (no explicit version creation)
+- **Complete Audit Trail**: Every query logged with version, reasoning, and client identifier
+- **Date Boundary Validation**: 5-year future horizon, 1-year historical access
+- **User-Friendly Defaults**: Missing dates default to "today" for ease of use
 
 #### 📋 **Next Steps**
-- Bank-holidays library integration
-- Flyway database migrations
-- Production database configuration
+- Schedule materialization engine (generate calendar from rules)
+- Business day calculation utilities
+- Cron-based auto-population jobs
 
 ## Database Schema Guidelines
 - **Table Naming**: Use snake_case (e.g., `schedules`, `holiday_rules`)

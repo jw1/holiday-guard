@@ -47,7 +47,6 @@ class ScheduleQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        
         scheduleId = UUID.randomUUID();
         versionId = UUID.randomUUID();
         
@@ -67,7 +66,7 @@ class ScheduleQueryServiceTest {
     @Test
     void shouldReturnTrueWhenDateExistsInMaterializedCalendar() {
         // Given: A date exists in the materialized calendar (should run = YES)
-        LocalDate queryDate = LocalDate.of(2024, 3, 15); // Friday
+        LocalDate queryDate = LocalDate.now().plusDays(5); // Future date
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
         
         ScheduleMaterializedCalendar calendarEntry = ScheduleMaterializedCalendar.builder()
@@ -109,7 +108,7 @@ class ScheduleQueryServiceTest {
     @Test
     void shouldReturnFalseWhenDateNotInMaterializedCalendar() {
         // Given: A date does not exist in materialized calendar (should run = NO)
-        LocalDate queryDate = LocalDate.of(2024, 3, 16); // Saturday
+        LocalDate queryDate = LocalDate.now().plusDays(10); // Future date
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
@@ -142,7 +141,7 @@ class ScheduleQueryServiceTest {
     @Test
     void shouldApplySkipOverrideWhenPresent() {
         // Given: A date exists in calendar but has a SKIP override
-        LocalDate queryDate = LocalDate.of(2024, 7, 4); // July 4th
+        LocalDate queryDate = LocalDate.now().plusDays(15); // Future date for holiday simulation
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
             
         ScheduleOverride skipOverride = ScheduleOverride.builder()

@@ -1,6 +1,5 @@
 package com.jw.holidayguard.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,8 +11,18 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ShouldRunQueryRequest {
     
-    @NotNull(message = "Query date is required")
+    /**
+     * Query date - defaults to today if not provided.
+     * This makes the API more user-friendly for common cases.
+     */
     private LocalDate queryDate;
     
     private String clientIdentifier;
+    
+    /**
+     * Gets the query date, defaulting to today if null.
+     */
+    public LocalDate getQueryDate() {
+        return queryDate != null ? queryDate : LocalDate.now();
+    }
 }
