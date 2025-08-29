@@ -1,0 +1,101 @@
+package com.jw.holidayguard.service;
+
+import com.jw.holidayguard.domain.*;
+import com.jw.holidayguard.dto.ShouldRunQueryRequest;
+import com.jw.holidayguard.dto.ShouldRunQueryResponse;
+import com.jw.holidayguard.repository.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+@Transactional
+public class ScheduleQueryService {
+    
+    private final ScheduleRepository scheduleRepository;
+    private final ScheduleVersionRepository scheduleVersionRepository;
+    private final ScheduleMaterializedCalendarRepository materializedCalendarRepository;
+    private final ScheduleOverrideRepository overrideRepository;
+    private final ScheduleQueryLogRepository queryLogRepository;
+
+    public ScheduleQueryService(
+            ScheduleRepository scheduleRepository,
+            ScheduleVersionRepository scheduleVersionRepository,
+            ScheduleMaterializedCalendarRepository materializedCalendarRepository,
+            ScheduleOverrideRepository overrideRepository,
+            ScheduleQueryLogRepository queryLogRepository) {
+        this.scheduleRepository = scheduleRepository;
+        this.scheduleVersionRepository = scheduleVersionRepository;
+        this.materializedCalendarRepository = materializedCalendarRepository;
+        this.overrideRepository = overrideRepository;
+        this.queryLogRepository = queryLogRepository;
+    }
+
+    public ShouldRunQueryResponse shouldRunToday(UUID scheduleId, ShouldRunQueryRequest request) {
+        // Validate schedule exists and is active
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+            .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + scheduleId));
+        
+        if (!schedule.isActive()) {
+            throw new IllegalArgumentException("Schedule is not active: " + scheduleId);
+        }
+        
+        // Get active version
+        ScheduleVersion activeVersion = scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId)
+            .orElseThrow(() -> new IllegalStateException("No active version found for schedule: " + scheduleId));
+        
+        // Check for overrides first (they take precedence)
+        Optional<ScheduleOverride> override = overrideRepository.findActiveOverrideForDate(
+            scheduleId, activeVersion.getId(), request.getQueryDate()
+        );
+        
+        boolean shouldRun;
+        String reason;
+        boolean overrideApplied = false;
+        
+        if (override.isPresent()) {
+            // Override exists - apply it
+            overrideApplied = true;
+            ScheduleOverride overrideRule = override.get();
+            shouldRun = overrideRule.getAction() == ScheduleOverride.OverrideAction.FORCE_RUN;
+            reason = "Override applied: " + overrideRule.getReason();
+        } else {
+            // No override - check materialized calendar
+            Optional<ScheduleMaterializedCalendar> calendarEntry = materializedCalendarRepository
+                .findByScheduleIdAndVersionIdAndOccursOn(scheduleId, activeVersion.getId(), request.getQueryDate());
+            
+            if (calendarEntry.isPresent()) {
+                shouldRun = true;
+                reason = "Scheduled to run - found in materialized calendar";
+            } else {
+                shouldRun = false;
+                reason = "Not scheduled to run - date not found in materialized calendar";
+            }
+        }
+        
+        // Log the query for audit trail
+        ScheduleQueryLog queryLog = ScheduleQueryLog.builder()
+            .scheduleId(scheduleId)
+            .versionId(activeVersion.getId())
+            .queryDate(request.getQueryDate())
+            .shouldRunResult(shouldRun)
+            .reason(reason)
+            .overrideApplied(overrideApplied)
+            .clientIdentifier(request.getClientIdentifier())
+            .build();
+        
+        queryLogRepository.save(queryLog);
+        
+        // Return response
+        return new ShouldRunQueryResponse(
+            scheduleId,
+            request.getQueryDate(),
+            shouldRun,
+            reason,
+            overrideApplied,
+            activeVersion.getId()
+        );
+    }
+}

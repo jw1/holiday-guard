@@ -48,6 +48,8 @@ Daily processes (payroll, ACH files, reports, etc.) call a simple REST endpoint 
 
 ### `schedule`
 
+**Purpose**: Stores the core schedule definitions that business processes reference by ID. Each schedule has a stable identifier that never changes, even when rules are updated.
+
   Column          Type      Notes
   --------------- --------- ------------------------------------
   `id`            UUID      Stable identifier, used by clients (✅ implemented)
@@ -61,6 +63,8 @@ Daily processes (payroll, ACH files, reports, etc.) call a simple REST endpoint 
 **Notes**: This matches our current Schedule entity implementation. The service answers "yes/no" only - business day shifting is a client concern.
 
 ### `schedule_version`
+
+**Purpose**: Maintains historical versions of schedule rules for auditability and rule evolution. Only the most recent version is active, but all versions are preserved for debugging and compliance.
 
   -----------------------------------------------------------------------
   Column                                Type               Notes
@@ -86,15 +90,19 @@ Daily processes (payroll, ACH files, reports, etc.) call a simple REST endpoint 
                                                            currently
                                                            active
 
-Dev note:  Sorting the rules by the "from" date and grabbing the last one presumably gives us the active one... but queries would be easier to write if there is an active flag.
+Dev note:  Sorting the rules by the "from" date and grabbing the last one gives us the active one... but queries would be easier to write if there is an active flag.
+
   -----------------------------------------------------------------------
 
 ### `schedule_rules`
+
+**Purpose**: Defines the actual scheduling logic (when should this schedule run) using various rule types like weekdays-only or cron expressions. Rules are tied to specific schedule versions to preserve complete rule history for audit and debugging purposes.
 
   Column              Type      Notes
   ------------------- --------- ----------------------------------------
   `id`                UUID      Rule identifier
   `schedule_id`       UUID      FK to schedule
+  `version_id`        UUID      FK to schedule version (preserves rule history)
   `rule_type`         Enum      WEEKDAYS_ONLY, CRON_EXPRESSION, etc.
   `rule_config`       JSON      Rule-specific configuration
   `effective_from`    DATE      When this rule becomes active
@@ -111,25 +119,32 @@ Dev note:  Sorting the rules by the "from" date and grabbing the last one presum
 - Weekdays: `rule_type=WEEKDAYS_ONLY, rule_config={}`
 - Bi-weekly: `rule_type=CRON_EXPRESSION, rule_config={"cron": "0 0 0 ? * MON/2"}`
 
-### `schedule_occurrence`
+### `schedule_materialized_calendar` *(THE MATERIALIZED CALENDAR)*
+
+**Purpose**: This IS the materialized calendar - pre-computed dates when each schedule should run, generated from schedule rules and modified by overrides. Contains only "should run = YES" dates; if no record exists for a date, the answer is "NO".
 
   Column          Type      Notes
   --------------- --------- -----------------------------------
   `id`            UUID      Occurrence ID
   `schedule_id`   UUID      FK to schedule
   `version_id`    UUID      FK to version that generated it
-  `occurs_on`     DATE      Business date (not time-of-day)
+  `occurs_on`     DATE      Business date when schedule should run
   `status`        Enum      SCHEDULED, OVERRIDDEN, COMPLETED
   `override_id`   UUID      FK to override (if applicable)
+
+**Key Design Decision**: This table contains **only dates when the schedule should run**. Empty result for a date = "don't run today". This keeps the table smaller and queries faster (e.g., 260 records/year for weekdays vs 365 records/year for every day).
 
 **Resolved Dev Note**: Changed from `occurs_at` (Instant) to `occurs_on` (DATE) since we're dealing with business dates only, not specific times. The "should I run today?" question is about dates, not times.
 
 ### `schedule_override`
 
+**Purpose**: Stores exceptions that modify the standard schedule rules for specific dates (e.g., skip payroll on Christmas, force run for catch-up). These overrides are tied to specific schedule versions to maintain complete audit trail of what changed between versions.
+
   Column              Type      Notes
   ------------------- --------- ----------------------------------------
   `id`                UUID      Override identifier
   `schedule_id`       UUID      FK to schedule
+  `version_id`        UUID      FK to schedule version (for audit trail)
   `override_date`     DATE      Specific business date to override
   `action`            Enum      SKIP, FORCE_RUN
   `reason`            String    Human-readable explanation
@@ -138,8 +153,8 @@ Dev note:  Sorting the rules by the "from" date and grabbing the last one presum
   `expires_at`        DATE      Optional expiration for cleanup
 
 **Override Actions:**
-- `SKIP`: Don't run on this date (answer "no")
-- `FORCE_RUN`: Run even if base schedule says don't run (answer "yes")
+- `SKIP`: Don't run on this date (answer "no") - removes occurrence if it exists
+- `FORCE_RUN`: Run even if base schedule says don't run (answer "yes") - adds occurrence if missing
 
 **Examples:**
 - Skip payroll on Christmas: `action=SKIP, override_date=2024-12-25, reason="Christmas Day"`
@@ -147,12 +162,16 @@ Dev note:  Sorting the rules by the "from" date and grabbing the last one presum
 
 **Note**: We only answer "yes" or "no" - rescheduling is a client concern. Client can call the API for different dates to find the next available run date.
 
-### `schedule_occurrence_history`
+### `schedule_query_log` *(AUDIT TRAIL)*
+*Alternative names considered: `schedule_occurrence_history`, `schedule_decision_log`, `schedule_audit_trail`*
+
+**Purpose**: Permanent audit trail that records every "should I run today?" query and the answer given. Includes version information for debugging scenarios ("what rule version was active when this query was made?"). Used for compliance, debugging, and business analysis - these records are never deleted.
 
   Column              Type      Notes
   ------------------- --------- ----------------------------------------
   `id`                UUID      History entry identifier
   `schedule_id`       UUID      FK to schedule
+  `version_id`        UUID      FK to schedule version (for debugging)
   `query_date`        DATE      Date that was queried
   `should_run_result` Boolean   The answer that was given
   `reason`            String    Explanation for the decision
@@ -160,7 +179,79 @@ Dev note:  Sorting the rules by the "from" date and grabbing the last one presum
   `queried_at`        Instant   When the query was made
   `client_identifier` String    Which process/system asked
 
-**Purpose**: Permanent audit trail of what answers were given for historical analysis. Records are never deleted.
+**Key Point**: This is NOT where schedule_materialized_calendar records "move to" - this is a separate log of actual queries made by business processes. A single date might have multiple history records if queried multiple times. The version_id tracks which rule version was active during the query for debugging purposes.
+
+------------------------------------------------------------------------
+
+## Data Flow: How It All Works Together
+
+### **Materialization Process** (Happens when rules change or during nightly batch):
+
+1. **Input**: `schedule_rules` (active rules for each schedule)
+2. **Process**: Generate dates when schedule should run (e.g., weekdays for next year)  
+3. **Apply**: `schedule_override` modifications (SKIP removes dates, FORCE_RUN adds dates)
+4. **Output**: `schedule_run_dates` table populated with "should run = YES" dates only
+
+### **Query Process** (When business process asks "should I run today?"):
+
+1. **Query**: `SELECT * FROM schedule_run_dates WHERE schedule_id = ? AND occurs_on = ?`
+2. **Result**: 
+   - **Record found** → Return `shouldRun: true` + reason
+   - **No record** → Return `shouldRun: false` + reason (based on rules/overrides)
+3. **Log**: Insert query and answer into `schedule_query_log`
+
+### **Key Insight**: 
+- `schedule_run_dates` = **Pre-computed calendar of "YES" answers**
+- `schedule_query_log` = **Log of actual questions asked**  
+- No data "moves" between these tables - they serve different purposes
+
+------------------------------------------------------------------------
+
+## Concrete Example: How Data Looks
+
+### Example: "Payroll" schedule (weekdays only)
+
+**`schedule` table:**
+```
+id: payroll-123
+name: "Bi-weekly Payroll"  
+country: "US"
+active: true
+```
+
+**`schedule_rules` table:**
+```  
+schedule_id: payroll-123
+rule_type: WEEKDAYS_ONLY
+rule_config: {}
+is_active: true
+```
+
+**`schedule_run_dates` table** (materialized calendar):
+```
+schedule_id: payroll-123, occurs_on: 2024-12-02, status: SCHEDULED
+schedule_id: payroll-123, occurs_on: 2024-12-03, status: SCHEDULED  
+schedule_id: payroll-123, occurs_on: 2024-12-04, status: SCHEDULED
+// ... no record for 2024-12-25 (Christmas)
+schedule_id: payroll-123, occurs_on: 2024-12-26, status: SCHEDULED
+```
+
+**`schedule_override` table:**
+```
+schedule_id: payroll-123, override_date: 2024-12-25, action: SKIP, reason: "Christmas Day"
+```
+
+**`schedule_query_log` table** (what actually happened):
+```
+schedule_id: payroll-123, query_date: 2024-12-24, should_run_result: true, reason: "Scheduled weekday", queried_at: 2024-12-24T09:00:00Z, client_identifier: "payroll-service"
+schedule_id: payroll-123, query_date: 2024-12-25, should_run_result: false, reason: "Christmas Day - Override", queried_at: 2024-12-25T09:00:00Z, client_identifier: "payroll-service"  
+```
+
+**The Query**: `GET /api/v1/schedules/payroll-123/should-run?date=2024-12-25`
+1. Check `schedule_run_dates`: No record found for 2024-12-25
+2. Check `schedule_override`: Found SKIP for 2024-12-25  
+3. **Answer**: `{"shouldRun": false, "reason": "Christmas Day - Override"}`
+4. Log to `schedule_query_log`
 
 ------------------------------------------------------------------------
 
@@ -301,7 +392,7 @@ The most common query pattern is daily processes asking "should I run today?":
 - **Configurable horizon**: Default to next year, customizable via Spring property `schedule.materialization.horizon`
 - **Override integration**: Mark occurrences as OVERRIDDEN when exceptions applied  
 - **No deletion**: Historical data preserved permanently for audit purposes
-- **History tracking**: All queries logged to `schedule_occurrence_history` table
+- **History tracking**: All queries logged to `schedule_query_log` table
 
 **Use Case**: Viewing schedule patterns for next year is valuable for business planning (e.g., "how many payroll runs in 2025?").
 
@@ -327,7 +418,7 @@ The most common query pattern is daily processes asking "should I run today?":
 
 ### Query Logging
 
-All queries are automatically logged to `schedule_occurrence_history` table (see entity model above).
+All queries are automatically logged to `schedule_query_log` table (see entity model above).
 
 **Key Benefits:**
 - **Permanent audit trail**: Never delete historical query results
