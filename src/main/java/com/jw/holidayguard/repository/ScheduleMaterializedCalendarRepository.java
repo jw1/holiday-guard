@@ -38,4 +38,8 @@ public interface ScheduleMaterializedCalendarRepository extends JpaRepository<Sc
     @Modifying
     @Query("DELETE FROM ScheduleMaterializedCalendar smc WHERE smc.scheduleId = :scheduleId AND smc.versionId = :versionId")
     void deleteByScheduleIdAndVersionId(@Param("scheduleId") UUID scheduleId, @Param("versionId") UUID versionId);
+    
+    @Modifying
+    @Query("DELETE FROM ScheduleMaterializedCalendar smc WHERE smc.scheduleId = :scheduleId AND smc.versionId = :versionId AND smc.occursOn BETWEEN :startDate AND :endDate")
+    void deleteByScheduleIdAndVersionIdAndOccursOnBetween(@Param("scheduleId") UUID scheduleId, @Param("versionId") UUID versionId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

@@ -204,6 +204,7 @@ GET /api/v1/admin/schedules/{schedule-id}/materialization-status
 - `QUARTERLY_PATTERN`: End-of-quarter processing
 - `FISCAL_CALENDAR`: Non-standard year boundaries
 - `CONDITIONAL_RULES`: "Run if previous day was holiday"
+- look at the bank_holidays project on github for how we may obtain US Fed Holidays
 
 ### **Smart Materialization**
 

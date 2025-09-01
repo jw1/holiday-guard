@@ -140,15 +140,22 @@ Body: {
 - **Service Layer**: Core business logic implemented:
   - `ScheduleVersionService` - Automatic version management when rules change
   - `ScheduleQueryService` - Primary "should I run today?" query engine with override precedence
+  - `ScheduleMaterializationService` - Rule engine with materialization pipeline
 - **REST API Layer**: Production-ready endpoints:
   - `ShouldRunController` - Dead simple daily queries (GET for today, POST for specific dates)
   - `ScheduleVersionController` - Administrative rule management
+  - `ScheduleController` - Full CRUD operations for schedules
+- **Materialization Engine**: Complete rule processing system:
+  - `RuleEngine` with pluggable handlers for all rule types
+  - `OverrideApplicator` for SKIP/FORCE_RUN precedence logic
+  - Handler implementations for WEEKDAYS_ONLY, CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN
 - **Database Schema**: Flyway migrations (V001 + V002) with proper constraints and indexes
 - **Test Infrastructure**: Comprehensive test coverage including:
   - Unit tests for all services (TDD approach)
   - Integration tests for repositories  
   - Controller tests with proper mocking
   - `ScheduleTestDataFactory` utility for consistent test data
+  - Specialized test utilities like `ACHProcessingScheduleFactory`
 
 #### ✅ **Key Design Patterns Established**
 - **Materialized Calendar Strategy**: Store only "YES" dates, empty result = "NO" (performance optimization)
@@ -157,11 +164,7 @@ Body: {
 - **Complete Audit Trail**: Every query logged with version, reasoning, and client identifier
 - **Date Boundary Validation**: 5-year future horizon, 1-year historical access
 - **User-Friendly Defaults**: Missing dates default to "today" for ease of use
-
-#### 📋 **Next Steps**
-- Schedule materialization engine (generate calendar from rules)
-- Business day calculation utilities
-- Cron-based auto-population jobs
+- **Factory Pattern for Schedule Utilities**: Established pattern for creating domain-specific schedule definitions (e.g., ACH processing schedules)
 
 ## Database Schema Guidelines
 - **Table Naming**: Use snake_case (e.g., `schedules`, `holiday_rules`)
@@ -199,34 +202,45 @@ Follow the Red-Green-Refactor cycle for all new features:
 ### **Current TDD Phases** (Immediate Focus)
 1. **✅ Phase 1: Domain Layer** - Schedule entity with validation and tests
 2. **✅ Phase 2: Repository Layer** - Spring Data JPA with custom queries  
-3. **🚧 Phase 3: Service Layer** - Business logic and validation
-4. **📋 Phase 4: REST API Layer** - HTTP endpoints with error handling
+3. **✅ Phase 3: Service Layer** - Business logic and validation
+4. **✅ Phase 4: REST API Layer** - HTTP endpoints with error handling
 
 ### **Feature Roadmap** (Long-term Goals)
-1. **Phase 1: US Holiday Foundation**
+1. **✅ Phase 1: US Holiday Foundation**
    - ✅ Schedule domain object with country field (US-first approach)
-   - 📋 Integration with [bank-holidays](https://github.com/lodenrogue/bank-holidays) library for US federal holiday calculations
-   - 🚧 Basic Schedule CRUD operations via REST API
+   - ✅ US federal holiday calculations via ACHProcessingScheduleFactory utility
+   - ✅ Complete Schedule CRUD operations via REST API
    
-2. **Phase 2: Business Rules**
-   - Support multiple schedules with independent rules
-   - Weekend pattern configuration
-   - Custom holiday overrides (per-schedule and global)
+2. **✅ Phase 2: Business Rules Engine**
+   - ✅ Support multiple schedules with independent rules
+   - ✅ Weekend pattern configuration (WEEKDAYS_ONLY)
+   - ✅ Custom holiday overrides (per-schedule SKIP/FORCE_RUN actions)
+   - ✅ Pluggable rule system (CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN)
    
-3. **Phase 3: Business Day Calculations**  
+3. **📋 Phase 3: Business Day Calculations**  
    - "Next N business days" endpoints
    - "Previous, next, next-next" style date generation
    - Auto-populate next year's holidays (cron or manual trigger)
    
-4. **Phase 4: International Expansion**
+4. **📋 Phase 4: International Expansion**
    - Multi-country holiday support (expand beyond US)
    - Timezone handling for multi-region deployments
    - Configurable weekend patterns by country
    
-5. **Phase 5: Production Ready**
+5. **📋 Phase 5: Production Ready**
    - Docker packaging with Postgres
    - Performance optimization and caching
    - Comprehensive API documentation
 
+## Important: Calendar-Only Focus
+**This project is concerned only with DATES (calendar days), not times of day.**
+- No time-based processing (hours, minutes, cutoffs)
+- No scheduling specific times within days  
+- Focus purely on "which days should something run" not "what time of day"
+- Rule engines, cron expressions, and schedules deal with date patterns only
+- Business day navigation and "should run today?" queries are date-based only
+
 ## Dependencies
-- **Holiday Calculations**: [bank-holidays](https://github.com/lodenrogue/bank-holidays) - Java library for US federal holiday calculation
+- **Core Framework**: Spring Boot 3.x with Spring Data JPA
+- **Database**: H2 (development), designed for PostgreSQL (production)
+- **Holiday Calculations**: Built-in US federal holiday calculations via ACHProcessingScheduleFactory

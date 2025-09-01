@@ -26,6 +26,9 @@ public interface ScheduleOverrideRepository extends JpaRepository<ScheduleOverri
     @Query("SELECT so FROM ScheduleOverride so WHERE so.scheduleId = :scheduleId AND so.versionId = :versionId AND so.overrideDate BETWEEN :startDate AND :endDate AND (so.expiresAt IS NULL OR so.expiresAt >= :startDate)")
     List<ScheduleOverride> findActiveOverridesInDateRange(@Param("scheduleId") UUID scheduleId, @Param("versionId") UUID versionId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
     
+    @Query("SELECT so FROM ScheduleOverride so WHERE so.scheduleId = :scheduleId AND so.versionId = :versionId AND so.overrideDate BETWEEN :startDate AND :endDate AND (so.expiresAt IS NULL OR so.expiresAt >= :startDate)")
+    List<ScheduleOverride> findActiveOverridesForDateRange(@Param("scheduleId") UUID scheduleId, @Param("versionId") UUID versionId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    
     List<ScheduleOverride> findByAction(ScheduleOverride.OverrideAction action);
     
     List<ScheduleOverride> findByCreatedBy(String createdBy);
