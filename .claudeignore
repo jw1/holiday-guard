@@ -1,0 +1,67 @@
+target/
+build/
+bin/
+out/
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+.mvn/
+mvnw
+mvnw.cmd
+node_modules/
+.git/
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+*.log
+*.tmp
+
+ # IDE and editor files
+*.iml
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# CI/CD and deployment
+.circleci/
+.github/
+docker-compose*.yml
+Dockerfile*
+
+# Documentation that changes frequently
+CHANGELOG.md
+HISTORY.md
+docs/
+
+# Test outputs and coverage
+coverage/
+test-results/
+jacoco/
+*.gcov
+
+# Database files (if using H2 locally)
+*.db
+*.h2.db
+
+# Logs
+logs/
+*.log.*
+
+# Maven wrapper (already in your list but missing the properties)
+.mvn/wrapper/maven-wrapper.properties
+
+# Spring Boot specific
+banner.txt
+
+# Any large data or resource files
+*.csv
+*.json.backup
+*.sql.backup

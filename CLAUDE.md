@@ -1,33 +1,17 @@
-# 🗓️ Claude Calendar Service
+# 🗓️ Holiday Guard
 
-Project Overview
+**Group/Package**: com.jw.holidayguard  
+**Purpose**: Service for managing business calendars with holiday/weekend rules, overrides, and business day forecasting.
 
-Name: Holiday Guard
-Group/Package: com.jw.holidayguard
-Purpose: A service for managing business calendars with holiday and weekend rules, overrides, and forecasting of future business days.
-
-A company could use this to manage all their backend stuff (e.g. maybe the ach file builder only runs on fed days and the payroll software only runs on every other friday, moving ahead a business day if that day is a holiday).  
-
-This project begins with a simple bank holiday service, but is designed to grow into a flexible, cloud-ready calendar management platform.
-
-
-## Purpose
-Service for managing multiple business calendars with rules for:
-- Weekends
-- US Federal holidays
-- Bank holidays
-- ACH/payday/internal settle days
-- Custom overrides (per calendar or global)
+A company could use this to manage backend scheduling (e.g. ACH file builder runs on fed days, payroll on alternate Fridays with holiday adjustments).
 
 ## Features
-- Multiple named calendars
-- Rule-based exclusion of days
-- Override support (per-calendar and global)
-- Generate "next N business days"
-- Generate "previous, next, next-next" style dates
-- Auto-populate next year in December (cron or manual trigger)
-- Docker-ready deployment with Postgres
-- Cloud-friendly (stateless core + database backend)
+Service for managing multiple business calendars with rules for:
+- Weekends and US Federal/Bank holidays  
+- ACH/payday/internal settlement days
+- Custom overrides (per-calendar and global)
+- Business day calculations and forecasting
+
 
 ## Tech
 - Java 21 + Spring Boot 3.x
@@ -68,34 +52,11 @@ Service for managing multiple business calendars with rules for:
   ```
 - **Resource Naming**: Use plural nouns (`/calendars`, `/holidays`)
 
-### **Core API Endpoints** (Implemented)
-
-#### **Daily Operations** (Primary Use Case)
-```bash
-# Simple "should I run today?" - defaults to today, no request body needed
-GET /api/v1/schedules/{scheduleId}/should-run?client=payroll-service
-
-# Advanced "should I run on specific date?" with full control
-POST /api/v1/schedules/{scheduleId}/should-run
-Body: {"queryDate": "2024-03-15", "clientIdentifier": "report-generator"}
-```
-
-#### **Schedule Management**
-```bash
-# Create schedule with initial rules
-POST /api/v1/schedules
-Body: {
-  "name": "Payroll Schedule",
-  "rules": [{"ruleType": "WEEKDAYS_ONLY", "effectiveFrom": "2024-01-01"}]
-}
-
-# Update schedule rules (creates new version automatically)  
-POST /api/v1/schedules/{scheduleId}/versions
-Body: {
-  "rules": [{"ruleType": "WEEKDAYS_ONLY", "effectiveFrom": "2024-01-01"}],
-  "overrides": [{"overrideDate": "2024-07-04", "action": "SKIP", "reason": "Independence Day"}]
-}
-```
+### **Core API Endpoints**
+- **Daily Operations**: `GET /api/v1/schedules/{id}/should-run` (primary use case)
+- **Schedule Management**: `POST /api/v1/schedules` and `POST /api/v1/schedules/{id}/versions`
+- **Rule Types**: WEEKDAYS_ONLY, CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN
+- **Override Actions**: SKIP, FORCE_RUN
 
 ## Testing Strategy
 - **Unit Tests**: Test business logic in service layer
@@ -127,35 +88,13 @@ Body: {
 
 ### **Current Implementation Status**
 
-#### ✅ **Completed Core Architecture** (Schedule Versioning System)
-- **Domain Layer**: Complete entity model with 6 interconnected entities:
-  - `Schedule` - Core schedule definitions
-  - `ScheduleVersion` - Version tracking for audit trail
-  - `ScheduleRules` - Rule definitions (WEEKDAYS_ONLY, CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN)
-  - `ScheduleOverride` - Exception management (SKIP/FORCE_RUN actions)
-  - `ScheduleMaterializedCalendar` - Pre-computed "should run" dates (performance optimization)
-  - `ScheduleQueryLog` - Complete audit trail of all "should I run today?" queries
-
-- **Repository Layer**: Full Spring Data JPA repositories with custom queries for all entities
-- **Service Layer**: Core business logic implemented:
-  - `ScheduleVersionService` - Automatic version management when rules change
-  - `ScheduleQueryService` - Primary "should I run today?" query engine with override precedence
-  - `ScheduleMaterializationService` - Rule engine with materialization pipeline
-- **REST API Layer**: Production-ready endpoints:
-  - `ShouldRunController` - Dead simple daily queries (GET for today, POST for specific dates)
-  - `ScheduleVersionController` - Administrative rule management
-  - `ScheduleController` - Full CRUD operations for schedules
-- **Materialization Engine**: Complete rule processing system:
-  - `RuleEngine` with pluggable handlers for all rule types
-  - `OverrideApplicator` for SKIP/FORCE_RUN precedence logic
-  - Handler implementations for WEEKDAYS_ONLY, CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN
-- **Database Schema**: Flyway migrations (V001 + V002) with proper constraints and indexes
-- **Test Infrastructure**: Comprehensive test coverage including:
-  - Unit tests for all services (TDD approach)
-  - Integration tests for repositories  
-  - Controller tests with proper mocking
-  - `ScheduleTestDataFactory` utility for consistent test data
-  - Specialized test utilities like `ACHProcessingScheduleFactory`
+#### ✅ **Completed Core Architecture**
+- **Domain Layer**: 6-entity model (Schedule, ScheduleVersion, ScheduleRules, ScheduleOverride, ScheduleMaterializedCalendar, ScheduleQueryLog)
+- **Service Layer**: ScheduleVersionService, ScheduleQueryService, ScheduleMaterializationService
+- **REST API Layer**: ShouldRunController, ScheduleVersionController, ScheduleController
+- **Materialization Engine**: RuleEngine with pluggable handlers, OverrideApplicator
+- **Database Schema**: Flyway migrations with proper constraints/indexes
+- **Test Infrastructure**: Comprehensive TDD coverage with test utilities
 
 #### ✅ **Key Design Patterns Established**
 - **Materialized Calendar Strategy**: Store only "YES" dates, empty result = "NO" (performance optimization)
@@ -199,38 +138,9 @@ Follow the Red-Green-Refactor cycle for all new features:
 
 ## Implementation Roadmap
 
-### **Current TDD Phases** (Immediate Focus)
-1. **✅ Phase 1: Domain Layer** - Schedule entity with validation and tests
-2. **✅ Phase 2: Repository Layer** - Spring Data JPA with custom queries  
-3. **✅ Phase 3: Service Layer** - Business logic and validation
-4. **✅ Phase 4: REST API Layer** - HTTP endpoints with error handling
-
-### **Feature Roadmap** (Long-term Goals)
-1. **✅ Phase 1: US Holiday Foundation**
-   - ✅ Schedule domain object with country field (US-first approach)
-   - ✅ US federal holiday calculations via ACHProcessingScheduleFactory utility
-   - ✅ Complete Schedule CRUD operations via REST API
-   
-2. **✅ Phase 2: Business Rules Engine**
-   - ✅ Support multiple schedules with independent rules
-   - ✅ Weekend pattern configuration (WEEKDAYS_ONLY)
-   - ✅ Custom holiday overrides (per-schedule SKIP/FORCE_RUN actions)
-   - ✅ Pluggable rule system (CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN)
-   
-3. **📋 Phase 3: Business Day Calculations**  
-   - "Next N business days" endpoints
-   - "Previous, next, next-next" style date generation
-   - Auto-populate next year's holidays (cron or manual trigger)
-   
-4. **📋 Phase 4: International Expansion**
-   - Multi-country holiday support (expand beyond US)
-   - Timezone handling for multi-region deployments
-   - Configurable weekend patterns by country
-   
-5. **📋 Phase 5: Production Ready**
-   - Docker packaging with Postgres
-   - Performance optimization and caching
-   - Comprehensive API documentation
+### **Implementation Status**
+✅ **Complete**: Core architecture (Domain/Service/API layers), Business rules engine, US holiday support  
+📋 **Next**: Business day calculations, International expansion, Production deployment
 
 ## Important: Calendar-Only Focus
 **This project is concerned only with DATES (calendar days), not times of day.**
@@ -240,7 +150,7 @@ Follow the Red-Green-Refactor cycle for all new features:
 - Rule engines, cron expressions, and schedules deal with date patterns only
 - Business day navigation and "should run today?" queries are date-based only
 
-## Dependencies
-- **Core Framework**: Spring Boot 3.x with Spring Data JPA
-- **Database**: H2 (development), designed for PostgreSQL (production)
-- **Holiday Calculations**: Built-in US federal holiday calculations via ACHProcessingScheduleFactory
+## Tech Stack
+- **Framework**: Java 21 + Spring Boot 3.x + Spring Data JPA + Flyway
+- **Database**: H2 (dev) / PostgreSQL (prod)
+- **US Holidays**: Built-in calculations via ACHProcessingScheduleFactory
