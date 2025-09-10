@@ -20,10 +20,10 @@
 			<artifactId>holiday-guard-repository</artifactId>
 		</dependency>
 
-		<!-- Spring Boot starters -->
+		<!-- Jackson -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
 		<!-- Lombok -->

@@ -20,6 +20,12 @@
 			<artifactId>holiday-guard-core</artifactId>
 		</dependency>
 
+		<!-- REST API module -->
+		<dependency>
+			<groupId>com.jw</groupId>
+			<artifactId>holiday-guard-rest</artifactId>
+		</dependency>
+
 		<!-- Spring Boot actuator for main app -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
