@@ -5,6 +5,7 @@ import com.jw.holidayguard.domain.ScheduleRules;
 import com.jw.holidayguard.domain.ScheduleVersion;
 import com.jw.holidayguard.dto.CreateScheduleRuleRequest;
 import com.jw.holidayguard.dto.UpdateScheduleRulesRequest;
+import com.jw.holidayguard.exception.GlobalExceptionHandler;
 import com.jw.holidayguard.service.ScheduleVersionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,12 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.context.annotation.Import;
 
-@WebMvcTest(ScheduleVersionController.class)
+@WebMvcTest(controllers = ScheduleVersionController.class)
+@ContextConfiguration(classes = ControllerTestConfiguration.class)
+@Import(GlobalExceptionHandler.class)
 class ScheduleVersionControllerTest {
 
     @Autowired

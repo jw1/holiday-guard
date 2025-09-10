@@ -21,8 +21,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.context.annotation.Import;
 
-@WebMvcTest(ShouldRunController.class)
+@WebMvcTest(controllers = ShouldRunController.class)
+@ContextConfiguration(classes = ControllerTestConfiguration.class)
+@Import(com.jw.holidayguard.exception.GlobalExceptionHandler.class)
 class ShouldRunControllerTest {
 
     @Autowired

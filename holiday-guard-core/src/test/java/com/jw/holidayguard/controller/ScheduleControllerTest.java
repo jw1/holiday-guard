@@ -23,8 +23,12 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.context.annotation.Import;
 
-@WebMvcTest(ScheduleController.class)
+@WebMvcTest(controllers = ScheduleController.class)
+@ContextConfiguration(classes = ControllerTestConfiguration.class)
+@Import(com.jw.holidayguard.exception.GlobalExceptionHandler.class)
 class ScheduleControllerTest {
 
     @Autowired

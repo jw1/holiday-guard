@@ -31,10 +31,9 @@ public class RuleEngineImpl implements RuleEngine {
 
     @Override
     public List<LocalDate> generateDates(ScheduleRules rule, LocalDate fromDate, LocalDate toDate) {
-        // Handle invalid date range
-        if (fromDate.isAfter(toDate)) {
-            return Collections.emptyList();
-        }
+
+        // empty list if not valid range
+        if (fromDate.isAfter(toDate)) return List.of();
         
         RuleHandler handler = handlers.get(rule.getRuleType());
         if (handler == null) {

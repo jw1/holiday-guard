@@ -1,0 +1,21 @@
+# Test-specific configuration to reduce console noise
+spring:
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        show_sql: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+  main:
+    banner-mode: off
+
+logging:
+  level:
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR  
+    org.hibernate.orm.jdbc.bind: ERROR
+    org.springframework.boot.web.embedded.tomcat: ERROR
+    org.hibernate: ERROR

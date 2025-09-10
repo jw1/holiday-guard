@@ -9,28 +9,28 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>holiday-guard-core</artifactId>
-	<name>Holiday Guard Core</name>
-	<description>Core application with REST API and business logic</description>
+	<artifactId>holiday-guard-app</artifactId>
+	<name>Holiday Guard Application</name>
+	<description>Main application entry point for Holiday Guard</description>
 
 	<dependencies>
-		<!-- Internal modules (for future use) -->
+		<!-- Core application module -->
 		<dependency>
 			<groupId>com.jw</groupId>
-			<artifactId>holiday-guard-repository</artifactId>
+			<artifactId>holiday-guard-core</artifactId>
 		</dependency>
 
-		<!-- Spring Boot starters -->
+		<!-- Spring Boot actuator for main app -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
-		<!-- Lombok -->
+		<!-- Database runtime dependency -->
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -50,6 +50,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.jw.holidayguard.Application</mainClass>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
