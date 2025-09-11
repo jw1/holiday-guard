@@ -54,3 +54,6 @@ Thumbs.db
 .env.local
 .env.production
 .env.staging
+
+### Node ###
+node_modules/

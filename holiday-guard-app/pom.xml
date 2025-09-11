@@ -26,6 +26,12 @@
 			<artifactId>holiday-guard-rest</artifactId>
 		</dependency>
 
+		<!-- UI module -->
+		<dependency>
+			<groupId>com.jw</groupId>
+			<artifactId>holiday-guard-react</artifactId>
+		</dependency>
+
 		<!-- Spring Boot actuator for main app -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

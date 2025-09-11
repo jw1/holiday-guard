@@ -45,6 +45,7 @@
 		<module>holiday-guard-repository</module>
 		<module>holiday-guard-core</module>
 		<module>holiday-guard-rest</module>
+		<module>holiday-guard-react</module>
 		<module>holiday-guard-app</module>
 	</modules>
 
@@ -79,6 +80,11 @@
 			<dependency>
 				<groupId>com.jw</groupId>
 				<artifactId>holiday-guard-rest</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jw</groupId>
+				<artifactId>holiday-guard-react</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
