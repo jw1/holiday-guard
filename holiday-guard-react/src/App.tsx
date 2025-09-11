@@ -5,7 +5,7 @@ function App(): React.ReactElement {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Holiday Guard Admin</h1>
+        <h1 className="text-3xl font-bold text-center">Holiday Guard Admin</h1>
       </header>
     </div>
   );

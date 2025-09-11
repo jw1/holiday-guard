@@ -34,6 +34,20 @@ Service for managing multiple business calendars with rules for:
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
+### UI Development
+
+For rapid UI development with hot-reloading, run the frontend and backend development servers separately:
+
+1.  **Start Backend API**: In one terminal:
+    ```bash
+    ./backend.sh
+    ```
+2.  **Start Frontend Dev Server**: In another terminal (this will open the browser with hot-reloading):
+    ```bash
+    ./frontend.sh
+    ```
+    The UI will be accessible at `http://localhost:5173/`. The Vite development server is configured to proxy API requests to the backend running on `http://localhost:8080/`.
+
 ## API Design Guidelines
 - **Base Path**: `/api/v1/` prefix for all endpoints
 - **HTTP Methods**: 
@@ -57,6 +71,15 @@ Service for managing multiple business calendars with rules for:
 - **Schedule Management**: `POST /api/v1/schedules` and `POST /api/v1/schedules/{id}/versions`
 - **Rule Types**: WEEKDAYS_ONLY, CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN
 - **Override Actions**: SKIP, FORCE_RUN
+
+
+## 🖥️ Frontend UI
+
+The project includes a React-based administrative user interface, located in the `holiday-guard-react` module.
+
+-   **Purpose**: Provides an admin interface for managing schedules and configurations.
+-   **Technologies**: React, Vite (for fast development and bundling), TypeScript.
+-   **Integration**: The UI is built into static assets and embedded directly into the Spring Boot application JAR, allowing for a single deployable artifact.
 
 ## Testing Strategy
 - **Unit Tests**: Test business logic in service layer
