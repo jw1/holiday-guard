@@ -48,6 +48,8 @@ For rapid UI development with hot-reloading, run the frontend and backend develo
     ```
     The UI will be accessible at `http://localhost:5173/`. The Vite development server is configured to proxy API requests to the backend running on `http://localhost:8080/`.
 
+**Note on TailwindCSS v4:** For styling to apply correctly, ensure `src/index.css` contains `@import "tailwindcss";` and any desired plugins like `@plugin '@tailwindcss/forms';`. This setup was based on the guide [How to install Tailwind CSS v4 to your React project](https://tailkit.com/blog/how-to-install-tailwind-css-v4-to-your-react-project).
+
 ## API Design Guidelines
 - **Base Path**: `/api/v1/` prefix for all endpoints
 - **HTTP Methods**: 
