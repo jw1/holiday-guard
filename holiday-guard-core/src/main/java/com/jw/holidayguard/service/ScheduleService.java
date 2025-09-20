@@ -7,6 +7,7 @@ import com.jw.holidayguard.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,6 +47,11 @@ public class ScheduleService {
         return repository.findByActiveTrue();
     }
 
+    @Transactional(readOnly = true)
+    public List<Schedule> findAllSchedules() {
+        return repository.findAll();
+    }
+
     public Schedule updateSchedule(UUID id, Schedule updateData) {
         // Find existing schedule (throws exception if not found)
         Schedule existing = findScheduleById(id);
@@ -72,9 +78,11 @@ public class ScheduleService {
         return existing;
     }
 
-    public Schedule deactivateSchedule(UUID id) {
+    public Schedule archiveSchedule(UUID id, String user) {
         Schedule schedule = findScheduleById(id);
         schedule.setActive(false);
+        schedule.setArchivedAt(Instant.now());
+        schedule.setArchivedBy(user);
         return repository.save(schedule);
     }
 }

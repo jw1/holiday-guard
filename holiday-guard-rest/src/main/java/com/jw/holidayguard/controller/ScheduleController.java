@@ -39,8 +39,8 @@ public class ScheduleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleResponse>> getAllActiveSchedules() {
-        var schedules = service.getAllActiveSchedules();
+    public ResponseEntity<List<ScheduleResponse>> getAllSchedules() {
+        var schedules = service.findAllSchedules();
         return ResponseEntity.ok(schedules.stream()
                 .map(this::toResponse)
                 .toList());
@@ -54,9 +54,11 @@ public class ScheduleController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSchedule(@PathVariable UUID id) {
-        service.deactivateSchedule(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ScheduleResponse> archiveSchedule(@PathVariable UUID id) {
+        // TODO:  In a real app, the user would come from the security context
+        var user = "api-user"; 
+        var deactivatedSchedule = service.archiveSchedule(id, user);
+        return ResponseEntity.ok(toResponse(deactivatedSchedule));
     }
 
     // error handling

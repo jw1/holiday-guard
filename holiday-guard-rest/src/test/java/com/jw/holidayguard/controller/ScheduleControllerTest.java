@@ -132,30 +132,16 @@ class ScheduleControllerTest {
     }
 
     @Test
-    void getAllActiveSchedules() throws Exception {
+    void getAllSchedules() throws Exception {
         
-        // given - multiple active schedules exist
+        // given - multiple schedules exist, including an inactive one
         var now = Instant.now();
-        var activeSchedules = List.of(
-                Schedule.builder()
-                        .id(UUID.randomUUID())
-                        .name("Schedule 1")
-                        .country("US")
-                        .active(true)
-                        .createdAt(now)
-                        .updatedAt(now)
-                        .build(),
-                Schedule.builder()
-                        .id(UUID.randomUUID())
-                        .name("Schedule 2")
-                        .country("US")
-                        .active(true)
-                        .createdAt(now)
-                        .updatedAt(now)
-                        .build()
+        var schedules = List.of(
+                Schedule.builder().id(UUID.randomUUID()).name("Schedule 1").active(true).createdAt(now).updatedAt(now).build(),
+                Schedule.builder().id(UUID.randomUUID()).name("Schedule 2").active(false).createdAt(now).updatedAt(now).build()
         );
 
-        when(service.getAllActiveSchedules()).thenReturn(activeSchedules);
+        when(service.findAllSchedules()).thenReturn(schedules);
 
         // when - GET request is made
         // then - 200 OK with schedule list
@@ -220,30 +206,33 @@ class ScheduleControllerTest {
     }
 
     @Test
-    void deleteSchedule() throws Exception {
+    void archiveSchedule() throws Exception {
         
         // given - schedule exists
         var scheduleId = UUID.randomUUID();
-        var deactivatedSchedule = Schedule.builder()
+        var archivedSchedule = Schedule.builder()
                 .id(scheduleId)
                 .name("Test Schedule")
                 .active(false)
+                .archivedBy("api-user")
                 .build();
 
-        when(service.deactivateSchedule(scheduleId)).thenReturn(deactivatedSchedule);
+        when(service.archiveSchedule(scheduleId, "api-user")).thenReturn(archivedSchedule);
 
         // when - DELETE request is made
-        // then - 204 No Content
+        // then - 200 OK with the archived schedule
         mockMvc.perform(delete("/api/v1/schedules/{id}", scheduleId))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(scheduleId.toString()))
+                .andExpect(jsonPath("$.active").value(false));
     }
 
     @Test
-    void deleteScheduleNotFound() throws Exception {
+    void archiveScheduleNotFound() throws Exception {
         
         // given - schedule does not exist
         var scheduleId = UUID.randomUUID();
-        when(service.deactivateSchedule(scheduleId))
+        when(service.archiveSchedule(eq(scheduleId), any(String.class)))
                 .thenThrow(new ScheduleNotFoundException(scheduleId));
 
         // when - DELETE request is made

@@ -328,7 +328,7 @@ class ScheduleServiceTest {
         when(repository.save(any(Schedule.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when - schedule is deactivated
-        var result = service.deactivateSchedule(scheduleId);
+        var result = service.archiveSchedule(scheduleId, "test user");
 
         // then - schedule is marked inactive and saved
         assertThat(result.isActive()).isFalse();

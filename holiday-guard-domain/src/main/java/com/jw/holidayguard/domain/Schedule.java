@@ -46,6 +46,12 @@ public class Schedule {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "archived_at")
+    private Instant archivedAt;
+
+    @Column(name = "archived_by")
+    private String archivedBy;
+
     public Schedule(String name, String description) {
         this(name, description, "US");
     }
