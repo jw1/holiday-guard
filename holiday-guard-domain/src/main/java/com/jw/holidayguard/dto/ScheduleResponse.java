@@ -18,4 +18,7 @@ public class ScheduleResponse extends ScheduleBase {
     private UUID id;
     private Instant createdAt;
     private Instant updatedAt;
+
+    private String ruleType;
+    private String ruleConfig;
 }

@@ -12,6 +12,8 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
   const [description, setDescription] = useState('');
   const [country, setCountry] = useState('US');
   const [isActive, setIsActive] = useState(true);
+  const [ruleType, setRuleType] = useState('WEEKDAYS_ONLY');
+  const [ruleConfig, setRuleConfig] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -20,12 +22,18 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
       setDescription(schedule.description);
       setCountry(schedule.country);
       setIsActive(schedule.status === 'Active');
+      // @ts-ignore
+      setRuleType(schedule.ruleType || 'WEEKDAYS_ONLY');
+      // @ts-ignore
+      setRuleConfig(schedule.ruleConfig || '');
     } else {
       // Reset form for new schedule
       setName('');
       setDescription('');
       setCountry('US');
       setIsActive(true);
+      setRuleType('WEEKDAYS_ONLY');
+      setRuleConfig('');
     }
     setError(''); // Clear errors when modal opens or schedule changes
   }, [schedule]);
@@ -41,6 +49,8 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
       description,
       country,
       status: isActive ? 'Active' : 'Inactive',
+      ruleType,
+      ruleConfig,
     });
   };
 
@@ -85,6 +95,31 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
               <option>CA</option>
               <option>AU</option>
             </select>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="ruleType" className="block text-gray-700 text-sm font-bold mb-2">Rule Type</label>
+            <select
+              id="ruleType"
+              value={ruleType}
+              onChange={(e) => setRuleType(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            >
+              <option>WEEKDAYS_ONLY</option>
+              <option>AVOID_US_FEDERAL_HOLIDAYS</option>
+              <option>CRON_EXPRESSION</option>
+              <option>CUSTOM_DATES</option>
+              <option>MONTHLY_PATTERN</option>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="ruleConfig" className="block text-gray-700 text-sm font-bold mb-2">Rule Config</label>
+            <textarea
+              id="ruleConfig"
+              rows={3}
+              value={ruleConfig}
+              onChange={(e) => setRuleConfig(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            ></textarea>
           </div>
           <div className="mb-6">
             <label className="flex items-center">

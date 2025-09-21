@@ -9,6 +9,8 @@ export interface Schedule {
   country: string;
   status: 'Active' | 'Inactive'; // Based on boolean active field
   createdDate: string; // Formatted date string
+  ruleType: string;
+  ruleConfig: string;
 }
 
 // Define the type for the raw data coming from the backend API
@@ -20,6 +22,8 @@ interface ScheduleResponseDto {
   active: boolean;
   createdAt: string; // ISO date string
   updatedAt: string;
+  ruleType: string;
+  ruleConfig: string;
 }
 
 type SortableKey = keyof Schedule;
@@ -43,6 +47,8 @@ const Schedules = () => {
           country: s.country,
           status: s.active ? 'Active' : 'Inactive',
           createdDate: new Date(s.createdAt).toLocaleDateString(),
+          ruleType: s.ruleType,
+          ruleConfig: s.ruleConfig,
         }));
         setSchedules(formattedData);
       })
@@ -65,8 +71,46 @@ const Schedules = () => {
   };
 
   const handleSaveSchedule = (scheduleData: Omit<Schedule, 'id' | 'createdDate'>) => {
-    console.log('Saving schedule:', scheduleData);
-    handleCloseModal();
+    const isNew = !editingSchedule;
+    const url = isNew ? '/api/v1/schedules' : `/api/v1/schedules/${editingSchedule.id}`;
+    const method = isNew ? 'POST' : 'PUT';
+
+    fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(scheduleData),
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Save failed');
+        }
+        return res.json();
+      })
+      .then((savedSchedule: ScheduleResponseDto) => {
+        const formatted: Schedule = {
+          id: savedSchedule.id,
+          name: savedSchedule.name,
+          description: savedSchedule.description,
+          country: savedSchedule.country,
+          status: savedSchedule.active ? 'Active' : 'Inactive',
+          createdDate: new Date(savedSchedule.createdAt).toLocaleDateString(),
+          ruleType: savedSchedule.ruleType,
+          ruleConfig: savedSchedule.ruleConfig,
+        };
+
+        if (isNew) {
+          setSchedules([...schedules, formatted]);
+        } else {
+          setSchedules(schedules.map(s => (s.id === formatted.id ? formatted : s)));
+        }
+        handleCloseModal();
+      })
+      .catch(error => {
+        console.error('Error saving schedule:', error);
+        window.alert('Failed to save schedule. Please try again.');
+      });
   };
 
   const handleArchiveSchedule = (scheduleId: string) => {

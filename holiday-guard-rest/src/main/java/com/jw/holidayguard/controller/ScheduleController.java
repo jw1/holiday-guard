@@ -5,6 +5,8 @@ import com.jw.holidayguard.dto.CreateScheduleRequest;
 import com.jw.holidayguard.dto.ScheduleResponse;
 import com.jw.holidayguard.dto.UpdateScheduleRequest;
 import com.jw.holidayguard.exception.DuplicateScheduleException;
+import com.jw.holidayguard.controller.ErrorResponse;
+import com.jw.holidayguard.exception.MissingRuleException;
 import com.jw.holidayguard.exception.ScheduleNotFoundException;
 import com.jw.holidayguard.service.ScheduleService;
 import jakarta.validation.Valid;
@@ -75,6 +77,12 @@ public class ScheduleController {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
+    @ExceptionHandler(MissingRuleException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRule(MissingRuleException ex) {
+        var error = ErrorResponse.of("MISSING_RULE", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
     // to/from DTO objects
 
     private Schedule toEntity(CreateScheduleRequest request) {
@@ -103,6 +111,12 @@ public class ScheduleController {
         response.setActive(schedule.isActive());
         response.setCreatedAt(schedule.getCreatedAt());
         response.setUpdatedAt(schedule.getUpdatedAt());
+
+        service.findLatestRuleForSchedule(schedule.getId()).ifPresent(rule -> {
+            response.setRuleType(rule.getRuleType().name());
+            response.setRuleConfig(rule.getRuleConfig());
+        });
+
         return response;
     }
 }

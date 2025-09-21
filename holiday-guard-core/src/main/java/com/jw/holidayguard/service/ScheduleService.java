@@ -1,14 +1,17 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.Schedule;
+import com.jw.holidayguard.domain.ScheduleRules;
 import com.jw.holidayguard.exception.DuplicateScheduleException;
 import com.jw.holidayguard.exception.ScheduleNotFoundException;
 import com.jw.holidayguard.repository.ScheduleRepository;
+import com.jw.holidayguard.repository.ScheduleRulesRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -16,9 +19,11 @@ import java.util.UUID;
 public class ScheduleService {
 
     private final ScheduleRepository repository;
+    private final ScheduleRulesRepository rulesRepository;
 
-    public ScheduleService(ScheduleRepository repository) {
+    public ScheduleService(ScheduleRepository repository, ScheduleRulesRepository rulesRepository) {
         this.repository = repository;
+        this.rulesRepository = rulesRepository;
     }
 
     public Schedule createSchedule(Schedule schedule) {
@@ -84,5 +89,10 @@ public class ScheduleService {
         schedule.setArchivedAt(Instant.now());
         schedule.setArchivedBy(user);
         return repository.save(schedule);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ScheduleRules> findLatestRuleForSchedule(UUID scheduleId) {
+        return rulesRepository.findFirstByScheduleIdOrderByCreatedAtDesc(scheduleId);
     }
 }

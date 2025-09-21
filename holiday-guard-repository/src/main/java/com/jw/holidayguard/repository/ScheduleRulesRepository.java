@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -26,4 +27,6 @@ public interface ScheduleRulesRepository extends JpaRepository<ScheduleRules, UU
     
     @Query("SELECT sr FROM ScheduleRules sr WHERE sr.scheduleId = :scheduleId AND sr.ruleType = :ruleType AND sr.active = true")
     List<ScheduleRules> findByScheduleIdAndRuleTypeAndActiveTrue(@Param("scheduleId") UUID scheduleId, @Param("ruleType") ScheduleRules.RuleType ruleType);
+
+    Optional<ScheduleRules> findFirstByScheduleIdOrderByCreatedAtDesc(UUID scheduleId);
 }

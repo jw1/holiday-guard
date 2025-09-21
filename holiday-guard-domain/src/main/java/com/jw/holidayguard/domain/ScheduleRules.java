@@ -84,9 +84,13 @@ public class ScheduleRules {
      * MONTHLY_PATTERN: ruleConfig = JSON object with pattern
      *   - Example: {"dayOfMonth": 15, "skipWeekends": true}
      *   - Example: {"dayOfWeek": "FRIDAY", "weekOfMonth": "LAST"}
+     * 
+     * AVOID_US_FEDERAL_HOLIDAYS: ruleConfig = null or empty
+     *  - Runs on weekdays, but skips all official US federal holidays
      */
     public enum RuleType {
         WEEKDAYS_ONLY,
+        AVOID_US_FEDERAL_HOLIDAYS,
         CRON_EXPRESSION,
         CUSTOM_DATES,
         MONTHLY_PATTERN
