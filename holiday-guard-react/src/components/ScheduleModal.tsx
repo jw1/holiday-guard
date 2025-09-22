@@ -21,7 +21,7 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
       setName(schedule.name);
       setDescription(schedule.description);
       setCountry(schedule.country);
-      setIsActive(schedule.status === 'Active');
+      setIsActive(schedule.active);
       // @ts-ignore
       setRuleType(schedule.ruleType || 'WEEKDAYS_ONLY');
       // @ts-ignore
@@ -48,7 +48,7 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
       name,
       description,
       country,
-      status: isActive ? 'Active' : 'Inactive',
+      active: isActive,
       ruleType,
       ruleConfig,
     });

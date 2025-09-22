@@ -46,11 +46,11 @@ public class Schedule {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @Column(name = "archived_at")
-    private Instant archivedAt;
+    @Column(name = "created_by", nullable = false, updatable = false)
+    private String createdBy;
 
-    @Column(name = "archived_by")
-    private String archivedBy;
+    @Column(name = "updated_by", nullable = false)
+    private String updatedBy;
 
     public Schedule(String name, String description) {
         this(name, description, "US");
@@ -64,12 +64,19 @@ public class Schedule {
 
     @PrePersist
     protected void onCreate() {
+        // TODO: get user from security context
+        var user = "api-user";
         createdAt = Instant.now();
         updatedAt = Instant.now();
+        createdBy = user;
+        updatedBy = user;
     }
 
     @PreUpdate
     protected void onUpdate() {
+        // TODO: get user from security context
+        var user = "api-user";
         updatedAt = Instant.now();
+        updatedBy = user;
     }
 }

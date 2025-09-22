@@ -7,7 +7,7 @@ export interface Schedule {
   name: string;
   description: string;
   country: string;
-  status: 'Active' | 'Inactive'; // Based on boolean active field
+  active: boolean;
   createdDate: string; // Formatted date string
   ruleType: string;
   ruleConfig: string;
@@ -45,7 +45,7 @@ const Schedules = () => {
           name: s.name,
           description: s.description,
           country: s.country,
-          status: s.active ? 'Active' : 'Inactive',
+          active: s.active,
           createdDate: new Date(s.createdAt).toLocaleDateString(),
           ruleType: s.ruleType,
           ruleConfig: s.ruleConfig,
@@ -94,7 +94,7 @@ const Schedules = () => {
           name: savedSchedule.name,
           description: savedSchedule.description,
           country: savedSchedule.country,
-          status: savedSchedule.active ? 'Active' : 'Inactive',
+          active: savedSchedule.active,
           createdDate: new Date(savedSchedule.createdAt).toLocaleDateString(),
           ruleType: savedSchedule.ruleType,
           ruleConfig: savedSchedule.ruleConfig,
@@ -113,35 +113,7 @@ const Schedules = () => {
       });
   };
 
-  const handleArchiveSchedule = (scheduleId: string) => {
-    if (window.confirm('Are you sure you want to archive this schedule?')) {
-      fetch(`/api/v1/schedules/${scheduleId}`, { method: 'DELETE' })
-        .then(response => {
-          if (response.ok) {
-            return response.json(); // Get the updated schedule from the response body
-          } else {
-            throw new Error('Server responded with an error');
-          }
-        })
-        .then(updatedSchedule => {
-            // Update the UI with the confirmed state from the server
-            const formatted: Schedule = {
-                id: updatedSchedule.id,
-                name: updatedSchedule.name,
-                description: updatedSchedule.description,
-                country: updatedSchedule.country,
-                status: updatedSchedule.active ? 'Active' : 'Inactive',
-                createdDate: new Date(updatedSchedule.createdAt).toLocaleDateString(),
-            };
-            setSchedules(schedules.map(s => s.id === scheduleId ? formatted : s));
-        })
-        .catch(error => {
-          // Handle network or server errors
-          console.error('Error archiving schedule:', error);
-          window.alert('Failed to archive schedule. Please try again.');
-        });
-    }
-  };
+
 
   const handleSort = (columnKey: SortableKey) => {
     if (sortColumn === columnKey) {
@@ -215,7 +187,7 @@ const Schedules = () => {
                 <SortableHeader columnKey="name" title="Name" />
                 <SortableHeader columnKey="description" title="Description" />
                 <SortableHeader columnKey="country" title="Country" />
-                <SortableHeader columnKey="status" title="Status" />
+                <SortableHeader columnKey="active" title="Status" />
                 <SortableHeader columnKey="createdDate" title="Created Date" />
                 <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
               </tr>
@@ -227,20 +199,14 @@ const Schedules = () => {
                   <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{schedule.description}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{schedule.country}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${schedule.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {schedule.status}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${schedule.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {schedule.active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{schedule.createdDate}</td>
                   <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                     <button onClick={() => handleEditSchedule(schedule)} className="mr-4 text-xs text-indigo-600 hover:text-indigo-900">Edit</button>
-                    <button 
-                      onClick={() => handleArchiveSchedule(schedule.id)} 
-                      className={`text-xs ${schedule.status === 'Inactive' ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
-                      disabled={schedule.status === 'Inactive'}
-                    >
-                      Archive
-                    </button>
+
                   </td>
                 </tr>
               ))}

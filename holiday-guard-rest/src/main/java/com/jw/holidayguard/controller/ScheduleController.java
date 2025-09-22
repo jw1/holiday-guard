@@ -29,8 +29,7 @@ public class ScheduleController {
 
     @PostMapping
     public ResponseEntity<ScheduleResponse> createSchedule(@Valid @RequestBody CreateScheduleRequest request) {
-        var schedule = toEntity(request);
-        var created = service.createSchedule(schedule);
+        var created = service.createSchedule(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
@@ -50,18 +49,10 @@ public class ScheduleController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ScheduleResponse> updateSchedule(@PathVariable UUID id, @Valid @RequestBody UpdateScheduleRequest request) {
-        var scheduleData = toEntity(request);
-        var updated = service.updateSchedule(id, scheduleData);
+        var updated = service.updateSchedule(id, request);
         return ResponseEntity.ok(toResponse(updated));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ScheduleResponse> archiveSchedule(@PathVariable UUID id) {
-        // TODO:  In a real app, the user would come from the security context
-        var user = "api-user"; 
-        var deactivatedSchedule = service.archiveSchedule(id, user);
-        return ResponseEntity.ok(toResponse(deactivatedSchedule));
-    }
 
     // error handling
 
@@ -84,23 +75,6 @@ public class ScheduleController {
     }
 
     // to/from DTO objects
-
-    private Schedule toEntity(CreateScheduleRequest request) {
-        return Schedule.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .country(request.getCountry() != null ? request.getCountry() : "US")
-                .active(request.isActive())
-                .build();
-    }
-
-    private Schedule toEntity(UpdateScheduleRequest request) {
-        return Schedule.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .country(request.getCountry())
-                .build();
-    }
 
     private ScheduleResponse toResponse(Schedule schedule) {
         var response = new ScheduleResponse();

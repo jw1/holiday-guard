@@ -24,9 +24,10 @@ public class UpdateScheduleRequest {
     
     @Size(min = 2, max = 2, message = "Country code must be exactly 2 characters")
     private String country;
-    
-    // Note: active field updates not supported via this endpoint
-    // Use dedicated activate/deactivate endpoints for state changes
-    
-    // NO ID field - ID comes from path parameter
+
+    private String ruleType;
+
+    private String ruleConfig;
+
+    private Boolean active;
 }
