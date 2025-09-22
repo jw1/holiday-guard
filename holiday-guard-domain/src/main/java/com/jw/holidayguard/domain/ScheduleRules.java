@@ -90,9 +90,8 @@ public class ScheduleRules {
      */
     public enum RuleType {
         WEEKDAYS_ONLY,
-        AVOID_US_FEDERAL_HOLIDAYS,
+        US_FEDERAL_RESERVE_BUSINESS_DAYS,
         CRON_EXPRESSION,
-        CUSTOM_DATES,
-        MONTHLY_PATTERN
+        ALL_DAYS
     }
 }

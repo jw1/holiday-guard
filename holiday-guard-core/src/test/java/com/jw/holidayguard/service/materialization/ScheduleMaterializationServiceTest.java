@@ -133,35 +133,7 @@ class ScheduleMaterializationServiceTest {
         });
     }
     
-    @Test
-    void shouldHandleMultipleRules() {
-        // RED: Test materialization with multiple rules for the same schedule
-        LocalDate fromDate = LocalDate.of(2025, 1, 1);
-        LocalDate toDate = LocalDate.of(2025, 1, 7);
-        
-        ScheduleRules secondRule = ScheduleRules.builder()
-            .scheduleId(scheduleId)
-            .versionId(versionId)
-            .ruleType(ScheduleRules.RuleType.CUSTOM_DATES)
-            .active(true)
-            .build();
-        
-        List<LocalDate> firstRuleDates = List.of(LocalDate.of(2025, 1, 1));
-        List<LocalDate> secondRuleDates = List.of(LocalDate.of(2025, 1, 3));
-        List<LocalDate> combinedDates = List.of(LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 3));
-        
-        when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
-        when(scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId)).thenReturn(Optional.of(testVersion));
-        when(scheduleRulesRepository.findByScheduleIdAndVersionIdAndActiveTrue(scheduleId, versionId)).thenReturn(List.of(testRule, secondRule));
-        when(ruleEngine.generateDates(testRule, fromDate, toDate)).thenReturn(firstRuleDates);
-        when(ruleEngine.generateDates(secondRule, fromDate, toDate)).thenReturn(secondRuleDates);
-        when(overrideApplicator.applyOverrides(eq(scheduleId), eq(versionId), any(), eq(fromDate), eq(toDate))).thenReturn(combinedDates);
-        
-        List<LocalDate> result = service.materializeCalendar(scheduleId, fromDate, toDate);
-        
-        assertEquals(2, result.size());
-        assertTrue(result.containsAll(combinedDates));
-    }
+
     
     @Test
     void shouldRematerializeExistingSchedule() {

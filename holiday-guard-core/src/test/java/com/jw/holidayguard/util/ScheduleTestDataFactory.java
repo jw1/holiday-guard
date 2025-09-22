@@ -110,49 +110,6 @@ public class ScheduleTestDataFactory {
     }
 
     /**
-     * Creates a monthly pattern rule for first business day of month.
-     */
-    public static CreateScheduleRuleRequest createFirstBusinessDayOfMonthRule() {
-        return new CreateScheduleRuleRequest(
-                ScheduleRules.RuleType.MONTHLY_PATTERN,
-                "{\"dayOfMonth\": 1, \"skipWeekends\": true, \"skipHolidays\": true}",
-                LocalDate.now(),
-                true
-        );
-    }
-
-    /**
-     * Creates a monthly pattern rule for 15th of month (or next business day).
-     */
-    public static CreateScheduleRuleRequest createMidMonthRule() {
-        return new CreateScheduleRuleRequest(
-                ScheduleRules.RuleType.MONTHLY_PATTERN,
-                "{\"dayOfMonth\": 15, \"skipWeekends\": true}",
-                LocalDate.now(),
-                true
-        );
-    }
-
-    /**
-     * Creates a custom dates rule for specific dates.
-     */
-    public static CreateScheduleRuleRequest createCustomDatesRule(List<LocalDate> dates) {
-        StringBuilder datesJson = new StringBuilder("[");
-        for (int i = 0; i < dates.size(); i++) {
-            if (i > 0) datesJson.append(", ");
-            datesJson.append("\"").append(dates.get(i).toString()).append("\"");
-        }
-        datesJson.append("]");
-        
-        return new CreateScheduleRuleRequest(
-                ScheduleRules.RuleType.CUSTOM_DATES,
-                datesJson.toString(),
-                LocalDate.now(),
-                true
-        );
-    }
-
-    /**
      * Creates a bi-weekly rule (every other Friday starting from a base date).
      */
     public static CreateScheduleRuleRequest createBiWeeklyRule(LocalDate startDate) {

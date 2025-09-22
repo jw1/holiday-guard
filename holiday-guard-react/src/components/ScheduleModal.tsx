@@ -7,6 +7,17 @@ interface ScheduleModalProps {
   onSave: (scheduleData: Omit<Schedule, 'id' | 'createdDate'>) => void;
 }
 
+const ruleTypeConfig: Record<string, { hasConfig: boolean; validation?: RegExp; displayName: string }> = {
+  WEEKDAYS_ONLY: { hasConfig: false, displayName: 'Weekdays Only' },
+  US_FEDERAL_RESERVE_BUSINESS_DAYS: { hasConfig: false, displayName: 'US Federal Reserve Business Days' },
+  CRON_EXPRESSION: {
+    hasConfig: true,
+    validation: /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])) (\*|([0-6]))$/,
+    displayName: 'Cron Expression',
+  },
+  ALL_DAYS: { hasConfig: false, displayName: 'All Days' },
+};
+
 const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -15,6 +26,7 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
   const [ruleType, setRuleType] = useState('WEEKDAYS_ONLY');
   const [ruleConfig, setRuleConfig] = useState('');
   const [error, setError] = useState('');
+  const [configError, setConfigError] = useState('');
 
   useEffect(() => {
     if (schedule) {
@@ -22,12 +34,9 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
       setDescription(schedule.description);
       setCountry(schedule.country);
       setIsActive(schedule.active);
-      // @ts-ignore
       setRuleType(schedule.ruleType || 'WEEKDAYS_ONLY');
-      // @ts-ignore
       setRuleConfig(schedule.ruleConfig || '');
     } else {
-      // Reset form for new schedule
       setName('');
       setDescription('');
       setCountry('US');
@@ -35,13 +44,38 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
       setRuleType('WEEKDAYS_ONLY');
       setRuleConfig('');
     }
-    setError(''); // Clear errors when modal opens or schedule changes
+    setError('');
+    setConfigError('');
   }, [schedule]);
+
+  const handleRuleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRuleType = e.target.value;
+    setRuleType(newRuleType);
+    if (!ruleTypeConfig[newRuleType]?.hasConfig) {
+      setRuleConfig('');
+    }
+    setConfigError('');
+  };
+
+  const handleRuleConfigChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newConfig = e.target.value;
+    setRuleConfig(newConfig);
+    const validation = ruleTypeConfig[ruleType]?.validation;
+    if (validation && !validation.test(newConfig)) {
+      setConfigError('Invalid CRON expression format.');
+    } else {
+      setConfigError('');
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setError('Name is a required field.');
+      return;
+    }
+    if (configError) {
+      setError('Please fix the errors before saving.');
       return;
     }
     onSave({
@@ -53,6 +87,8 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
       ruleConfig,
     });
   };
+
+  const showRuleConfig = ruleTypeConfig[ruleType]?.hasConfig;
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
@@ -101,26 +137,27 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
             <select
               id="ruleType"
               value={ruleType}
-              onChange={(e) => setRuleType(e.target.value)}
+              onChange={handleRuleTypeChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             >
-              <option>WEEKDAYS_ONLY</option>
-              <option>AVOID_US_FEDERAL_HOLIDAYS</option>
-              <option>CRON_EXPRESSION</option>
-              <option>CUSTOM_DATES</option>
-              <option>MONTHLY_PATTERN</option>
+              {Object.entries(ruleTypeConfig).map(([key, { displayName }]) => (
+                <option key={key} value={key}>{displayName}</option>
+              ))}
             </select>
           </div>
-          <div className="mb-4">
-            <label htmlFor="ruleConfig" className="block text-gray-700 text-sm font-bold mb-2">Rule Config</label>
-            <textarea
-              id="ruleConfig"
-              rows={3}
-              value={ruleConfig}
-              onChange={(e) => setRuleConfig(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            ></textarea>
-          </div>
+          {showRuleConfig && (
+            <div className="mb-4">
+              <label htmlFor="ruleConfig" className="block text-gray-700 text-sm font-bold mb-2">Rule Config</label>
+              <textarea
+                id="ruleConfig"
+                rows={3}
+                value={ruleConfig}
+                onChange={handleRuleConfigChange}
+                className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${configError ? 'border-red-500' : ''}`}
+              ></textarea>
+              {configError && <p className="text-red-500 text-xs italic">{configError}</p>}
+            </div>
+          )}
           <div className="mb-6">
             <label className="flex items-center">
               <input 
