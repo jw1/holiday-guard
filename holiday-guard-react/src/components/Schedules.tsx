@@ -184,6 +184,7 @@ const Schedules = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <SortableHeader columnKey="id" title="ID" />
                 <SortableHeader columnKey="name" title="Name" />
                 <SortableHeader columnKey="description" title="Description" />
                 <SortableHeader columnKey="country" title="Country" />
@@ -195,6 +196,7 @@ const Schedules = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedSchedules.map((schedule) => (
                 <tr key={schedule.id}>
+                  <td className="px-6 py-4 text-sm font-mono text-gray-500 whitespace-nowrap">{schedule.id}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{schedule.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{schedule.description}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{schedule.country}</td>

@@ -1,0 +1,55 @@
+TODOs for v1 of this thing:
+
+
+
+Let's go ahead and implement the overrides calendar UI functionality.  I propose we tackle this one step at a time.
+
+Step 1:  Add a modal popup.  from the schedules list, we need a new Action called "Overrides" that will bring up a new modal dialog.  For now, it can simply be a list of the overrides already created with cancel and save buttons.  We'll be implementing a more sophisticated UI in a later step.
+
+Step 2:  Adding a calendar component.  I have a calendar component (business-day-calendar.tsx) which can be found in the root of the holiday-guard-react module that handles a lot of the sophistication required by the UI.  Let's adapt this for use on the modal dialog previously created.  We'll have business days in green, non-business days in red, and overrides will be in green and red, but they'll have an outline.  The component already supports the bulk of this.  Please use this as a starting point and let's come up with a UI component that'll work with this project.
+
+Step 3:  Wiring the data together.  The data that will be put in this component is a schedule, schedule rule, and a list of schedule overrides.  The backend will probably need to be able to take a schedule and schedule rule and spit out a list of days in a month so that the UI can be colored appropriately.  Then, the list of overrides can be placed over the top of that.
+
+Step 4:  The UI needs to return an updated list of overrides so that they can be saved.  We don't need to really worry about merging the old list of overrides and the new list of overrides.  Each time they are saved we get a new "schedule version" that's effectively a combination of schedule, schedule rule, and list of overrides.
+
+Step 5:  Implement the save logic described in Step 4.
+
+Before starting, evaluate each step and provide feedback on anything you think is missed or should be added.
+
+
+Implement the overrides calendar editor.  That should hang off the actions part too
+* Should be a calendar that has the days in red/green?  Maybe a different shade if it’s an override.
+* On save it should generate a new list of overrides, step the schedule version
+
+Also need to add a “should run today” to the table maybe?  Just a “nice to have”
+
+Left side needs an “audit table” that gathers all the “should run” calls.  Don’t need a materialized calendar just yet
+
+Dashboard updates
+* Don’t need total users
+* Make total schedules / active schedules actually reflect data
+* Recent activity should be a combination of the audit data + rollup of ui edits
+* Server health maybe oughta update itself every 60 seconds?
+
+Top header thing “Dashboard, Home / Dashboard” is not functional.  Ask about what it needs to be functional
+
+Investigate what we’ll want for users
+* Admin and invite thingy?
+* Do we just do generic OAuth and walk on
+* Answers to this will help decide what to do with icon in top-right.
+* We expect app users and people users
+
+Left side needs a “Calendars” function
+* Will effectively be a view-only function that lets user pick a schedule, look at calendar, pick a version, maybe toggles for overrides / etc
+* Pick a decent calendaring component for this
+* May bake in an export to ics or something, that’s supposed to be trivial
+
+Future function for generic web hook functionality
+* Ask Claude what this would take — we’d normally just drop a teams plugin and move, but that’s challenging
+* It’s a builder (daily / weekly / monthly), sends content somewhere, blah blah blah
+
+Need some better validation on the cron expression guy
+* build out those samples too
+
+Rewrite the README.md file
+* talk about reflections on claude / gemini

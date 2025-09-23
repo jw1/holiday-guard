@@ -96,6 +96,19 @@ const ScheduleModal = ({ schedule, onClose, onSave }: ScheduleModalProps) => {
         <h2 className="text-2xl font-bold mb-4">{schedule ? 'Edit Schedule' : 'New Schedule'}</h2>
         {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
         <form onSubmit={handleSubmit}>
+          {schedule && (
+            <div className="mb-4">
+              <label htmlFor="id" className="block text-gray-700 text-sm font-bold mb-2">ID</label>
+              <input
+                type="text"
+                id="id"
+                name="id"
+                value={schedule.id}
+                readOnly
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100"
+              />
+            </div>
+          )}
           <div className="mb-4">
             <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Name</label>
             <input 
