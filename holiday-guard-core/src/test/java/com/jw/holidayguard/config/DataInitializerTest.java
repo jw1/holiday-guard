@@ -24,11 +24,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DataInitializerTest {
 
     @Autowired
-    private ScheduleRepository scheduleRepository;
+    private ScheduleRepository repo;
 
     @Test
     void shouldLoadSampleSchedulesOnLocalProfile() {
-        List<Schedule> schedules = scheduleRepository.findAll();
+        List<Schedule> schedules = repo.findAll();
 
         assertThat(schedules).hasSize(4);
         assertThat(schedules)

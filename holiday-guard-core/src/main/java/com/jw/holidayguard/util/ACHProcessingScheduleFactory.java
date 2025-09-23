@@ -3,21 +3,21 @@ package com.jw.holidayguard.util;
 import com.jw.holidayguard.domain.*;
 import com.jw.holidayguard.dto.CreateScheduleOverrideRequest;
 import com.jw.holidayguard.dto.CreateScheduleRuleRequest;
+import com.jw.holidayguard.dto.UpdateScheduleRuleRequest;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Factory for creating ACH processing schedule definitions that integrate with Holiday Guard.
- * 
+ *
  * Generates a complete ACH schedule as a combination of:
  * - Base rule: WEEKDAYS_ONLY (Monday-Friday)
  * - Skip overrides: All US Federal holidays
- * 
+ *
  * This produces the standard banking "Federal Reserve business days" calendar.
  * The output integrates directly with Holiday Guard's REST API and materialization engine.
  */
@@ -29,16 +29,16 @@ public class ACHProcessingScheduleFactory {
 
     /**
      * Creates a complete ACH schedule definition for a given year.
-     * 
+     *
      * <p>This method generates the standard banking "Federal Reserve business days" calendar
      * by combining a WEEKDAYS_ONLY rule with SKIP overrides for all US federal holidays.
      * The resulting schedule definition is ready for direct integration with Holiday Guard's
      * REST API via the {@link ACHScheduleDefinition#toUpdateRequest()} method.
-     * 
+     *
      * @param year the year for which to generate the ACH schedule (must be positive)
      * @return a complete ACHScheduleDefinition containing schedule, rule, and holiday overrides
      * @throws IllegalArgumentException if year is not positive
-     * 
+     *
      * @see ACHScheduleDefinition#toUpdateRequest()
      * @see USFederalHolidays#getHolidays(int)
      */
@@ -51,25 +51,25 @@ public class ACHProcessingScheduleFactory {
                 .build();
 
         CreateScheduleRuleRequest weekdaysRule = new CreateScheduleRuleRequest(
-                ScheduleRules.RuleType.WEEKDAYS_ONLY,
+                ScheduleRule.RuleType.WEEKDAYS_ONLY,
                 null, // No config needed for weekdays-only
                 LocalDate.of(year, 1, 1), // Effective from start of year
                 true
         );
 
-        List<CreateScheduleOverrideRequest> holidayOverrides = 
-            USFederalHolidays.createSkipOverrides(year);
+        List<CreateScheduleOverrideRequest> holidayOverrides =
+                USFederalHolidays.createSkipOverrides(year);
 
         return new ACHScheduleDefinition(schedule, weekdaysRule, holidayOverrides);
     }
 
     /**
      * Creates a same-day ACH schedule definition for a given year.
-     * 
+     *
      * <p>This method creates a schedule specifically for same-day ACH processing,
      * which follows the same Federal Reserve business days pattern as regular ACH
      * but with a different name and description for operational clarity.
-     * 
+     *
      * @param year the year for which to generate the same-day ACH schedule
      * @return a complete ACHScheduleDefinition for same-day ACH processing
      * @see #createACHSchedule(int)
@@ -83,14 +83,14 @@ public class ACHProcessingScheduleFactory {
                 .build();
 
         CreateScheduleRuleRequest weekdaysRule = new CreateScheduleRuleRequest(
-                ScheduleRules.RuleType.WEEKDAYS_ONLY,
+                ScheduleRule.RuleType.WEEKDAYS_ONLY,
                 null,
                 LocalDate.of(year, 1, 1),
                 true
         );
 
-        List<CreateScheduleOverrideRequest> holidayOverrides = 
-            USFederalHolidays.createSkipOverrides(year);
+        List<CreateScheduleOverrideRequest> holidayOverrides =
+                USFederalHolidays.createSkipOverrides(year);
 
         return new ACHScheduleDefinition(schedule, weekdaysRule, holidayOverrides);
     }
@@ -107,14 +107,14 @@ public class ACHProcessingScheduleFactory {
 
         /**
          * Generates all US Federal holidays for a given year.
-         * 
+         *
          * <p>This method calculates all 11 US federal holidays, including both fixed-date
          * holidays (New Year's Day, Independence Day, etc.) and floating holidays that
          * are calculated using {@link java.time.temporal.TemporalAdjusters}.
-         * 
+         *
          * <p>Juneteenth (June 19) is included for years 2021 and later, when it became
          * a federal holiday.
-         * 
+         *
          * @param year the year for which to calculate federal holidays
          * @return a sorted list of all US federal holidays for the given year
          */
@@ -145,14 +145,14 @@ public class ACHProcessingScheduleFactory {
 
         /**
          * Creates SKIP overrides for all federal holidays in a year.
-         * 
+         *
          * <p>This method generates {@link CreateScheduleOverrideRequest} objects for each
          * federal holiday in the given year, configured as SKIP actions with descriptive
          * reasons. The overrides are permanent (no expiration) and created by "system".
-         * 
+         *
          * <p>Output integrates directly with Holiday Guard's override system and can be
-         * used in {@link com.jw.holidayguard.dto.UpdateScheduleRulesRequest}.
-         * 
+         * used in {@link com.jw.holidayguard.dto.UpdateScheduleRuleRequest}.
+         *
          * @param year the year for which to create holiday skip overrides
          * @return a list of CreateScheduleOverrideRequest objects for all federal holidays
          * @see #getHolidays(int)
@@ -161,12 +161,12 @@ public class ACHProcessingScheduleFactory {
             return getHolidays(year)
                     .stream()
                     .map(holiday -> new CreateScheduleOverrideRequest(
-                        holiday,
-                        ScheduleOverride.OverrideAction.SKIP,
-                        "Federal Holiday: " + getHolidayName(holiday, year),
-                        "system",
-                        null // never expires
-            )).toList();
+                            holiday,
+                            ScheduleOverride.OverrideAction.SKIP,
+                            "Federal Holiday: " + getHolidayName(holiday, year),
+                            "system",
+                            null // never expires
+                    )).toList();
         }
 
         // ===========================================
@@ -224,7 +224,7 @@ public class ACHProcessingScheduleFactory {
             if (date.equals(LocalDate.of(year, 11, 11))) return "Veterans Day";
             if (date.equals(getThanksgiving(year))) return "Thanksgiving Day";
             if (date.equals(LocalDate.of(year, 12, 25))) return "Christmas Day";
-            
+
             return "Federal Holiday";
         }
     }
@@ -248,24 +248,32 @@ public class ACHProcessingScheduleFactory {
             this.holidayOverrides = holidayOverrides;
         }
 
-        public Schedule getSchedule() { return schedule; }
-        public CreateScheduleRuleRequest getRule() { return rule; }
-        public List<CreateScheduleOverrideRequest> getHolidayOverrides() { return holidayOverrides; }
+        public Schedule getSchedule() {
+            return schedule;
+        }
+
+        public CreateScheduleRuleRequest getRule() {
+            return rule;
+        }
+
+        public List<CreateScheduleOverrideRequest> getHolidayOverrides() {
+            return holidayOverrides;
+        }
 
         /**
-         * Creates an UpdateScheduleRulesRequest for direct use with Holiday Guard REST API.
-         * 
+         * Creates an UpdateScheduleRuleRequest for direct use with Holiday Guard REST API.
+         *
          * <p>This method converts the ACH schedule definition into a format that can be
          * directly submitted to the {@code /api/v1/schedules/{scheduleId}/versions} endpoint.
          * The effective date is set to the beginning of the year specified in the rule.
-         * 
-         * @return an UpdateScheduleRulesRequest ready for REST API submission
-         * @see com.jw.holidayguard.controller.ScheduleVersionController#updateScheduleRules
+         *
+         * @return an UpdateScheduleRuleRequest ready for REST API submission
+         * @see com.jw.holidayguard.controller.ScheduleVersionController#updateScheduleRule
          */
-        public com.jw.holidayguard.dto.UpdateScheduleRulesRequest toUpdateRequest() {
-            return new com.jw.holidayguard.dto.UpdateScheduleRulesRequest(
+        public UpdateScheduleRuleRequest toUpdateRequest() {
+            return new UpdateScheduleRuleRequest(
                     rule.getEffectiveFrom().atStartOfDay().toInstant(java.time.ZoneOffset.UTC),
-                    List.of(rule),
+                    rule,
                     holidayOverrides
             );
         }

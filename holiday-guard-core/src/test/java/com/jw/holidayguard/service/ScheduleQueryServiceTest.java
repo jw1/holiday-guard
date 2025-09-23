@@ -81,8 +81,8 @@ class ScheduleQueryServiceTest {
             .thenReturn(Optional.of(activeVersion));
         when(materializedCalendarRepository.findByScheduleIdAndVersionIdAndOccursOn(scheduleId, versionId, queryDate))
             .thenReturn(Optional.of(calendarEntry));
-        when(overrideRepository.findActiveOverrideForDate(scheduleId, versionId, queryDate))
-            .thenReturn(Optional.empty());
+        when(overrideRepository.findByScheduleId(scheduleId))
+            .thenReturn(java.util.Collections.emptyList());
         when(queryLogRepository.save(any(ScheduleQueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -116,8 +116,8 @@ class ScheduleQueryServiceTest {
             .thenReturn(Optional.of(activeVersion));
         when(materializedCalendarRepository.findByScheduleIdAndVersionIdAndOccursOn(scheduleId, versionId, queryDate))
             .thenReturn(Optional.empty());
-        when(overrideRepository.findActiveOverrideForDate(scheduleId, versionId, queryDate))
-            .thenReturn(Optional.empty());
+        when(overrideRepository.findByScheduleId(scheduleId))
+            .thenReturn(java.util.Collections.emptyList());
         when(queryLogRepository.save(any(ScheduleQueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -156,8 +156,8 @@ class ScheduleQueryServiceTest {
             .thenReturn(Optional.of(testSchedule));
         when(scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId))
             .thenReturn(Optional.of(activeVersion));
-        when(overrideRepository.findActiveOverrideForDate(scheduleId, versionId, queryDate))
-            .thenReturn(Optional.of(skipOverride));
+        when(overrideRepository.findByScheduleId(scheduleId))
+            .thenReturn(java.util.List.of(skipOverride));
         when(queryLogRepository.save(any(ScheduleQueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 

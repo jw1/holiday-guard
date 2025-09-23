@@ -1,8 +1,8 @@
 package com.jw.holidayguard.util;
 
 import com.jw.holidayguard.domain.*;
-import com.jw.holidayguard.dto.CreateScheduleRuleRequest;
 import com.jw.holidayguard.dto.CreateScheduleOverrideRequest;
+import com.jw.holidayguard.dto.CreateScheduleRuleRequest;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -89,7 +89,7 @@ public class ScheduleTestDataFactory {
      */
     public static CreateScheduleRuleRequest createWeekdaysOnlyRule() {
         return new CreateScheduleRuleRequest(
-                ScheduleRules.RuleType.WEEKDAYS_ONLY,
+                ScheduleRule.RuleType.WEEKDAYS_ONLY,
                 null, // No config needed for weekdays-only
                 LocalDate.now(),
                 true
@@ -102,7 +102,7 @@ public class ScheduleTestDataFactory {
      */
     public static CreateScheduleRuleRequest createCronRule(String cronExpression) {
         return new CreateScheduleRuleRequest(
-                ScheduleRules.RuleType.CRON_EXPRESSION,
+                ScheduleRule.RuleType.CRON_EXPRESSION,
                 cronExpression, // e.g., "0 0 9 * * MON-FRI"
                 LocalDate.now(),
                 true
@@ -114,7 +114,7 @@ public class ScheduleTestDataFactory {
      */
     public static CreateScheduleRuleRequest createBiWeeklyRule(LocalDate startDate) {
         return new CreateScheduleRuleRequest(
-                ScheduleRules.RuleType.CRON_EXPRESSION,
+                ScheduleRule.RuleType.CRON_EXPRESSION,
                 "0 0 9 ? * FRI", // Every Friday at 9 AM - logic would handle bi-weekly in service
                 startDate,
                 true
@@ -176,7 +176,7 @@ public class ScheduleTestDataFactory {
                 LocalDate.of(year, 1, 1),   // New Year's Day
                 // MLK Day (3rd Monday of January)
                 LocalDate.of(year, 1, 15).with(java.time.temporal.TemporalAdjusters.dayOfWeekInMonth(3, java.time.DayOfWeek.MONDAY)),
-                // Presidents Day (3rd Monday of February) 
+                // Presidents Day (3rd Monday of February)
                 LocalDate.of(year, 2, 15).with(java.time.temporal.TemporalAdjusters.dayOfWeekInMonth(3, java.time.DayOfWeek.MONDAY)),
                 // Memorial Day (last Monday of May)
                 LocalDate.of(year, 5, 31).with(java.time.temporal.TemporalAdjusters.lastInMonth(java.time.DayOfWeek.MONDAY)),

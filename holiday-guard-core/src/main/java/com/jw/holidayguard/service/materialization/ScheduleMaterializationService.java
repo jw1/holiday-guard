@@ -21,7 +21,7 @@ public class ScheduleMaterializationService {
 
     private final ScheduleRepository scheduleRepository;
     private final ScheduleVersionRepository scheduleVersionRepository;
-    private final ScheduleRulesRepository scheduleRulesRepository;
+    private final ScheduleRuleRepository scheduleRuleRepository;
     private final ScheduleMaterializedCalendarRepository materializedCalendarRepository;
     private final RuleEngine ruleEngine;
     private final OverrideApplicator overrideApplicator;
@@ -29,13 +29,13 @@ public class ScheduleMaterializationService {
     public ScheduleMaterializationService(
             ScheduleRepository scheduleRepository,
             ScheduleVersionRepository scheduleVersionRepository,
-            ScheduleRulesRepository scheduleRulesRepository,
+            ScheduleRuleRepository scheduleRuleRepository,
             ScheduleMaterializedCalendarRepository materializedCalendarRepository,
             RuleEngine ruleEngine,
             OverrideApplicator overrideApplicator) {
         this.scheduleRepository = scheduleRepository;
         this.scheduleVersionRepository = scheduleVersionRepository;
-        this.scheduleRulesRepository = scheduleRulesRepository;
+        this.scheduleRuleRepository = scheduleRuleRepository;
         this.materializedCalendarRepository = materializedCalendarRepository;
         this.ruleEngine = ruleEngine;
         this.overrideApplicator = overrideApplicator;
@@ -49,41 +49,32 @@ public class ScheduleMaterializationService {
     public List<LocalDate> materializeCalendar(UUID scheduleId, LocalDate fromDate, LocalDate toDate) {
         // Validate schedule exists
         Schedule schedule = scheduleRepository.findById(scheduleId)
-            .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + scheduleId));
+                .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + scheduleId));
 
         // Get active version
         ScheduleVersion activeVersion = scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId)
-            .orElseThrow(() -> new IllegalArgumentException("No active version found for schedule: " + scheduleId));
+                .orElseThrow(() -> new IllegalArgumentException("No active version found for schedule: " + scheduleId));
 
-        // Get all active rules for this version
-        List<ScheduleRules> activeRules = scheduleRulesRepository.findByScheduleIdAndVersionIdAndActiveTrue(scheduleId, activeVersion.getId());
+        // Get active rule for this version
+        ScheduleRule activeRule = scheduleRuleRepository.findByScheduleIdAndVersionIdAndActiveTrue(scheduleId, activeVersion.getId())
+                .orElseThrow(() -> new IllegalStateException("Schedule has no active rule"));
 
-        // Generate dates from all rules and combine them
-        Set<LocalDate> allRuleDates = new LinkedHashSet<>(); // Use Set to avoid duplicates, LinkedHashSet to maintain order
-        
-        for (ScheduleRules rule : activeRules) {
-            List<LocalDate> ruleDates = ruleEngine.generateDates(rule, fromDate, toDate);
-            allRuleDates.addAll(ruleDates);
-        }
-
-        // Convert back to sorted list
-        List<LocalDate> combinedRuleDates = allRuleDates.stream()
-            .sorted()
-            .collect(Collectors.toList());
+        // Generate dates from rule
+        List<LocalDate> ruleDates = ruleEngine.generateDates(activeRule, fromDate, toDate);
 
         // Apply overrides
-        List<LocalDate> finalDates = overrideApplicator.applyOverrides(scheduleId, activeVersion.getId(), combinedRuleDates, fromDate, toDate);
+        List<LocalDate> finalDates = overrideApplicator.applyOverrides(scheduleId, activeVersion.getId(), ruleDates, fromDate, toDate);
 
         // Clear existing materialized entries in the date range and save new ones
         materializedCalendarRepository.deleteByScheduleIdAndVersionIdAndOccursOnBetween(scheduleId, activeVersion.getId(), fromDate, toDate);
-        
+
         for (LocalDate date : finalDates) {
             ScheduleMaterializedCalendar entry = ScheduleMaterializedCalendar.builder()
-                .scheduleId(scheduleId)
-                .versionId(activeVersion.getId())
-                .occursOn(date)
-                .status(ScheduleMaterializedCalendar.OccurrenceStatus.SCHEDULED)
-                .build();
+                    .scheduleId(scheduleId)
+                    .versionId(activeVersion.getId())
+                    .occursOn(date)
+                    .status(ScheduleMaterializedCalendar.OccurrenceStatus.SCHEDULED)
+                    .build();
             materializedCalendarRepository.save(entry);
         }
 

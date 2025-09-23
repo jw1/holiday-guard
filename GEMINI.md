@@ -89,7 +89,7 @@ The project uses a standard testing pyramid with unit, integration, and web laye
 ### **Current Implementation Status**
 
 #### ✅ **Completed Core Architecture**
-- **Domain Layer**: 6-entity model (Schedule, ScheduleVersion, ScheduleRules, ScheduleOverride, ScheduleMaterializedCalendar, ScheduleQueryLog)
+- **Domain Layer**: 6-entity model (Schedule, ScheduleVersion, ScheduleRule, ScheduleOverride, ScheduleMaterializedCalendar, ScheduleQueryLog)
 - **Service Layer**: ScheduleVersionService, ScheduleQueryService, ScheduleMaterializationService
 - **REST API Layer**: ShouldRunController, ScheduleVersionController, ScheduleController
 - **Materialization Engine**: RuleEngine with pluggable handlers, OverrideApplicator

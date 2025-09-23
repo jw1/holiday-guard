@@ -1,5 +1,7 @@
 
 
+import ActiveSchedulesPanel from './ActiveSchedulesPanel';
+
 const Dashboard = () => {
   return (
     <main className="flex-1 p-8 bg-gray-50">
@@ -24,7 +26,7 @@ const Dashboard = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white p-6 rounded-lg shadow mb-8">
         <h3 className="text-xl font-bold mb-4">Recent Activity</h3>
         <table className="w-full">
           <thead>
@@ -53,6 +55,8 @@ const Dashboard = () => {
           </tbody>
         </table>
       </div>
+
+      <ActiveSchedulesPanel />
     </main>
   );
 };

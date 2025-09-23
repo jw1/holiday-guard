@@ -1,6 +1,6 @@
 package com.jw.holidayguard.service.materialization.handler;
 
-import com.jw.holidayguard.domain.ScheduleRules;
+import com.jw.holidayguard.domain.ScheduleRule;
 import com.jw.holidayguard.util.ACHProcessingScheduleFactory;
 import org.springframework.stereotype.Component;
 
@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 public class USFederalReserveBusinessDaysHandler implements RuleHandler {
 
     @Override
-    public ScheduleRules.RuleType getSupportedRuleType() {
-        return ScheduleRules.RuleType.US_FEDERAL_RESERVE_BUSINESS_DAYS;
+    public ScheduleRule.RuleType getSupportedRuleType() {
+        return ScheduleRule.RuleType.US_FEDERAL_RESERVE_BUSINESS_DAYS;
     }
 
     @Override
-    public List<LocalDate> generateDates(ScheduleRules rule, LocalDate fromDate, LocalDate toDate) {
+    public List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate) {
         List<LocalDate> weekdays = fromDate.datesUntil(toDate.plusDays(1))
                 .filter(d -> d.getDayOfWeek() != DayOfWeek.SATURDAY && d.getDayOfWeek() != DayOfWeek.SUNDAY)
                 .collect(Collectors.toList());

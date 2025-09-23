@@ -16,10 +16,41 @@ Step 5:  Implement the save logic described in Step 4.
 
 Before starting, evaluate each step and provide feedback on anything you think is missed or should be added.
 
+Let's go ahead and implement the overrides calendar UI functionality.  Here is the revised plan we agreed on before I had to go upgrade to the "pro" account.
 
-Implement the overrides calendar editor.  That should hang off the actions part too
-* Should be a calendar that has the days in red/green?  Maybe a different shade if it’s an override.
-* On save it should generate a new list of overrides, step the schedule version
+* Step 1: Add a modal popup (Your plan is solid)
+   * I will add a new "Overrides" button to the actions column in the Schedules.tsx component.
+   * This will trigger a new modal, which I'll create in holiday-guard-react/src/components/OverridesModal.tsx.
+   * For this initial step, the modal will fetch and display a simple, read-only list of existing overrides for the selected schedule to confirm the wiring.
+
+* Step 2: Adding a calendar component (Good idea to use an existing component)
+   * First, I need to locate business-day-calendar.tsx. You mentioned it's in the root of the holiday-guard-react module. I'll start by searching for that file.
+   * I will then create a new wrapper component, ScheduleOverridesCalendar.tsx, that adapts the calendar for our specific use case, including the green/red/outlined coloring scheme you described.
+
+* Step 3: Wiring the data together (Crucial backend dependency)
+   * You've correctly identified that the UI needs a way to get the base calendar data. A new backend endpoint seems necessary. I propose we design the frontend around two new API endpoints:
+       1. GET /api/v1/schedules/{scheduleId}/calendar?year={YYYY}&month={MM}: To get the calculated run/no-run days for a given month based on the schedule's primary rules.
+       2. GET /api/v1/schedules/{scheduleId}/overrides: To get the list of all existing overrides for that schedule.
+   * I will proceed with the frontend implementation assuming these endpoints will be available, and we can build the backend for them in parallel or subsequently.
+
+* Step 4: The UI needs to return an updated list of overrides (Defining the interaction)
+   * This is where the user interaction logic comes in. I'll implement the following behavior in the calendar:
+       * Clicking a standard day (green or red) will create a new override for that day (a "force run" or "skip" respectively), which will be reflected in the UI with an outline.
+       * Clicking a day that already has an override will remove that override, returning the day to its default state.
+   * The OverridesModal will maintain the state of the user's changes, keeping track of the new set of overrides.
+
+* Step 5: Implement the save logic (Creating a new version)
+   * As you noted, saving overrides creates a new schedule version. I'll wire the "Save" button to send the new, complete list of overrides to the backend.
+   * Based on the project documentation, this will be a POST request to the /api/v1/schedules/{id}/versions endpoint. I will need to investigate the exact payload structure this endpoint expects, but it
+     will likely include the new set of overrides.
+
+Let's work through this one step at a time, and allow me to review the work along the way!
+
+
+
+
+
+
 
 Also need to add a “should run today” to the table maybe?  Just a “nice to have”
 

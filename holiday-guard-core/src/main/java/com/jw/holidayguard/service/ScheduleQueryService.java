@@ -1,6 +1,7 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.*;
+import com.jw.holidayguard.dto.ScheduleDailyStatusDto;
 import com.jw.holidayguard.dto.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.ShouldRunQueryResponse;
 import com.jw.holidayguard.repository.*;
@@ -8,8 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,6 +35,23 @@ public class ScheduleQueryService {
         this.materializedCalendarRepository = materializedCalendarRepository;
         this.overrideRepository = overrideRepository;
         this.queryLogRepository = queryLogRepository;
+    }
+
+    public List<ScheduleDailyStatusDto> getDailyStatusForActiveSchedules() {
+        List<Schedule> activeSchedules = scheduleRepository.findByActiveTrue();
+        ShouldRunQueryRequest request = new ShouldRunQueryRequest(LocalDate.now(), "internal-dashboard");
+
+        return activeSchedules.stream()
+                .map(schedule -> {
+                    ShouldRunQueryResponse response = shouldRunToday(schedule.getId(), request);
+                    return new ScheduleDailyStatusDto(
+                            schedule.getId(),
+                            schedule.getName(),
+                            response.isShouldRun(),
+                            response.getReason()
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     public ShouldRunQueryResponse shouldRunToday(UUID scheduleId, ShouldRunQueryRequest request) {
@@ -61,9 +81,10 @@ public class ScheduleQueryService {
             .orElseThrow(() -> new IllegalStateException("No active version found for schedule: " + scheduleId));
         
         // Check for overrides first (they take precedence)
-        Optional<ScheduleOverride> override = overrideRepository.findActiveOverrideForDate(
-            scheduleId, activeVersion.getId(), queryDate
-        );
+        Optional<ScheduleOverride> override = overrideRepository.findByScheduleId(scheduleId)
+            .stream()
+            .filter(o -> o.getVersionId().equals(activeVersion.getId()) && o.getOverrideDate().equals(queryDate))
+            .findFirst();
         
         boolean shouldRun;
         String reason;

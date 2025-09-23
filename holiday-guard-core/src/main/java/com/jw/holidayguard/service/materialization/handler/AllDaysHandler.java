@@ -1,6 +1,6 @@
 package com.jw.holidayguard.service.materialization.handler;
 
-import com.jw.holidayguard.domain.ScheduleRules;
+import com.jw.holidayguard.domain.ScheduleRule;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 public class AllDaysHandler implements RuleHandler {
 
     @Override
-    public ScheduleRules.RuleType getSupportedRuleType() {
-        return ScheduleRules.RuleType.ALL_DAYS;
+    public ScheduleRule.RuleType getSupportedRuleType() {
+        return ScheduleRule.RuleType.ALL_DAYS;
     }
 
     @Override
-    public List<LocalDate> generateDates(ScheduleRules rule, LocalDate fromDate, LocalDate toDate) {
+    public List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate) {
         return fromDate.datesUntil(toDate.plusDays(1)).collect(Collectors.toList());
     }
 }

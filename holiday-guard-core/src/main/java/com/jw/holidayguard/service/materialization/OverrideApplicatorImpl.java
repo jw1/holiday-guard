@@ -27,7 +27,10 @@ public class OverrideApplicatorImpl implements OverrideApplicator {
     @Override
     public List<LocalDate> applyOverrides(UUID scheduleId, UUID versionId, List<LocalDate> ruleDates, LocalDate fromDate, LocalDate toDate) {
         // Get all active overrides in the date range
-        List<ScheduleOverride> activeOverrides = scheduleOverrideRepository.findActiveOverridesForDateRange(scheduleId, versionId, fromDate, toDate);
+        List<ScheduleOverride> activeOverrides = scheduleOverrideRepository.findByScheduleId(scheduleId)
+            .stream()
+            .filter(o -> o.getVersionId().equals(versionId) && !o.getOverrideDate().isBefore(fromDate) && !o.getOverrideDate().isAfter(toDate))
+            .toList();
         
         if (activeOverrides.isEmpty()) {
             return new ArrayList<>(ruleDates);

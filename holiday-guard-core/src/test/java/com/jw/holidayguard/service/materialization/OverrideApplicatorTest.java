@@ -51,7 +51,7 @@ class OverrideApplicatorTest {
             LocalDate.of(2025, 1, 5)
         );
         
-        when(scheduleOverrideRepository.findActiveOverridesForDateRange(scheduleId, versionId, fromDate, toDate))
+        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of());
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
@@ -76,8 +76,7 @@ class OverrideApplicatorTest {
             .action(ScheduleOverride.OverrideAction.SKIP)
             .reason("Holiday skip")
             .build();
-        
-        when(scheduleOverrideRepository.findActiveOverridesForDateRange(scheduleId, versionId, fromDate, toDate))
+        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride));
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
@@ -104,7 +103,7 @@ class OverrideApplicatorTest {
             .reason("Emergency run")
             .build();
         
-        when(scheduleOverrideRepository.findActiveOverridesForDateRange(scheduleId, versionId, fromDate, toDate))
+        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(forceRunOverride));
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
@@ -144,7 +143,7 @@ class OverrideApplicatorTest {
             .reason("Emergency")
             .build();
         
-        when(scheduleOverrideRepository.findActiveOverridesForDateRange(scheduleId, versionId, fromDate, toDate))
+        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride, forceRunOverride));
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
@@ -172,7 +171,7 @@ class OverrideApplicatorTest {
             .reason("Holiday")
             .build();
         
-        when(scheduleOverrideRepository.findActiveOverridesForDateRange(scheduleId, versionId, fromDate, toDate))
+        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride));
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);

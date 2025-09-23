@@ -55,14 +55,14 @@ Response:
 
 The service uses these core entities:
 - **Schedule**: Named calendar (e.g., "Payroll Schedule")
-- **ScheduleRules**: When to run (weekdays, cron, custom dates, monthly patterns)
+- **ScheduleRule**: When to run (weekdays, cron, custom dates, monthly patterns)
 - **ScheduleOverride**: Exceptions (skip holidays, emergency runs)
 - **MaterializedCalendar**: Pre-computed "should run" dates
 - **QueryLog**: Complete audit trail
 
 ## 📖 Full Documentation
 
-See [CLAUDE.md](./CLAUDE.md) for complete architecture details, API documentation, and development guidelines.
+See [GEMINI.md](./GEMINI.md) for complete architecture details, API documentation, and development guidelines.
 
 See [docs/schedule_service_design.md](./docs/schedule_service_design.md) for detailed service design and data flow.
 

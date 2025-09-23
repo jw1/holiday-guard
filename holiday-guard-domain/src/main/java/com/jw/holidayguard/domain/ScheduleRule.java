@@ -15,12 +15,12 @@ import java.util.UUID;
  * Rules are tied to specific schedule versions to preserve complete rule history for audit and debugging.
  */
 @Entity
-@Table(name = "schedule_rules")
+@Table(name = "schedule_rule")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ScheduleRules {
+public class ScheduleRule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -29,7 +29,7 @@ public class ScheduleRules {
     @Column(name = "schedule_id", nullable = false)
     private UUID scheduleId;
 
-    @Column(name = "version_id", nullable = false)
+    @Column(name = "version_id", nullable = false, unique = true)
     private UUID versionId;
 
     @ManyToOne(fetch = FetchType.LAZY)

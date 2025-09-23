@@ -1,14 +1,14 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.domain.ScheduleRules;
+import com.jw.holidayguard.domain.ScheduleRule;
 import com.jw.holidayguard.domain.ScheduleVersion;
 import com.jw.holidayguard.dto.CreateScheduleRequest;
 import com.jw.holidayguard.dto.UpdateScheduleRequest;
 import com.jw.holidayguard.exception.DuplicateScheduleException;
 import com.jw.holidayguard.exception.ScheduleNotFoundException;
 import com.jw.holidayguard.repository.ScheduleRepository;
-import com.jw.holidayguard.repository.ScheduleRulesRepository;
+import com.jw.holidayguard.repository.ScheduleRuleRepository;
 import com.jw.holidayguard.repository.ScheduleVersionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,7 +31,7 @@ class ScheduleServiceTest {
     private ScheduleRepository repository;
 
     @Mock
-    private ScheduleRulesRepository rulesRepository;
+    private ScheduleRuleRepository ruleRepository;
 
     @Mock
     private ScheduleVersionRepository versionRepository;
@@ -68,7 +67,7 @@ class ScheduleServiceTest {
         assertThat(result).isNotNull();
         verify(repository).save(any(Schedule.class));
         verify(versionRepository).save(any(ScheduleVersion.class));
-        verify(rulesRepository).save(any(ScheduleRules.class));
+        verify(ruleRepository).save(any(ScheduleRule.class));
     }
 
     @Test
@@ -125,7 +124,7 @@ class ScheduleServiceTest {
 
         when(repository.findById(scheduleId)).thenReturn(Optional.of(existingSchedule));
         when(repository.findByName("Updated Name")).thenReturn(Optional.empty());
-        when(rulesRepository.findFirstByScheduleIdOrderByCreatedAtDesc(scheduleId)).thenReturn(Optional.empty());
+        when(ruleRepository.findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(scheduleId)).thenReturn(Optional.empty());
         when(versionRepository.save(any(ScheduleVersion.class))).thenReturn(new ScheduleVersion());
 
         // when
@@ -135,7 +134,7 @@ class ScheduleServiceTest {
         assertThat(result.getName()).isEqualTo("Updated Name");
         assertThat(result.getDescription()).isEqualTo("Updated description");
         verify(versionRepository).save(any(ScheduleVersion.class));
-        verify(rulesRepository).save(any(ScheduleRules.class));
+        verify(ruleRepository).save(any(ScheduleRule.class));
     }
 
     // Other tests for findByName, getAllActiveSchedules, archiveSchedule etc. would go here

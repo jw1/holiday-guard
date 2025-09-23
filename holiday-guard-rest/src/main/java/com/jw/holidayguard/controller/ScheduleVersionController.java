@@ -1,7 +1,7 @@
 package com.jw.holidayguard.controller;
 
 import com.jw.holidayguard.domain.ScheduleVersion;
-import com.jw.holidayguard.dto.UpdateScheduleRulesRequest;
+import com.jw.holidayguard.dto.UpdateScheduleRuleRequest;
 import com.jw.holidayguard.dto.ScheduleVersionResponse;
 import com.jw.holidayguard.service.ScheduleVersionService;
 import jakarta.validation.Valid;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/schedules")
 @Validated
 public class ScheduleVersionController {
-    
+
     private final ScheduleVersionService scheduleVersionService;
 
     public ScheduleVersionController(ScheduleVersionService scheduleVersionService) {
@@ -24,22 +24,22 @@ public class ScheduleVersionController {
     }
 
     @PostMapping("/{scheduleId}/versions")
-    public ResponseEntity<ScheduleVersionResponse> updateScheduleRules(
+    public ResponseEntity<ScheduleVersionResponse> updateScheduleRule(
             @PathVariable UUID scheduleId,
-            @Valid @RequestBody UpdateScheduleRulesRequest request) {
-        
-        ScheduleVersion newVersion = scheduleVersionService.updateScheduleRules(scheduleId, request);
-        
+            @Valid @RequestBody UpdateScheduleRuleRequest request) {
+
+        ScheduleVersion newVersion = scheduleVersionService.updateScheduleRule(scheduleId, request);
+
         ScheduleVersionResponse response = new ScheduleVersionResponse(
-            newVersion.getId(),
-            newVersion.getScheduleId(),
-            newVersion.getEffectiveFrom(),
-            newVersion.getCreatedAt(),
-            newVersion.isActive(),
-            null, // rules - would populate in full implementation
-            null  // overrides - would populate in full implementation
+                newVersion.getId(),
+                newVersion.getScheduleId(),
+                newVersion.getEffectiveFrom(),
+                newVersion.getCreatedAt(),
+                newVersion.isActive(),
+                null, // rules - would populate in full implementation
+                null  // overrides - would populate in full implementation
         );
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

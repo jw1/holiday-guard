@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import ScheduleModal from './ScheduleModal';
+import OverridesModal from './OverridesModal';
 
 // Define the type for a schedule on the frontend
 export interface Schedule {
@@ -31,6 +32,7 @@ type SortableKey = keyof Schedule;
 const Schedules = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOverridesModalOpen, setIsOverridesModalOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<SortableKey>('name');
@@ -63,6 +65,16 @@ const Schedules = () => {
   const handleEditSchedule = (schedule: Schedule) => {
     setEditingSchedule(schedule);
     setIsModalOpen(true);
+  };
+
+  const handleOverridesClick = (schedule: Schedule) => {
+    setEditingSchedule(schedule);
+    setIsOverridesModalOpen(true);
+  };
+
+  const handleCloseOverridesModal = () => {
+    setIsOverridesModalOpen(false);
+    setEditingSchedule(null);
   };
 
   const handleCloseModal = () => {
@@ -208,7 +220,7 @@ const Schedules = () => {
                   <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{schedule.createdDate}</td>
                   <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                     <button onClick={() => handleEditSchedule(schedule)} className="mr-4 text-xs text-indigo-600 hover:text-indigo-900">Edit</button>
-
+                    <button onClick={() => handleOverridesClick(schedule)} className="mr-4 text-xs text-indigo-600 hover:text-indigo-900">Overrides</button>
                   </td>
                 </tr>
               ))}
@@ -222,6 +234,13 @@ const Schedules = () => {
           schedule={editingSchedule}
           onClose={handleCloseModal}
           onSave={handleSaveSchedule}
+        />
+      )}
+      {isOverridesModalOpen && (
+        <OverridesModal
+          schedule={editingSchedule}
+          onClose={handleCloseOverridesModal}
+          onSave={() => {}}
         />
       )}
     </main>

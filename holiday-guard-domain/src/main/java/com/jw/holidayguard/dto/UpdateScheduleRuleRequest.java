@@ -1,7 +1,8 @@
 package com.jw.holidayguard.dto;
 
+import com.jw.holidayguard.domain.ScheduleRule;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,14 +13,14 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateScheduleRulesRequest {
-    
+public class UpdateScheduleRuleRequest {
+
     private Instant effectiveFrom;
-    
+
     @Valid
-    @NotEmpty(message = "At least one rule is required")
-    private List<CreateScheduleRuleRequest> rules;
-    
+    @NotNull(message = "A rule is required")
+    private CreateScheduleRuleRequest rule;
+
     @Valid
     private List<CreateScheduleOverrideRequest> overrides;
 }
