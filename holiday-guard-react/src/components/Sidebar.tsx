@@ -34,24 +34,24 @@ const Sidebar = () => {
               Schedules
             </Link>
           </li>
-          <li className="mb-2">
-            <a href="#" className="flex items-center p-2 rounded hover:bg-gray-700">
-              <UsersIcon className="h-6 w-6 mr-2" />
-              Users
-            </a>
-          </li>
-          <li className="mb-2">
-            <a href="#" className="flex items-center p-2 rounded hover:bg-gray-700">
-              <ChartBarIcon className="h-6 w-6 mr-2" />
-              Analytics
-            </a>
-          </li>
-          <li className="mb-2">
-            <a href="#" className="flex items-center p-2 rounded hover:bg-gray-700">
-              <Cog6ToothIcon className="h-6 w-6 mr-2" />
-              Settings
-            </a>
-          </li>
+          {/*<li className="mb-2">*/}
+          {/*  <a href="#" className="flex items-center p-2 rounded hover:bg-gray-700">*/}
+          {/*    <UsersIcon className="h-6 w-6 mr-2" />*/}
+          {/*    Users*/}
+          {/*  </a>*/}
+          {/*</li>*/}
+          {/*<li className="mb-2">*/}
+          {/*  <a href="#" className="flex items-center p-2 rounded hover:bg-gray-700">*/}
+          {/*    <ChartBarIcon className="h-6 w-6 mr-2" />*/}
+          {/*    Analytics*/}
+          {/*  </a>*/}
+          {/*</li>*/}
+          {/*<li className="mb-2">*/}
+          {/*  <a href="#" className="flex items-center p-2 rounded hover:bg-gray-700">*/}
+          {/*    <Cog6ToothIcon className="h-6 w-6 mr-2" />*/}
+          {/*    Settings*/}
+          {/*  </a>*/}
+          {/*</li>*/}
         </ul>
       </nav>
     </aside>

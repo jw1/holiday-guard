@@ -32,3 +32,9 @@ Need some better validation on the cron expression guy
 
 Rewrite the README.md file
 * talk about reflections on claude / gemini
+
+
+The UI needs an audit log screen -- whenever "should run" is called" ScheduleQueryLog records are saved to the database.
+Please add an item to the sidebar and another component for this information.  This will be another page alongside Dashboard and Schedules.
+
+For the first iteration, let's display all the items sorted from newest to oldest.  We can use the sortable table logic previously developed for the Schedules list if that's easy enough.
