@@ -1,23 +1,6 @@
 TODOs for v1 of this thing:
 
 
-
-Left side needs an “audit table” that gathers all the “should run” calls.  Don’t need a materialized calendar just yet
-
-Dashboard updates
-* Don’t need total users
-* Make total schedules / active schedules actually reflect data
-* Recent activity should be a combination of the audit data + rollup of ui edits
-* Server health maybe oughta update itself every 60 seconds?
-
-Top header thing “Dashboard, Home / Dashboard” is not functional.  Ask about what it needs to be functional
-
-Investigate what we’ll want for users
-* Admin and invite thingy?
-* Do we just do generic OAuth and walk on
-* Answers to this will help decide what to do with icon in top-right.
-* We expect app users and people users
-
 Left side needs a “Calendars” function
 * Will effectively be a view-only function that lets user pick a schedule, look at calendar, pick a version, maybe toggles for overrides / etc
 * Pick a decent calendaring component for this
@@ -33,8 +16,143 @@ Need some better validation on the cron expression guy
 Rewrite the README.md file
 * talk about reflections on claude / gemini
 
+=============
 
-The UI needs an audit log screen -- whenever "should run" is called" ScheduleQueryLog records are saved to the database.
-Please add an item to the sidebar and another component for this information.  This will be another page alongside Dashboard and Schedules.
 
-For the first iteration, let's display all the items sorted from newest to oldest.  We can use the sortable table logic previously developed for the Schedules list if that's easy enough.
+
+
+
+
+# Implementation Plan: Spring Security with In-Memory Users (Replaceable Auth Layer)
+
+## Goal
+
+Provide an **out-of-the-box authentication solution** using Spring Security with in-memory users for immediate use, while ensuring the architecture is **easy to replace** with an OAuth2 or external identity provider later.
+We will start with two users:
+
+* **admin / admin** (role: `ADMIN`)
+* **user / user** (role: `USER`)
+
+This app uses a **React frontend** in the holiday-guard-react module, so we’ll provide a login page and token-based session handling.
+Backend endpoints will eventually use the security context when saving audit info, created_by info, etc.
+
+---
+
+## Steps
+
+### 1. Add Spring Security Dependencies
+
+* In `build.gradle` or `pom.xml`, include:
+
+  * `spring-boot-starter-security`
+  * `spring-boot-starter-web`
+  * (later, for JWT or OAuth2: `spring-boot-starter-oauth2-client`)
+
+---
+
+### 2. Create Security Configuration
+
+* Define a `SecurityConfig` class with:
+
+  * A `SecurityFilterChain` bean for HTTP security.
+  * An `InMemoryUserDetailsManager` with two users:
+
+    * admin/admin → ROLE\_ADMIN
+    * user/user → ROLE\_USER
+* Example:
+
+  ```java
+  @Configuration
+  @EnableWebSecurity
+  public class SecurityConfig {
+
+      @Bean
+      public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+          http
+              .csrf().disable()
+              .authorizeHttpRequests(auth -> auth
+                  .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                  .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+                  .anyRequest().permitAll()
+              )
+              .formLogin(Customizer.withDefaults())
+              .httpBasic(Customizer.withDefaults());
+          return http.build();
+      }
+
+      @Bean
+      public UserDetailsService users() {
+          UserDetails admin = User.withUsername("admin")
+              .password("{noop}admin") // no encoding for demo
+              .roles("ADMIN")
+              .build();
+          UserDetails user = User.withUsername("user")
+              .password("{noop}user")
+              .roles("USER")
+              .build();
+          return new InMemoryUserDetailsManager(admin, user);
+      }
+  }
+  ```
+
+---
+
+### 3. Establish a Replaceable Auth Layer
+
+* Encapsulate auth logic into a separate module (holiday-guard-security-inmemory)
+* The base package could be `com.jw.holidayguard.security`.
+* Expose only:
+
+  * `SecurityConfig` (configuration)
+  * A `CurrentUserService` bean that wraps `SecurityContextHolder` lookups.
+* Example service:
+
+  ```java
+  @Service
+  public class CurrentUserService {
+      public String getCurrentUsername() {
+          Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+          return auth != null ? auth.getName() : "anonymous";
+      }
+  }
+  ```
+* This abstraction ensures audit logic doesn’t care if the user came from in-memory, OAuth2, or SAML.
+
+Then, in the app module, make sure it imports this one also in the pom.  Probably want to add a comment saying to change this or add your own impl or whatever.
+
+---
+
+### 4. React Frontend Login Page
+
+* Implement a simple **login page** (`/login`) in React:
+
+  * Username + password form.
+  * POSTs credentials to backend at `/login` (Spring Security’s default form login endpoint).
+  * On success, backend sets a session cookie (default Spring Session handling).
+* Store the authenticated user in React app state (context or Redux).
+* Show/hide UI features based on roles (`ADMIN` vs `USER`).
+
+---
+
+### 5. Securing API Endpoints
+
+* Organize endpoints with role-based security:
+
+Looking at schedules and overrides and rules should require user auth.
+Updating them should require admin privileges.
+Calling the should-run endpoints should be public, but we should devise a way to switch this easily depending on business need.
+
+Let's configure these endpoint permissions in SecurityConfig without changing the controllers.  This also gives us a straightforward place to adjust the should-run endpoints if we decide to do that.
+
+---
+
+### 6. Add Audit Information
+
+* In service/repository layers, when creating/updating records:
+
+  * Call `CurrentUserService.getCurrentUsername()` to capture `createdBy` / `modifiedBy`.
+* Schema impact: Add `created_by`, `modified_by` columns to entities where needed, though this should already be done.
+
+7. Future enhancements
+* Creating a SECURITY.md file to document the replaceable nature of the security module will be helpful for project documentation and adoption.
+

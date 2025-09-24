@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import Schedules from './components/Schedules';
+import AuditLog from './components/AuditLog';
 
 function App(): React.ReactElement {
   return (
@@ -15,6 +16,7 @@ function App(): React.ReactElement {
           <Route path="/" element={<Navigate to="/dashboard" />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/schedules" element={<Schedules />} />
+          <Route path="/audit-log" element={<AuditLog />} />
         </Routes>
       </div>
     </div>

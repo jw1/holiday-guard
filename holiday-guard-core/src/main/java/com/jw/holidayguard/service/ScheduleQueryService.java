@@ -1,17 +1,22 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.*;
+
 import com.jw.holidayguard.dto.DailyScheduleStatusDto;
+import com.jw.holidayguard.dto.ScheduleQueryLogDto;
 import com.jw.holidayguard.dto.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.ShouldRunQueryResponse;
 import com.jw.holidayguard.repository.*;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +40,36 @@ public class ScheduleQueryService {
         this.materializedCalendarRepository = materializedCalendarRepository;
         this.overrideRepository = overrideRepository;
         this.queryLogRepository = queryLogRepository;
+    }
+
+    public List<ScheduleQueryLogDto> findAllLogs() {
+        // 1. Fetch all logs, sorted by newest first
+        List<ScheduleQueryLog> logs = queryLogRepository.findAll(Sort.by(Sort.Direction.DESC, "queriedAt"));
+
+        // 2. Get unique schedule IDs
+        var scheduleIds = logs.stream()
+                .map(ScheduleQueryLog::getScheduleId)
+                .collect(Collectors.toSet());
+
+        // 3. Fetch all schedules in a single batch query
+        Map<UUID, String> scheduleNames = scheduleRepository.findAllById(scheduleIds).stream()
+                .collect(Collectors.toMap(Schedule::getId, Schedule::getName));
+
+        // 4. Map to DTOs
+        return logs.stream()
+                .map(log -> new ScheduleQueryLogDto(
+                        log.getId(),
+                        log.getScheduleId(),
+                        scheduleNames.getOrDefault(log.getScheduleId(), "Unknown"),
+                        log.getVersionId(),
+                        log.getQueryDate(),
+                        log.isShouldRunResult(),
+                        log.getReason(),
+                        log.isOverrideApplied(),
+                        log.getClientIdentifier(),
+                        log.getQueriedAt()
+                ))
+                .collect(Collectors.toList());
     }
 
     public long getTotalSchedulesCount() {

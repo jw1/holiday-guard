@@ -12,6 +12,7 @@ const Header = () => {
     const getTitle = (pathname: string) => {
         if (pathname.startsWith('/schedules')) return 'Schedules';
         if (pathname.startsWith('/dashboard')) return 'Dashboard';
+        if (pathname.startsWith('/audit-log')) return 'Audit Log';
         return '';
     };
 
