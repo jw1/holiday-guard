@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Stores exceptions that modify the standard schedule rules for specific dates.
+ * Alterations which modify schedule rules for specific dates.
  * Overrides are tied to specific schedule versions to maintain complete audit trail of what changed between versions.
  */
 @Entity
@@ -61,12 +61,8 @@ public class ScheduleOverride {
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
-        if (createdBy == null) {
-            createdBy = "system";
-        }
+        if (createdAt == null) createdAt = Instant.now();
+        if (createdBy == null) createdBy = "system";
     }
 
     public enum OverrideAction {

@@ -18,4 +18,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     List<Schedule> findByCountry(String country);
     
     List<Schedule> findByCountryAndActiveTrue(String country);
+
+    long countByActive(boolean active);
 }

@@ -1,7 +1,7 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.*;
-import com.jw.holidayguard.dto.ScheduleDailyStatusDto;
+import com.jw.holidayguard.dto.DailyScheduleStatusDto;
 import com.jw.holidayguard.dto.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.ShouldRunQueryResponse;
 import com.jw.holidayguard.repository.*;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class ScheduleQueryService {
-    
+
     private final ScheduleRepository scheduleRepository;
     private final ScheduleVersionRepository scheduleVersionRepository;
     private final ScheduleMaterializedCalendarRepository materializedCalendarRepository;
@@ -37,14 +37,22 @@ public class ScheduleQueryService {
         this.queryLogRepository = queryLogRepository;
     }
 
-    public List<ScheduleDailyStatusDto> getDailyStatusForActiveSchedules() {
+    public long getTotalSchedulesCount() {
+        return scheduleRepository.count();
+    }
+
+    public long getActiveSchedulesCount() {
+        return scheduleRepository.countByActive(true);
+    }
+
+    public List<DailyScheduleStatusDto> getDailyRunStatusForAllActiveSchedules() {
         List<Schedule> activeSchedules = scheduleRepository.findByActiveTrue();
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(LocalDate.now(), "internal-dashboard");
 
         return activeSchedules.stream()
                 .map(schedule -> {
                     ShouldRunQueryResponse response = shouldRunToday(schedule.getId(), request);
-                    return new ScheduleDailyStatusDto(
+                    return new DailyScheduleStatusDto(
                             schedule.getId(),
                             schedule.getName(),
                             response.isShouldRun(),

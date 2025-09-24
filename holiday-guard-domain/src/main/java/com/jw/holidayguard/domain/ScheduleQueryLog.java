@@ -62,11 +62,7 @@ public class ScheduleQueryLog {
 
     @PrePersist
     protected void onCreate() {
-        if (queriedAt == null) {
-            queriedAt = Instant.now();
-        }
-        if (clientIdentifier == null) {
-            clientIdentifier = "unknown";
-        }
+        if (queriedAt == null) queriedAt = Instant.now();
+        if (clientIdentifier == null) clientIdentifier = "unknown";
     }
 }

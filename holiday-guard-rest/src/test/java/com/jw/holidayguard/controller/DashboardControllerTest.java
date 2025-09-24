@@ -1,0 +1,77 @@
+package com.jw.holidayguard.controller;
+
+import com.jw.holidayguard.dto.DailyScheduleStatusDto;
+import com.jw.holidayguard.service.ScheduleQueryService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(DashboardController.class)
+class DashboardControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ScheduleQueryService scheduleQueryService;
+
+    @Test
+    void getStatusToday_shouldReturnDailyStatusForAllActiveSchedules() throws Exception {
+        // given
+        UUID scheduleId1 = UUID.randomUUID();
+        UUID scheduleId2 = UUID.randomUUID();
+        List<DailyScheduleStatusDto> statuses = List.of(
+                new DailyScheduleStatusDto(scheduleId1, "ACH File Generation", true, "Scheduled to run"),
+                new DailyScheduleStatusDto(scheduleId2, "Daily Reporting", false, "Not scheduled to run")
+        );
+
+        when(scheduleQueryService.getDailyRunStatusForAllActiveSchedules()).thenReturn(statuses);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/dashboard/schedule-status"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].scheduleId").value(scheduleId1.toString()))
+                .andExpect(jsonPath("$[0].scheduleName").value("ACH File Generation"))
+                .andExpect(jsonPath("$[0].shouldRun").value(true))
+                .andExpect(jsonPath("$[0].reason").value("Scheduled to run"))
+                .andExpect(jsonPath("$[1].scheduleId").value(scheduleId2.toString()))
+                .andExpect(jsonPath("$[1].scheduleName").value("Daily Reporting"))
+                .andExpect(jsonPath("$[1].shouldRun").value(false))
+                .andExpect(jsonPath("$[1].reason").value("Not scheduled to run"));
+    }
+
+    @Test
+    void getTotalSchedulesCount_shouldReturnTotalCount() throws Exception {
+        // given
+        when(scheduleQueryService.getTotalSchedulesCount()).thenReturn(123L);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/dashboard/stats/total-schedules"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.count").value(123));
+    }
+
+    @Test
+    void getActiveSchedulesCount_shouldReturnActiveCount() throws Exception {
+        // given
+        when(scheduleQueryService.getActiveSchedulesCount()).thenReturn(99L);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/dashboard/stats/active-schedules"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.count").value(99));
+    }
+}

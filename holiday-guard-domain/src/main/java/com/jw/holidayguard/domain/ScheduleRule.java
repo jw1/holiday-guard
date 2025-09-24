@@ -59,12 +59,8 @@ public class ScheduleRule {
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
-        if (effectiveFrom == null) {
-            effectiveFrom = LocalDate.now();
-        }
+        if (createdAt == null) createdAt = Instant.now();
+        if (effectiveFrom == null) effectiveFrom = LocalDate.now();
     }
 
     /**

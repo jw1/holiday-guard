@@ -18,7 +18,7 @@ const Sidebar = ({ page, setPage }: SidebarProps) => {
     `flex items-center p-2 rounded cursor-pointer ${isCurrentPage ? 'bg-gray-900' : 'hover:bg-gray-700'}`;
 
   return (
-    <aside className="bg-gray-800 text-white w-64 min-h-screen p-4">
+    <aside className="bg-gray-800 text-white w-64 min-h-screen p-4 flex-shrink-0">
       <div className="flex items-center mb-10">
         <img src="/favicon3.png" alt="Logo" className="h-8 w-8 mr-2" />
         <div className="text-2xl font-bold">Holiday Guard</div>

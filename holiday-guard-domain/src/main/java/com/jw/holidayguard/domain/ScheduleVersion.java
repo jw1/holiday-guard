@@ -10,8 +10,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Maintains historical versions of schedule rules for auditability and rule evolution.
- * Only the most recent version is active, but all versions are preserved for debugging and compliance.
+ * Each time a schedule, its rule, or overrides is modified, the updated set is saved as a new version.
+ * This way, the audit records will have a history of how a "should run" decision was made.
  */
 @Entity
 @Table(name = "schedule_versions")
@@ -44,11 +44,7 @@ public class ScheduleVersion {
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
-        if (effectiveFrom == null) {
-            effectiveFrom = Instant.now();
-        }
+        if (createdAt == null) createdAt = Instant.now();
+        if (effectiveFrom == null) effectiveFrom = Instant.now();
     }
 }

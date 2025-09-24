@@ -199,7 +199,6 @@ const Schedules = () => {
                 <SortableHeader columnKey="id" title="ID" />
                 <SortableHeader columnKey="name" title="Name" />
                 <SortableHeader columnKey="description" title="Description" />
-                <SortableHeader columnKey="country" title="Country" />
                 <SortableHeader columnKey="active" title="Status" />
                 <SortableHeader columnKey="createdDate" title="Created Date" />
                 <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
@@ -208,10 +207,9 @@ const Schedules = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedSchedules.map((schedule) => (
                 <tr key={schedule.id}>
-                  <td className="px-6 py-4 text-sm font-mono text-gray-500 whitespace-nowrap">{schedule.id}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-gray-500 whitespace-nowrap">{schedule.id}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{schedule.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{schedule.description}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{schedule.country}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{schedule.description}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${schedule.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                       {schedule.active ? 'Active' : 'Inactive'}
