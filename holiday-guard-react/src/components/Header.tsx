@@ -1,11 +1,24 @@
 
 
+import { useLocation } from 'react-router-dom';
+
 const Header = () => {
+  const location = useLocation();
+
+  // Create a user-friendly title from the pathname
+  const getTitle = (pathname: string) => {
+    if (pathname.startsWith('/schedules')) return 'Schedules';
+    if (pathname.startsWith('/dashboard')) return 'Dashboard';
+    return 'Home';
+  };
+
+  const title = getTitle(location.pathname);
+
   return (
     <header className="bg-white shadow-md p-4 flex justify-between items-center">
       <div>
-        <h1 className="text-xl text-gray-600">Dashboard</h1>
-        <p className="text-sm text-gray-500">Home / Dashboard</p>
+        <h1 className="text-xl text-gray-600">{title}</h1>
+        <p className="text-sm text-gray-500">Home / {title}</p>
       </div>
       <div className="flex items-center">
         <div className="mr-4">

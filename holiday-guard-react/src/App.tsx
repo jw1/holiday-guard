@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import Schedules from './components/Schedules';
 
-export type Page = 'dashboard' | 'schedules';
-
 function App(): React.ReactElement {
-  const [page, setPage] = useState<Page>('dashboard');
-
   return (
     <div className="flex bg-gray-100 min-h-screen">
-      <Sidebar page={page} setPage={setPage} />
+      <Sidebar />
       <div className="flex-1 flex flex-col">
         <Header />
-        {page === 'dashboard' && <Dashboard />}
-        {page === 'schedules' && <Schedules />}
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/schedules" element={<Schedules />} />
+        </Routes>
       </div>
     </div>
   );
