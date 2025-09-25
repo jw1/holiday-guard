@@ -38,6 +38,13 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
+		<!-- Pluggable security implementation. Swap this with a different module -->
+		<!-- (e.g., holiday-guard-security-oauth2) for a different auth mechanism. -->
+		<dependency>
+			<groupId>com.jw</groupId>
+			<artifactId>holiday-guard-security-inmemory</artifactId>
+		</dependency>
+
 		<!-- Database runtime dependency -->
 		<dependency>
 			<groupId>com.h2database</groupId>

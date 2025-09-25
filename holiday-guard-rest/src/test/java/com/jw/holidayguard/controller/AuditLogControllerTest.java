@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -53,7 +54,7 @@ class AuditLogControllerTest {
         when(scheduleQueryService.findAllLogs()).thenReturn(logs);
 
         // when & then
-        mockMvc.perform(get("/api/v1/audit-logs"))
+        mockMvc.perform(get("/api/v1/audit-logs").with(user("user")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].logId").value(logId.toString()))

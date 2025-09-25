@@ -10,8 +10,11 @@ import com.jw.holidayguard.exception.ScheduleNotFoundException;
 import com.jw.holidayguard.repository.ScheduleRepository;
 import com.jw.holidayguard.repository.ScheduleRuleRepository;
 import com.jw.holidayguard.repository.ScheduleVersionRepository;
+import com.jw.holidayguard.service.CurrentUserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,6 +39,9 @@ class ScheduleServiceTest {
     @Mock
     private ScheduleVersionRepository versionRepository;
 
+    @Mock
+    private CurrentUserService currentUserService;
+
     @InjectMocks
     private ScheduleService service;
 
@@ -59,13 +65,18 @@ class ScheduleServiceTest {
         when(repository.findByName(anyString())).thenReturn(Optional.empty());
         when(repository.save(any(Schedule.class))).thenReturn(savedSchedule);
         when(versionRepository.save(any(ScheduleVersion.class))).thenReturn(savedVersion);
+        when(currentUserService.getCurrentUsername()).thenReturn("test-user");
 
         // when
-        var result = service.createSchedule(request);
+        service.createSchedule(request);
 
         // then
-        assertThat(result).isNotNull();
-        verify(repository).save(any(Schedule.class));
+        ArgumentCaptor<Schedule> scheduleCaptor = ArgumentCaptor.forClass(Schedule.class);
+        verify(repository).save(scheduleCaptor.capture());
+        
+        assertThat(scheduleCaptor.getValue().getCreatedBy()).isEqualTo("test-user");
+        assertThat(scheduleCaptor.getValue().getUpdatedBy()).isEqualTo("test-user");
+        
         verify(versionRepository).save(any(ScheduleVersion.class));
         verify(ruleRepository).save(any(ScheduleRule.class));
     }
@@ -114,6 +125,7 @@ class ScheduleServiceTest {
         var scheduleId = UUID.randomUUID();
         var existingSchedule = new Schedule();
         existingSchedule.setName("Original Name");
+        existingSchedule.setCreatedBy("original-user");
 
         var request = UpdateScheduleRequest.builder()
                 .name("Updated Name")
@@ -126,6 +138,7 @@ class ScheduleServiceTest {
         when(repository.findByName("Updated Name")).thenReturn(Optional.empty());
         when(ruleRepository.findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(scheduleId)).thenReturn(Optional.empty());
         when(versionRepository.save(any(ScheduleVersion.class))).thenReturn(new ScheduleVersion());
+        when(currentUserService.getCurrentUsername()).thenReturn("test-user");
 
         // when
         var result = service.updateSchedule(scheduleId, request);
@@ -133,9 +146,9 @@ class ScheduleServiceTest {
         // then
         assertThat(result.getName()).isEqualTo("Updated Name");
         assertThat(result.getDescription()).isEqualTo("Updated description");
+        assertThat(result.getCreatedBy()).isEqualTo("original-user"); // Should not change
+        assertThat(result.getUpdatedBy()).isEqualTo("test-user"); // Should be updated
         verify(versionRepository).save(any(ScheduleVersion.class));
         verify(ruleRepository).save(any(ScheduleRule.class));
     }
-
-    // Other tests for findByName, getAllActiveSchedules, archiveSchedule etc. would go here
 }

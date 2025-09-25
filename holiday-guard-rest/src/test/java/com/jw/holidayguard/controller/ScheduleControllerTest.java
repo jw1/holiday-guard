@@ -22,6 +22,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.test.context.ContextConfiguration;
@@ -56,6 +58,8 @@ class ScheduleControllerTest {
         when(service.createSchedule(any(CreateScheduleRequest.class))).thenReturn(savedSchedule);
 
         mockMvc.perform(post("/api/v1/schedules")
+                .with(user("admin").roles("ADMIN"))
+                .with(csrf())
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isCreated())
@@ -71,6 +75,8 @@ class ScheduleControllerTest {
                 .thenThrow(new DuplicateScheduleException("Existing Schedule"));
 
         mockMvc.perform(post("/api/v1/schedules")
+                .with(user("admin").roles("ADMIN"))
+                .with(csrf())
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isConflict());
@@ -91,6 +97,8 @@ class ScheduleControllerTest {
         when(service.updateSchedule(eq(scheduleId), any(UpdateScheduleRequest.class))).thenReturn(updatedSchedule);
 
         mockMvc.perform(put("/api/v1/schedules/{id}", scheduleId)
+                .with(user("admin").roles("ADMIN"))
+                .with(csrf())
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
@@ -106,6 +114,8 @@ class ScheduleControllerTest {
                 .thenThrow(new ScheduleNotFoundException(scheduleId));
 
         mockMvc.perform(put("/api/v1/schedules/{id}", scheduleId)
+                .with(user("admin").roles("ADMIN"))
+                .with(csrf())
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound());

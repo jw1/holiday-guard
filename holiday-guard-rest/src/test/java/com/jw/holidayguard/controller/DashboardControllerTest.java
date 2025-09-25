@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,7 +39,7 @@ class DashboardControllerTest {
         when(scheduleQueryService.getDailyRunStatusForAllActiveSchedules()).thenReturn(statuses);
 
         // when & then
-        mockMvc.perform(get("/api/v1/dashboard/schedule-status"))
+        mockMvc.perform(get("/api/v1/dashboard/schedule-status").with(user("user")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].scheduleId").value(scheduleId1.toString()))
@@ -57,7 +58,7 @@ class DashboardControllerTest {
         when(scheduleQueryService.getTotalSchedulesCount()).thenReturn(123L);
 
         // when & then
-        mockMvc.perform(get("/api/v1/dashboard/stats/total-schedules"))
+        mockMvc.perform(get("/api/v1/dashboard/stats/total-schedules").with(user("user")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.count").value(123));
@@ -69,7 +70,7 @@ class DashboardControllerTest {
         when(scheduleQueryService.getActiveSchedulesCount()).thenReturn(99L);
 
         // when & then
-        mockMvc.perform(get("/api/v1/dashboard/stats/active-schedules"))
+        mockMvc.perform(get("/api/v1/dashboard/stats/active-schedules").with(user("user")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.count").value(99));

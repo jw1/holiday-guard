@@ -1,4 +1,5 @@
 import {useLocation} from 'react-router-dom';
+import {UserMenu} from "./UserMenu";
 
 const Header = () => {
 
@@ -25,11 +26,11 @@ const Header = () => {
                 <p className="text-sm text-gray-500">Home / {title}</p>
             </div>
             <div className="flex items-center">
-                <div className="mr-4">
-                    <span>🔔</span>
-                </div>
+                {/*<div className="mr-4">*/}
+                {/*    <span>🔔</span>*/}
+                {/*</div>*/}
                 <div>
-                    <img src="https://i.pravatar.cc/40" alt="User Avatar" className="rounded-full"/>
+                    <UserMenu />
                 </div>
             </div>
         </header>

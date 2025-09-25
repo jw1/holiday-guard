@@ -13,6 +13,7 @@ import com.jw.holidayguard.repository.ScheduleVersionRepository;
 import com.jw.holidayguard.dto.ScheduleCalendarDto;
 import com.jw.holidayguard.dto.ScheduleOverrideDto;
 import com.jw.holidayguard.repository.ScheduleOverrideRepository;
+import com.jw.holidayguard.service.CurrentUserService;
 import com.jw.holidayguard.service.materialization.RuleEngine;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,13 +36,15 @@ public class ScheduleService {
     private final ScheduleVersionRepository versionRepository;
     private final ScheduleOverrideRepository overrideRepository;
     private final RuleEngine ruleEngine;
+    private final CurrentUserService currentUserService;
 
-    public ScheduleService(ScheduleRepository repository, ScheduleRuleRepository ruleRepository, ScheduleVersionRepository versionRepository, ScheduleOverrideRepository overrideRepository, RuleEngine ruleEngine) {
+    public ScheduleService(ScheduleRepository repository, ScheduleRuleRepository ruleRepository, ScheduleVersionRepository versionRepository, ScheduleOverrideRepository overrideRepository, RuleEngine ruleEngine, CurrentUserService currentUserService) {
         this.repository = repository;
         this.ruleRepository = ruleRepository;
         this.versionRepository = versionRepository;
         this.overrideRepository = overrideRepository;
         this.ruleEngine = ruleEngine;
+        this.currentUserService = currentUserService;
     }
 
     public Schedule createSchedule(CreateScheduleRequest request) {
@@ -50,11 +53,15 @@ public class ScheduleService {
             throw new DuplicateScheduleException(request.getName());
         }
 
+        String currentUser = currentUserService.getCurrentUsername();
+
         Schedule schedule = Schedule.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .country(request.getCountry())
                 .active(request.isActive())
+                .createdBy(currentUser)
+                .updatedBy(currentUser)
                 .build();
 
         Schedule savedSchedule = repository.save(schedule);
@@ -161,6 +168,8 @@ public class ScheduleService {
                 ruleRepository.save(rule);
             }
         }
+
+        existing.setUpdatedBy(currentUserService.getCurrentUsername());
 
         // JPA automatically detects changes and updates on transaction commit
         return existing;
