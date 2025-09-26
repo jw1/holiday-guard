@@ -1,7 +1,7 @@
 package com.jw.holidayguard.service.materialization.handler;
 
 import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.util.ACHProcessingScheduleFactory;
+import com.jw.holidayguard.util.ACHProcessingScheduleFactory.USFederalHolidays;
 import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
@@ -19,17 +19,23 @@ public class USFederalReserveBusinessDaysHandler implements RuleHandler {
 
     @Override
     public List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate) {
-        List<LocalDate> weekdays = fromDate.datesUntil(toDate.plusDays(1))
-                .filter(d -> d.getDayOfWeek() != DayOfWeek.SATURDAY && d.getDayOfWeek() != DayOfWeek.SUNDAY)
+        return fromDate.datesUntil(toDate.plusDays(1))
+                .filter(this::isBusinessDay)
                 .collect(Collectors.toList());
+    }
 
-        List<LocalDate> holidays = ACHProcessingScheduleFactory.USFederalHolidays.getHolidays(fromDate.getYear());
-        if (fromDate.getYear() != toDate.getYear()) {
-            holidays.addAll(ACHProcessingScheduleFactory.USFederalHolidays.getHolidays(toDate.getYear()));
+    @Override
+    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+        return isBusinessDay(date);
+    }
+
+    private boolean isBusinessDay(LocalDate date) {
+        DayOfWeek day = date.getDayOfWeek();
+        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+            return false;
         }
 
-        return weekdays.stream()
-                .filter(d -> !holidays.contains(d))
-                .collect(Collectors.toList());
+        List<LocalDate> holidays = USFederalHolidays.getHolidays(date.getYear());
+        return !holidays.contains(date);
     }
 }

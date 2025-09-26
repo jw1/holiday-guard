@@ -1,12 +1,16 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.*;
-
 import com.jw.holidayguard.dto.DailyScheduleStatusDto;
 import com.jw.holidayguard.dto.ScheduleQueryLogDto;
 import com.jw.holidayguard.dto.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.ShouldRunQueryResponse;
-import com.jw.holidayguard.repository.*;
+import com.jw.holidayguard.repository.ScheduleOverrideRepository;
+import com.jw.holidayguard.repository.ScheduleQueryLogRepository;
+import com.jw.holidayguard.repository.ScheduleRepository;
+import com.jw.holidayguard.repository.ScheduleVersionRepository;
+import com.jw.holidayguard.repository.ScheduleRuleRepository;
+import com.jw.holidayguard.service.materialization.RuleEngine;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,21 +29,25 @@ public class ScheduleQueryService {
 
     private final ScheduleRepository scheduleRepository;
     private final ScheduleVersionRepository scheduleVersionRepository;
-    private final ScheduleMaterializedCalendarRepository materializedCalendarRepository;
     private final ScheduleOverrideRepository overrideRepository;
     private final ScheduleQueryLogRepository queryLogRepository;
+    private final RuleEngine ruleEngine;
+
+    private final ScheduleRuleRepository scheduleRuleRepository;
 
     public ScheduleQueryService(
             ScheduleRepository scheduleRepository,
             ScheduleVersionRepository scheduleVersionRepository,
-            ScheduleMaterializedCalendarRepository materializedCalendarRepository,
             ScheduleOverrideRepository overrideRepository,
-            ScheduleQueryLogRepository queryLogRepository) {
+            ScheduleQueryLogRepository queryLogRepository,
+            RuleEngine ruleEngine,
+            ScheduleRuleRepository scheduleRuleRepository) {
         this.scheduleRepository = scheduleRepository;
         this.scheduleVersionRepository = scheduleVersionRepository;
-        this.materializedCalendarRepository = materializedCalendarRepository;
         this.overrideRepository = overrideRepository;
         this.queryLogRepository = queryLogRepository;
+        this.ruleEngine = ruleEngine;
+        this.scheduleRuleRepository = scheduleRuleRepository;
     }
 
     public List<ScheduleQueryLogDto> findAllLogs() {
@@ -140,16 +148,19 @@ public class ScheduleQueryService {
             shouldRun = overrideRule.getAction() == ScheduleOverride.OverrideAction.FORCE_RUN;
             reason = "Override applied: " + overrideRule.getReason();
         } else {
-            // No override - check materialized calendar
-            Optional<ScheduleMaterializedCalendar> calendarEntry = materializedCalendarRepository
-                .findByScheduleIdAndVersionIdAndOccursOn(scheduleId, activeVersion.getId(), queryDate);
-            
-            if (calendarEntry.isPresent()) {
-                shouldRun = true;
-                reason = "Scheduled to run - found in materialized calendar";
-            } else {
+            // No override - evaluate rules
+            Optional<ScheduleRule> rule = scheduleRuleRepository.findByVersionId(activeVersion.getId());
+            if (rule.isEmpty()) {
                 shouldRun = false;
-                reason = "Not scheduled to run - date not found in materialized calendar";
+                reason = "Not scheduled to run - no rules found for version";
+            } else {
+                shouldRun = ruleEngine.shouldRun(rule.get(), queryDate);
+                
+                if (shouldRun) {
+                    reason = "Scheduled to run - rule matches";
+                } else {
+                    reason = "Not scheduled to run - rule does not match";
+                }
             }
         }
         

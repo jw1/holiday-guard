@@ -1,9 +1,18 @@
 package com.jw.holidayguard.service;
 
-import com.jw.holidayguard.domain.*;
+import com.jw.holidayguard.domain.Schedule;
+import com.jw.holidayguard.domain.ScheduleQueryLog;
+import com.jw.holidayguard.domain.ScheduleOverride;
+import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.ScheduleVersion;
 import com.jw.holidayguard.dto.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.ShouldRunQueryResponse;
-import com.jw.holidayguard.repository.*;
+import com.jw.holidayguard.repository.ScheduleOverrideRepository;
+import com.jw.holidayguard.repository.ScheduleQueryLogRepository;
+import com.jw.holidayguard.repository.ScheduleRepository;
+import com.jw.holidayguard.repository.ScheduleVersionRepository;
+import com.jw.holidayguard.repository.ScheduleRuleRepository;
+import com.jw.holidayguard.service.materialization.RuleEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,13 +39,16 @@ class ScheduleQueryServiceTest {
     private ScheduleVersionRepository scheduleVersionRepository;
     
     @Mock
-    private ScheduleMaterializedCalendarRepository materializedCalendarRepository;
-    
-    @Mock
     private ScheduleOverrideRepository overrideRepository;
     
     @Mock
     private ScheduleQueryLogRepository queryLogRepository;
+
+    @Mock
+    private ScheduleRuleRepository scheduleRuleRepository;
+
+    @Mock
+    private RuleEngine ruleEngine;
 
     @InjectMocks
     private ScheduleQueryService service;
@@ -64,23 +77,17 @@ class ScheduleQueryServiceTest {
     }
 
     @Test
-    void shouldReturnTrueWhenDateExistsInMaterializedCalendar() {
-        // Given: A date exists in the materialized calendar (should run = YES)
-        LocalDate queryDate = LocalDate.now().plusDays(5); // Future date
+    void shouldReturnTrueWhenAllRulesMatch() {
+        // Given: All rules match for the given date
+        LocalDate queryDate = LocalDate.now().plusDays(5);
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
-        
-        ScheduleMaterializedCalendar calendarEntry = ScheduleMaterializedCalendar.builder()
-            .scheduleId(scheduleId)
-            .versionId(versionId)
-            .occursOn(queryDate)
-            .status(ScheduleMaterializedCalendar.OccurrenceStatus.SCHEDULED)
-            .build();
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
         when(scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId))
             .thenReturn(Optional.of(activeVersion));
-        when(materializedCalendarRepository.findByScheduleIdAndVersionIdAndOccursOn(scheduleId, versionId, queryDate))
-            .thenReturn(Optional.of(calendarEntry));
+        when(scheduleRuleRepository.findByVersionId(versionId))
+            .thenReturn(Optional.of(new ScheduleRule()));
+        when(ruleEngine.shouldRun(any(ScheduleRule.class), eq(queryDate))).thenReturn(true);
         when(overrideRepository.findByScheduleId(scheduleId))
             .thenReturn(java.util.Collections.emptyList());
         when(queryLogRepository.save(any(ScheduleQueryLog.class)))
@@ -92,7 +99,7 @@ class ScheduleQueryServiceTest {
         // Then: Should return true with explanation
         assertNotNull(response);
         assertTrue(response.isShouldRun());
-        assertEquals("Scheduled to run - found in materialized calendar", response.getReason());
+        assertEquals("Scheduled to run - rule matches", response.getReason());
         assertFalse(response.isOverrideApplied());
         assertEquals(versionId, response.getVersionId());
         
@@ -106,16 +113,17 @@ class ScheduleQueryServiceTest {
     }
 
     @Test
-    void shouldReturnFalseWhenDateNotInMaterializedCalendar() {
-        // Given: A date does not exist in materialized calendar (should run = NO)
-        LocalDate queryDate = LocalDate.now().plusDays(10); // Future date
+    void shouldReturnFalseWhenAnyRuleFails() {
+        // Given: At least one rule fails for the given date
+        LocalDate queryDate = LocalDate.now().plusDays(10);
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
         when(scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId))
             .thenReturn(Optional.of(activeVersion));
-        when(materializedCalendarRepository.findByScheduleIdAndVersionIdAndOccursOn(scheduleId, versionId, queryDate))
-            .thenReturn(Optional.empty());
+        when(scheduleRuleRepository.findByVersionId(versionId))
+            .thenReturn(Optional.of(new ScheduleRule()));
+        when(ruleEngine.shouldRun(any(ScheduleRule.class), eq(queryDate))).thenReturn(false);
         when(overrideRepository.findByScheduleId(scheduleId))
             .thenReturn(java.util.Collections.emptyList());
         when(queryLogRepository.save(any(ScheduleQueryLog.class)))
@@ -127,7 +135,7 @@ class ScheduleQueryServiceTest {
         // Then: Should return false with explanation
         assertNotNull(response);
         assertFalse(response.isShouldRun());
-        assertEquals("Not scheduled to run - date not found in materialized calendar", response.getReason());
+        assertEquals("Not scheduled to run - rule does not match", response.getReason());
         assertFalse(response.isOverrideApplied());
         
         // Should log the query

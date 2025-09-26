@@ -41,4 +41,14 @@ public class RuleEngineImpl implements RuleEngine {
 
         return handler.generateDates(rule, fromDate, toDate);
     }
+
+    @Override
+    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+        RuleHandler handler = handlers.get(rule.getRuleType());
+        if (handler == null) {
+            throw new UnsupportedOperationException("No handler found for rule type: " + rule.getRuleType());
+        }
+
+        return handler.shouldRun(rule, date);
+    }
 }

@@ -19,4 +19,9 @@ public class AllDaysHandler implements RuleHandler {
     public List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate) {
         return fromDate.datesUntil(toDate.plusDays(1)).collect(Collectors.toList());
     }
+
+    @Override
+    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+        return true;
+    }
 }

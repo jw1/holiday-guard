@@ -22,6 +22,15 @@ public interface RuleHandler {
     List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate);
 
     /**
+     * Checks if a schedule should run on a specific date based on the given rule.
+     *
+     * @param rule The schedule rule to evaluate
+     * @param date The date to check
+     * @return True if the schedule should run on the given date, false otherwise
+     */
+    boolean shouldRun(ScheduleRule rule, LocalDate date);
+
+    /**
      * Returns the rule type this handler supports.
      */
     ScheduleRule.RuleType getSupportedRuleType();

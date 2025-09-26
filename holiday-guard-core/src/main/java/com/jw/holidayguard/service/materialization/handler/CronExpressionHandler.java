@@ -1,41 +1,42 @@
 package com.jw.holidayguard.service.materialization.handler;
 
 import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.ScheduleRule.RuleType;
+import org.springframework.stereotype.Service;
+
 import org.springframework.scheduling.support.CronExpression;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-/**
- * GREEN: Handler for CRON_EXPRESSION rule type.
- * Generates dates based on standard cron expressions.
- */
-@Component
+@Service
 public class CronExpressionHandler implements RuleHandler {
 
     @Override
     public List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate) {
-        // Handle invalid date range
-        if (fromDate.isAfter(toDate)) {
-            return Collections.emptyList();
+        CronExpression cron = CronExpression.parse(rule.getRuleConfig());
+        List<LocalDate> dates = new ArrayList<>();
+
+        LocalDate currentDate = fromDate;
+        while (!currentDate.isAfter(toDate)) {
+            LocalDateTime nextExecution = cron.next(currentDate.atStartOfDay());
+            if (nextExecution != null && !nextExecution.toLocalDate().isAfter(currentDate)) {
+                dates.add(currentDate);
+            }
+            currentDate = currentDate.plusDays(1);
         }
 
-        String cronConfig = rule.getRuleConfig();
-        if (cronConfig == null || cronConfig.trim().isEmpty()) {
-            throw new IllegalArgumentException("Cron expression cannot be null or empty");
-        }
+        return dates;
+    }
 
-        try {
-            CronExpression cronExpression = CronExpression.parse(cronConfig);
-            return generateDatesFromCron(cronExpression, fromDate, toDate);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid cron expression: " + cronConfig, e);
-        }
+    @Override
+    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+        CronExpression cron = CronExpression.parse(rule.getRuleConfig());
+        LocalDateTime nextExecution = cron.next(date.atStartOfDay().minusDays(1));
+        return nextExecution != null && nextExecution.toLocalDate().equals(date);
     }
 
     private List<LocalDate> generateDatesFromCron(CronExpression cronExpression, LocalDate fromDate, LocalDate toDate) {

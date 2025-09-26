@@ -1,0 +1,1 @@
+DROP TABLE schedule_materialized_calendar;

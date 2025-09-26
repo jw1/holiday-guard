@@ -21,4 +21,16 @@ public interface RuleEngine {
      * @return List of dates when the schedule should run, sorted chronologically
      */
     List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate);
+
+    /**
+     * Checks if a schedule should run on a specific date based on the given rule.
+     * <p>
+     * NOTE: This method does NOT evaluate any overrides. Override evaluation is handled
+     * in the {@link com.jw.holidayguard.service.ScheduleQueryService}.
+     *
+     * @param rule The schedule rule to evaluate
+     * @param date The date to check
+     * @return True if the schedule should run on the given date, false otherwise
+     */
+    boolean shouldRun(ScheduleRule rule, LocalDate date);
 }

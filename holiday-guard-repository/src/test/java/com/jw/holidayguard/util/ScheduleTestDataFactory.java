@@ -1,7 +1,6 @@
 package com.jw.holidayguard.util;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.domain.ScheduleMaterializedCalendar;
 import com.jw.holidayguard.domain.ScheduleVersion;
 
 import java.time.Instant;
@@ -24,15 +23,6 @@ public class ScheduleTestDataFactory {
                 .scheduleId(scheduleId)
                 .effectiveFrom(Instant.now())
                 .active(active)
-                .build();
-    }
-
-    public static ScheduleMaterializedCalendar createCalendarEntry(UUID scheduleId, UUID versionId, LocalDate date) {
-        return ScheduleMaterializedCalendar.builder()
-                .scheduleId(scheduleId)
-                .versionId(versionId)
-                .occursOn(date)
-                .status(ScheduleMaterializedCalendar.OccurrenceStatus.SCHEDULED)
                 .build();
     }
 }

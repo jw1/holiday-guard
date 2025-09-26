@@ -38,6 +38,12 @@ public class WeekdaysOnlyHandler implements RuleHandler {
     }
 
     @Override
+    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+        DayOfWeek day = date.getDayOfWeek();
+        return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY;
+    }
+
+    @Override
     public ScheduleRule.RuleType getSupportedRuleType() {
         return ScheduleRule.RuleType.WEEKDAYS_ONLY;
     }

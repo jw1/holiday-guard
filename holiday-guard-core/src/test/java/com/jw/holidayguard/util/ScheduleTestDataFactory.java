@@ -207,17 +207,6 @@ public class ScheduleTestDataFactory {
                 .build();
     }
 
-    /**
-     * Creates a ScheduleMaterializedCalendar entry for testing.
-     */
-    public static ScheduleMaterializedCalendar createCalendarEntry(UUID scheduleId, UUID versionId, LocalDate date) {
-        return ScheduleMaterializedCalendar.builder()
-                .scheduleId(scheduleId)
-                .versionId(versionId)
-                .occursOn(date)
-                .status(ScheduleMaterializedCalendar.OccurrenceStatus.SCHEDULED)
-                .build();
-    }
 
     /**
      * Creates a ScheduleQueryLog entry for testing.
