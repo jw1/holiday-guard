@@ -47,19 +47,20 @@ public class ScheduleMaterializationService {
      */
     @Transactional
     public List<LocalDate> materializeCalendar(UUID scheduleId, LocalDate fromDate, LocalDate toDate) {
-        // Validate schedule exists
+
+        // verify schedule exists
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + scheduleId));
 
-        // Get active version
+        // and has active version
         ScheduleVersion activeVersion = scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("No active version found for schedule: " + scheduleId));
 
-        // Get active rule for this version
+        // get the rule for that version
         ScheduleRule activeRule = scheduleRuleRepository.findByScheduleIdAndVersionIdAndActiveTrue(scheduleId, activeVersion.getId())
                 .orElseThrow(() -> new IllegalStateException("Schedule has no active rule"));
 
-        // Generate dates from rule
+        // generate business days from rule
         List<LocalDate> ruleDates = ruleEngine.generateDates(activeRule, fromDate, toDate);
 
         // Apply overrides
@@ -75,6 +76,7 @@ public class ScheduleMaterializationService {
                     .occursOn(date)
                     .status(ScheduleMaterializedCalendar.OccurrenceStatus.SCHEDULED)
                     .build();
+
             materializedCalendarRepository.save(entry);
         }
 

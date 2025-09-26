@@ -5,6 +5,7 @@ interface StatCount {
 }
 
 const TotalSchedulesStatPanel: FC = () => {
+
   const [count, setCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 

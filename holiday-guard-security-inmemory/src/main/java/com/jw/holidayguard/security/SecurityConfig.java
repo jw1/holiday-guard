@@ -30,42 +30,6 @@ public class SecurityConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//            .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for SPA compatibility with form login
-//            .authorizeHttpRequests(auth -> auth
-//                // Publicly accessible endpoints
-//                .requestMatchers("/", "/index.html", "/vite.svg", "/assets/**").permitAll()
-//                .requestMatchers(HttpMethod.GET, "/login").denyAll() // Do not handle GET requests for /login
-//                .requestMatchers("/actuator/health").permitAll()
-//                .requestMatchers("/api/v1/schedules/*/should-run").permitAll() // This is a public-facing endpoint
-//
-//                // Secure API endpoints
-//                .requestMatchers(HttpMethod.GET, "/api/v1/schedules/**").hasAnyRole("USER", "ADMIN")
-//                .requestMatchers(HttpMethod.POST, "/api/v1/schedules/**").hasRole("ADMIN")
-//                .requestMatchers(HttpMethod.PUT, "/api/v1/schedules/**").hasRole("ADMIN")
-//                .requestMatchers(HttpMethod.GET, "/api/v1/audit-logs").hasAnyRole("USER", "ADMIN")
-//                .requestMatchers("/api/v1/dashboard/**").authenticated()
-//                .requestMatchers("/api/v1/user/principal").authenticated()
-//
-//                // Deny all other API requests by default, but for now authenticate
-//                .anyRequest().authenticated()
-//            )
-//            .formLogin(form -> form
-//                .loginProcessingUrl("/login") // The URL to submit the username and password to
-//                .successHandler((request, response, authentication) -> {
-//                    response.setStatus(200); // Send a 200 OK on successful login
-//                })
-//                .failureHandler((request, response, exception) -> {
-//                    logger.error("Login failed: {}", exception.getMessage());
-//                    response.setStatus(401); // Send a 401 Unauthorized on failed login
-//                })
-//            )
-//            .httpBasic(Customizer.withDefaults());
-//        return http.build();
-//    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         // Custom login filter (POST /login only, no HTML page)
@@ -104,15 +68,18 @@ public class SecurityConfig {
                         // Everything else requires auth
                         .anyRequest().authenticated()
                 )
-                // Kill the default Spring login page
+
+                // kill the default Spring login page
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(Customizer.withDefaults())
-                // Add our JSON/AJAX login filter instead
+
+                // add our JSON/AJAX login filter instead
                 .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
                         .logoutUrl("/api/logout")
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(HttpServletResponse.SC_OK);
+                            logger.info("Received logout request for user {}", authentication.getName());
                         })
                 );
 
