@@ -10,19 +10,18 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ShouldRunQueryRequest {
-    
-    /**
-     * Query date - defaults to today if not provided.
-     * This makes the API more user-friendly for common cases.
-     */
-    private LocalDate queryDate;
-    
+
+    private LocalDate queryDate = LocalDate.now();
     private String clientIdentifier;
+
+    public ShouldRunQueryRequest(String clientIdentifier) {
+        this.clientIdentifier = clientIdentifier;
+    }
     
     /**
      * Gets the query date, defaulting to today if null.
      */
     public LocalDate getQueryDate() {
-        return queryDate != null ? queryDate : LocalDate.now();
+        return null != queryDate ? queryDate : LocalDate.now();
     }
 }

@@ -32,7 +32,6 @@ public class ScheduleQueryService {
     private final ScheduleOverrideRepository overrideRepository;
     private final ScheduleQueryLogRepository queryLogRepository;
     private final RuleEngine ruleEngine;
-
     private final ScheduleRuleRepository scheduleRuleRepository;
 
     public ScheduleQueryService(
@@ -77,7 +76,7 @@ public class ScheduleQueryService {
                         log.getClientIdentifier(),
                         log.getQueriedAt()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public long getTotalSchedulesCount() {
@@ -94,7 +93,7 @@ public class ScheduleQueryService {
 
         return activeSchedules.stream()
                 .map(schedule -> {
-                    ShouldRunQueryResponse response = shouldRunToday(schedule.getId(), request);
+                    var response = shouldRunToday(schedule.getId(), request);
                     return new DailyScheduleStatusDto(
                             schedule.getId(),
                             schedule.getName(),

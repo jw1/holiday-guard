@@ -2,7 +2,6 @@ package com.jw.holidayguard.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -18,6 +17,5 @@ public record ScheduleQueryLogDto(
     String reason,
     boolean overrideApplied,
     String clientIdentifier,
-    Instant createdAt
-) {
+    Instant createdAt) {
 }
