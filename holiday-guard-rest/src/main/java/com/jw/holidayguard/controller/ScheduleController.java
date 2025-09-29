@@ -1,11 +1,10 @@
 package com.jw.holidayguard.controller;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.dto.CreateScheduleRequest;
-import com.jw.holidayguard.dto.ScheduleResponse;
-import com.jw.holidayguard.dto.UpdateScheduleRequest;
+import com.jw.holidayguard.dto.request.CreateScheduleRequest;
+import com.jw.holidayguard.dto.response.ScheduleResponse;
+import com.jw.holidayguard.dto.request.UpdateScheduleRequest;
 import com.jw.holidayguard.exception.DuplicateScheduleException;
-import com.jw.holidayguard.controller.ErrorResponse;
 import com.jw.holidayguard.exception.MissingRuleException;
 import com.jw.holidayguard.exception.ScheduleNotFoundException;
 import com.jw.holidayguard.service.ScheduleService;

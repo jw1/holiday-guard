@@ -1,4 +1,4 @@
-package com.jw.holidayguard.dto;
+package com.jw.holidayguard.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -2,9 +2,9 @@ package com.jw.holidayguard.util;
 
 import com.jw.holidayguard.domain.ScheduleOverride;
 import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.dto.CreateScheduleOverrideRequest;
-import com.jw.holidayguard.dto.CreateScheduleRuleRequest;
-import com.jw.holidayguard.dto.UpdateScheduleRuleRequest;
+import com.jw.holidayguard.dto.request.CreateScheduleOverrideRequest;
+import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
+import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

@@ -2,20 +2,17 @@ package com.jw.holidayguard.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.dto.CreateScheduleRequest;
-import com.jw.holidayguard.dto.UpdateScheduleRequest;
+import com.jw.holidayguard.dto.request.CreateScheduleRequest;
+import com.jw.holidayguard.dto.request.UpdateScheduleRequest;
 import com.jw.holidayguard.exception.DuplicateScheduleException;
 import com.jw.holidayguard.exception.ScheduleNotFoundException;
 import com.jw.holidayguard.service.ScheduleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;

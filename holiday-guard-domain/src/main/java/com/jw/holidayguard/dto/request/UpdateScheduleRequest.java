@@ -1,6 +1,5 @@
-package com.jw.holidayguard.dto;
+package com.jw.holidayguard.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

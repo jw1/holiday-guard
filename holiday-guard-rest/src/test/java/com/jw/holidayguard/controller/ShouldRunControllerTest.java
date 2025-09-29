@@ -3,8 +3,8 @@ package com.jw.holidayguard.controller;
 // TODO: Revisit tests in this file. They are failing due to complex interactions with the MockMvc security context.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jw.holidayguard.dto.ShouldRunQueryRequest;
-import com.jw.holidayguard.dto.ShouldRunQueryResponse;
+import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
+import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
 import com.jw.holidayguard.service.ScheduleQueryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.jw.holidayguard.dto;
+package com.jw.holidayguard.dto.request;
 
 import com.jw.holidayguard.domain.ScheduleOverride;
 import jakarta.validation.constraints.NotBlank;

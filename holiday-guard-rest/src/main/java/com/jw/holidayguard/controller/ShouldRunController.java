@@ -1,7 +1,7 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.dto.ShouldRunQueryRequest;
-import com.jw.holidayguard.dto.ShouldRunQueryResponse;
+import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
+import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
 import com.jw.holidayguard.service.ScheduleQueryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

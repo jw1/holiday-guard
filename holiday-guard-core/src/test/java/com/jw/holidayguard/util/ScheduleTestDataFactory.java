@@ -1,8 +1,8 @@
 package com.jw.holidayguard.util;
 
 import com.jw.holidayguard.domain.*;
-import com.jw.holidayguard.dto.CreateScheduleOverrideRequest;
-import com.jw.holidayguard.dto.CreateScheduleRuleRequest;
+import com.jw.holidayguard.dto.request.CreateScheduleOverrideRequest;
+import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
 
 import java.time.Instant;
 import java.time.LocalDate;

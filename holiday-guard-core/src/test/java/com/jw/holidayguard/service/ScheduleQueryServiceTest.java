@@ -5,8 +5,8 @@ import com.jw.holidayguard.domain.ScheduleQueryLog;
 import com.jw.holidayguard.domain.ScheduleOverride;
 import com.jw.holidayguard.domain.ScheduleRule;
 import com.jw.holidayguard.domain.ScheduleVersion;
-import com.jw.holidayguard.dto.ShouldRunQueryRequest;
-import com.jw.holidayguard.dto.ShouldRunQueryResponse;
+import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
+import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
 import com.jw.holidayguard.repository.ScheduleOverrideRepository;
 import com.jw.holidayguard.repository.ScheduleQueryLogRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

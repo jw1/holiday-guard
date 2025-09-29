@@ -1,4 +1,4 @@
-package com.jw.holidayguard.dto;
+package com.jw.holidayguard.dto.response;
 
 import com.jw.holidayguard.domain.ScheduleOverride;
 import lombok.AllArgsConstructor;

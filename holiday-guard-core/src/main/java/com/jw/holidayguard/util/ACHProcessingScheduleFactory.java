@@ -1,9 +1,9 @@
 package com.jw.holidayguard.util;
 
 import com.jw.holidayguard.domain.*;
-import com.jw.holidayguard.dto.CreateScheduleOverrideRequest;
-import com.jw.holidayguard.dto.CreateScheduleRuleRequest;
-import com.jw.holidayguard.dto.UpdateScheduleRuleRequest;
+import com.jw.holidayguard.dto.request.CreateScheduleOverrideRequest;
+import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
+import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -151,7 +151,7 @@ public class ACHProcessingScheduleFactory {
          * reasons. The overrides are permanent (no expiration) and created by "system".
          *
          * <p>Output integrates directly with Holiday Guard's override system and can be
-         * used in {@link com.jw.holidayguard.dto.UpdateScheduleRuleRequest}.
+         * used in {@link UpdateScheduleRuleRequest}.
          *
          * @param year the year for which to create holiday skip overrides
          * @return a list of CreateScheduleOverrideRequest objects for all federal holidays

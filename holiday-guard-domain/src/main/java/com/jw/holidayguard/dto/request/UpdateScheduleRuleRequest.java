@@ -1,6 +1,5 @@
-package com.jw.holidayguard.dto;
+package com.jw.holidayguard.dto.request;
 
-import com.jw.holidayguard.domain.ScheduleRule;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

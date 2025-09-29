@@ -1,8 +1,8 @@
 package com.jw.holidayguard.controller;
 
 import com.jw.holidayguard.domain.ScheduleVersion;
-import com.jw.holidayguard.dto.UpdateScheduleRuleRequest;
-import com.jw.holidayguard.dto.ScheduleVersionResponse;
+import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
+import com.jw.holidayguard.dto.response.ScheduleVersionResponse;
 import com.jw.holidayguard.service.ScheduleVersionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

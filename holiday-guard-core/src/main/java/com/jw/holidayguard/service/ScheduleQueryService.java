@@ -3,8 +3,8 @@ package com.jw.holidayguard.service;
 import com.jw.holidayguard.domain.*;
 import com.jw.holidayguard.dto.DailyScheduleStatusDto;
 import com.jw.holidayguard.dto.ScheduleQueryLogDto;
-import com.jw.holidayguard.dto.ShouldRunQueryRequest;
-import com.jw.holidayguard.dto.ShouldRunQueryResponse;
+import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
+import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
 import com.jw.holidayguard.repository.ScheduleOverrideRepository;
 import com.jw.holidayguard.repository.ScheduleQueryLogRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
