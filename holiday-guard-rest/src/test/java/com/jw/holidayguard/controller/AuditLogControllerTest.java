@@ -1,12 +1,12 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.dto.ScheduleQueryLogDto;
+import com.jw.holidayguard.dto.QueryLogDto;
 import com.jw.holidayguard.service.ScheduleQueryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
@@ -25,7 +25,7 @@ class AuditLogControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ScheduleQueryService scheduleQueryService;
 
     @Test
@@ -36,8 +36,8 @@ class AuditLogControllerTest {
         UUID versionId = UUID.randomUUID();
         Instant now = Instant.now();
 
-        List<ScheduleQueryLogDto> logs = List.of(
-                new ScheduleQueryLogDto(
+        List<QueryLogDto> logs = List.of(
+                new QueryLogDto(
                         logId,
                         scheduleId,
                         "Test Schedule",

@@ -1,6 +1,6 @@
 package com.jw.holidayguard.dto.request;
 
-import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.Rule;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,10 +11,10 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateScheduleRuleRequest {
+public class CreateRuleRequest {
 
     @NotNull(message = "Rule type is required")
-    private ScheduleRule.RuleType ruleType;
+    private Rule.RuleType ruleType;
 
     private String ruleConfig;
 

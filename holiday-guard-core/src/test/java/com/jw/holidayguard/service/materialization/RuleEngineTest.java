@@ -1,6 +1,6 @@
 package com.jw.holidayguard.service.materialization;
 
-import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.Rule;
 import com.jw.holidayguard.service.materialization.handler.WeekdaysOnlyHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +25,8 @@ class RuleEngineTest {
 
     @Test
     void shouldGenerateDatesForWeekdaysOnlyRule() {
-        ScheduleRule weekdaysRule = ScheduleRule.builder()
-                .ruleType(ScheduleRule.RuleType.WEEKDAYS_ONLY)
+        Rule weekdaysRule = Rule.builder()
+                .ruleType(Rule.RuleType.WEEKDAYS_ONLY)
                 .ruleConfig(null)
                 .build();
 
@@ -49,8 +49,8 @@ class RuleEngineTest {
 
     @Test
     void shouldReturnEmptyListWhenDateRangeIsInvalid() {
-        ScheduleRule rule = ScheduleRule.builder()
-                .ruleType(ScheduleRule.RuleType.WEEKDAYS_ONLY)
+        Rule rule = Rule.builder()
+                .ruleType(Rule.RuleType.WEEKDAYS_ONLY)
                 .build();
 
         LocalDate fromDate = LocalDate.of(2025, 1, 10);
@@ -63,8 +63,8 @@ class RuleEngineTest {
 
     @Test
     void shouldThrowExceptionForUnsupportedRuleType() {
-        ScheduleRule unsupportedRule = ScheduleRule.builder()
-                .ruleType(ScheduleRule.RuleType.CRON_EXPRESSION)  // Not supported yet
+        Rule unsupportedRule = Rule.builder()
+                .ruleType(Rule.RuleType.CRON_EXPRESSION)  // Not supported yet
                 .build();
 
         LocalDate fromDate = LocalDate.of(2025, 1, 1);

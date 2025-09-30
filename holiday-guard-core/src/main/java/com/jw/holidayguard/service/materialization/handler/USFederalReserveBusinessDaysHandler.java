@@ -1,6 +1,6 @@
 package com.jw.holidayguard.service.materialization.handler;
 
-import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.Rule;
 import com.jw.holidayguard.util.ACHProcessingScheduleFactory.USFederalHolidays;
 import org.springframework.stereotype.Component;
 
@@ -16,12 +16,12 @@ import java.util.List;
 public class USFederalReserveBusinessDaysHandler implements RuleHandler {
 
     @Override
-    public ScheduleRule.RuleType getSupportedRuleType() {
-        return ScheduleRule.RuleType.US_FEDERAL_RESERVE_BUSINESS_DAYS;
+    public Rule.RuleType getSupportedRuleType() {
+        return Rule.RuleType.US_FEDERAL_RESERVE_BUSINESS_DAYS;
     }
 
     @Override
-    public List<LocalDate> generateDates(ScheduleRule rule, LocalDate from, LocalDate to) {
+    public List<LocalDate> generateDates(Rule rule, LocalDate from, LocalDate to) {
         return from
                 .datesUntil(to.plusDays(1))
                 .filter(this::isBusinessDay)
@@ -29,7 +29,7 @@ public class USFederalReserveBusinessDaysHandler implements RuleHandler {
     }
 
     @Override
-    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+    public boolean shouldRun(Rule rule, LocalDate date) {
         return isBusinessDay(date);
     }
 

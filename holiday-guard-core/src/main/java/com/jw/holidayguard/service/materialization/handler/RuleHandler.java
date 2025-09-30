@@ -1,6 +1,6 @@
 package com.jw.holidayguard.service.materialization.handler;
 
-import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.Rule;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,7 +19,7 @@ public interface RuleHandler {
      * @param toDate End date (inclusive)
      * @return List of dates when the schedule should run, sorted chronologically
      */
-    List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate);
+    List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate);
 
     /**
      * Checks if a schedule should run on a specific date based on the given rule.
@@ -28,10 +28,10 @@ public interface RuleHandler {
      * @param date The date to check
      * @return True if the schedule should run on the given date, false otherwise
      */
-    boolean shouldRun(ScheduleRule rule, LocalDate date);
+    boolean shouldRun(Rule rule, LocalDate date);
 
     /**
      * Returns the rule type this handler supports.
      */
-    ScheduleRule.RuleType getSupportedRuleType();
+    Rule.RuleType getSupportedRuleType();
 }

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data
+@Builder
 public class CreateScheduleRequest {
 
     @NotBlank(message = "Name is required")
@@ -13,8 +14,10 @@ public class CreateScheduleRequest {
     private String description;
 
     @NotNull(message = "Country is required")
+    @Builder.Default
     private String country = "US";
 
+    @Builder.Default
     private boolean active = true;
     
     private String ruleType;

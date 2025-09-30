@@ -1,7 +1,7 @@
 package com.jw.holidayguard.repository;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.domain.ScheduleVersion;
+import com.jw.holidayguard.domain.Version;
 import com.jw.holidayguard.util.ScheduleTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +16,13 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class ScheduleVersionRepositoryTest {
+class VersionRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
 
     @Autowired
-    private ScheduleVersionRepository scheduleVersionRepository;
+    private VersionRepository versionRepository;
 
     private Schedule testSchedule;
 
@@ -35,14 +35,14 @@ class ScheduleVersionRepositoryTest {
     @Test
     void shouldFindActiveVersionForSchedule() {
         // Given: A schedule with multiple versions, only one active
-        ScheduleVersion inactiveVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
-        ScheduleVersion activeVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), true);
+        Version inactiveVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
+        Version activeVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), true);
         
         entityManager.persistAndFlush(inactiveVersion);
         entityManager.persistAndFlush(activeVersion);
 
         // When: Finding active version
-        Optional<ScheduleVersion> result = scheduleVersionRepository.findByScheduleIdAndActiveTrue(testSchedule.getId());
+        Optional<Version> result = versionRepository.findByScheduleIdAndActiveTrue(testSchedule.getId());
 
         // Then: Should return the active version
         assertThat(result).isPresent();
@@ -53,17 +53,17 @@ class ScheduleVersionRepositoryTest {
     @Test
     void shouldReturnAllVersionsOrderedByCreatedAt() {
         // Given: Multiple versions created at different times
-        ScheduleVersion oldVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
+        Version oldVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
         oldVersion.setCreatedAt(Instant.now().minusSeconds(3600)); // 1 hour ago
         
-        ScheduleVersion newVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), true);
+        Version newVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), true);
         newVersion.setCreatedAt(Instant.now());
         
         entityManager.persistAndFlush(oldVersion);
         entityManager.persistAndFlush(newVersion);
 
         // When: Getting all versions
-        List<ScheduleVersion> versions = scheduleVersionRepository.findByScheduleIdOrderByCreatedAtDesc(testSchedule.getId());
+        List<Version> versions = versionRepository.findByScheduleIdOrderByCreatedAtDesc(testSchedule.getId());
 
         // Then: Should be ordered by created date descending
         assertThat(versions).hasSize(2);
@@ -74,11 +74,11 @@ class ScheduleVersionRepositoryTest {
     @Test
     void shouldCheckIfActiveVersionExists() {
         // Given: A schedule with an active version
-        ScheduleVersion activeVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), true);
+        Version activeVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), true);
         entityManager.persistAndFlush(activeVersion);
 
         // When: Checking if active version exists
-        boolean exists = scheduleVersionRepository.existsByScheduleIdAndActiveTrue(testSchedule.getId());
+        boolean exists = versionRepository.existsByScheduleIdAndActiveTrue(testSchedule.getId());
 
         // Then: Should return true
         assertThat(exists).isTrue();
@@ -87,11 +87,11 @@ class ScheduleVersionRepositoryTest {
     @Test
     void shouldReturnFalseWhenNoActiveVersionExists() {
         // Given: A schedule with only inactive versions
-        ScheduleVersion inactiveVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
+        Version inactiveVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
         entityManager.persistAndFlush(inactiveVersion);
 
         // When: Checking if active version exists
-        boolean exists = scheduleVersionRepository.existsByScheduleIdAndActiveTrue(testSchedule.getId());
+        boolean exists = versionRepository.existsByScheduleIdAndActiveTrue(testSchedule.getId());
 
         // Then: Should return false
         assertThat(exists).isFalse();

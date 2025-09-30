@@ -4,14 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import java.time.YearMonth;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScheduleDailyStatusDto {
-    private UUID id;
-    private String name;
-    private boolean shouldRun;
-    private String reason;
+public class ScheduleMonthDto {
+    private YearMonth yearMonth;
+    private Map<Integer, String> days;
 }

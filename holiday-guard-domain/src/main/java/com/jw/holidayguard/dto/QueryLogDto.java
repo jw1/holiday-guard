@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * DTO for representing a schedule query log entry in the API.
  */
-public record ScheduleQueryLogDto(
+public record QueryLogDto(
     UUID logId,
     UUID scheduleId,
     String scheduleName,

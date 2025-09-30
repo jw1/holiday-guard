@@ -14,12 +14,12 @@ import java.util.UUID;
  * This way, the audit records will have a history of how a "should run" decision was made.
  */
 @Entity
-@Table(name = "schedule_versions")
+@Table(name = "version")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ScheduleVersion {
+public class Version {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,7 +38,7 @@ public class ScheduleVersion {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     @Builder.Default
     private boolean active = false;
 

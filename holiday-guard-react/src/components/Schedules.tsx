@@ -1,6 +1,6 @@
 import {useState, useEffect, useMemo} from 'react';
 import ScheduleModal from '@/components/ScheduleModal';
-import OverridesModal from '@/components/OverridesModal';
+import DeviationsModal from '@/components/DeviationsModal';
 import type {Schedule, ScheduleResponseDto} from '@/types/schedule';
 
 type SortableKey = keyof Schedule;
@@ -9,7 +9,7 @@ const Schedules = () => {
 
     const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isOverridesModalOpen, setIsOverridesModalOpen] = useState(false);
+    const [isDeviationsModalOpen, setIsDeviationsModalOpen] = useState(false);
     const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortColumn, setSortColumn] = useState<SortableKey>('name');
@@ -50,13 +50,13 @@ const Schedules = () => {
         setIsModalOpen(true);
     };
 
-    const handleOverridesClick = (schedule: Schedule) => {
+    const handleDeviationsClick = (schedule: Schedule) => {
         setEditingSchedule(schedule);
-        setIsOverridesModalOpen(true);
+        setIsDeviationsModalOpen(true);
     };
 
-    const handleCloseOverridesModal = () => {
-        setIsOverridesModalOpen(false);
+    const handleCloseDeviationsModal = () => {
+        setIsDeviationsModalOpen(false);
         setEditingSchedule(null);
     };
 
@@ -202,8 +202,8 @@ const Schedules = () => {
                                     <button onClick={() => handleEditSchedule(schedule)}
                                             className="mr-4 text-xs text-indigo-600 hover:text-indigo-900">Edit
                                     </button>
-                                    <button onClick={() => handleOverridesClick(schedule)}
-                                            className="mr-4 text-xs text-indigo-600 hover:text-indigo-900">Overrides
+                                    <button onClick={() => handleDeviationsClick(schedule)}
+                                            className="mr-4 text-xs text-indigo-600 hover:text-indigo-900">Deviations
                                     </button>
                                 </td>
                             </tr>
@@ -220,10 +220,10 @@ const Schedules = () => {
                     onSave={handleSaveSchedule}
                 />
             )}
-            {isOverridesModalOpen && (
-                <OverridesModal
+            {isDeviationsModalOpen && (
+                <DeviationsModal
                     schedule={editingSchedule}
-                    onClose={handleCloseOverridesModal}
+                    onClose={handleCloseDeviationsModal}
                     onSave={() => {
                     }}
                 />

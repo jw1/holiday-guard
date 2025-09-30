@@ -50,8 +50,10 @@ class ScheduleControllerSecurityTest {
 
     @Test
     void createSchedule_withAdminRole_shouldSucceed() throws Exception {
-        var createRequest = new CreateScheduleRequest();
-        createRequest.setName("Test");
+        var createRequest = CreateScheduleRequest.builder()
+                .name("Test")
+                .build();
+
         when(service.createSchedule(createRequest)).thenReturn(Schedule.builder().build());
 
         mockMvc.perform(post("/api/v1/schedules")
@@ -64,8 +66,9 @@ class ScheduleControllerSecurityTest {
 
     @Test
     void createSchedule_withUserRole_shouldFail() throws Exception {
-        var createRequest = new CreateScheduleRequest();
-        createRequest.setName("Test");
+        var createRequest = CreateScheduleRequest.builder()
+                .name("Test")
+                .build();
 
         // Add mock to prevent NPE, even though this should be blocked by security
         when(service.createSchedule(any(CreateScheduleRequest.class))).thenReturn(Schedule.builder().build());
@@ -80,8 +83,9 @@ class ScheduleControllerSecurityTest {
 
     @Test
     void createSchedule_withNoUser_shouldFail() throws Exception {
-        var createRequest = new CreateScheduleRequest();
-        createRequest.setName("Test");
+        var createRequest = CreateScheduleRequest.builder()
+                .name("Test")
+                .build();
 
         mockMvc.perform(post("/api/v1/schedules")
                 .with(csrf()) // CSRF is checked before authentication

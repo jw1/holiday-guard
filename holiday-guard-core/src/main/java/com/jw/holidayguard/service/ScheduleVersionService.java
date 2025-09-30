@@ -1,13 +1,13 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.domain.ScheduleVersion;
-import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
-import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
+import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.domain.Version;
+import com.jw.holidayguard.dto.request.CreateRuleRequest;
+import com.jw.holidayguard.dto.request.UpdateRuleRequest;
 import com.jw.holidayguard.repository.ScheduleRepository;
-import com.jw.holidayguard.repository.ScheduleRuleRepository;
-import com.jw.holidayguard.repository.ScheduleVersionRepository;
+import com.jw.holidayguard.repository.RuleRepository;
+import com.jw.holidayguard.repository.VersionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,42 +20,42 @@ import java.util.UUID;
 public class ScheduleVersionService {
 
     private final ScheduleRepository scheduleRepository;
-    private final ScheduleVersionRepository scheduleVersionRepository;
-    private final ScheduleRuleRepository scheduleRuleRepository;
+    private final VersionRepository versionRepository;
+    private final RuleRepository ruleRepository;
 
     public ScheduleVersionService(
             ScheduleRepository scheduleRepository,
-            ScheduleVersionRepository scheduleVersionRepository,
-            ScheduleRuleRepository scheduleRuleRepository) {
+            VersionRepository versionRepository,
+            RuleRepository ruleRepository) {
         this.scheduleRepository = scheduleRepository;
-        this.scheduleVersionRepository = scheduleVersionRepository;
-        this.scheduleRuleRepository = scheduleRuleRepository;
+        this.versionRepository = versionRepository;
+        this.ruleRepository = ruleRepository;
     }
 
-    public ScheduleVersion updateScheduleRule(UUID scheduleId, UpdateScheduleRuleRequest request) {
+    public Version updateScheduleRule(UUID scheduleId, UpdateRuleRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + scheduleId));
 
         // Deactivate current version
-        Optional<ScheduleVersion> currentVersion = scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId);
+        Optional<Version> currentVersion = versionRepository.findByScheduleIdAndActiveTrue(scheduleId);
         if (currentVersion.isPresent()) {
-            ScheduleVersion current = currentVersion.get();
+            Version current = currentVersion.get();
             current.setActive(false);
-            scheduleVersionRepository.save(current);
+            versionRepository.save(current);
         }
 
         // Create new version
-        ScheduleVersion newVersion = ScheduleVersion.builder()
+        Version newVersion = Version.builder()
                 .scheduleId(scheduleId)
                 .effectiveFrom(request.getEffectiveFrom() != null ? request.getEffectiveFrom() : Instant.now())
                 .active(true)
                 .build();
 
-        newVersion = scheduleVersionRepository.save(newVersion);
+        newVersion = versionRepository.save(newVersion);
 
         // Create rule for new version
-        CreateScheduleRuleRequest ruleRequest = request.getRule();
-        ScheduleRule rule = ScheduleRule.builder()
+        CreateRuleRequest ruleRequest = request.getRule();
+        Rule rule = Rule.builder()
                 .scheduleId(scheduleId)
                 .versionId(newVersion.getId())
                 .ruleType(ruleRequest.getRuleType())
@@ -64,7 +64,7 @@ public class ScheduleVersionService {
                 .active(ruleRequest.isActive())
                 .build();
 
-        scheduleRuleRepository.save(rule);
+        ruleRepository.save(rule);
 
         return newVersion;
     }

@@ -1,32 +1,32 @@
 import {FC, useState, useEffect} from 'react';
 import {Schedule} from '@/types/schedule';
-import ScheduleOverridesCalendar from './ScheduleOverridesCalendar';
+import DeviationCalendar from './DeviationCalendar';
 
-interface OverridesModalProps {
+interface DeviationsModalProps {
     schedule: Schedule | null;
     onClose: () => void;
-    onSave: (overrides: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => void;
+    onSave: (deviations: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => void;
 }
 
-const OverridesModal: FC<OverridesModalProps> = ({schedule, onClose, onSave}) => {
+const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) => {
 
-    const [overrides, setOverrides] = useState<{ [date: string]: 'FORCE_RUN' | 'SKIP' }>({});
+    const [deviations, setDeviations] = useState<{ [date: string]: 'FORCE_RUN' | 'SKIP' }>({});
     const [baseCalendar, setBaseCalendar] = useState<{ [date: string]: 'run' | 'no-run' }>({});
 
     useEffect(() => {
         if (schedule) {
 
-            // Fetch overrides for the schedule
-            fetch(`/api/v1/schedules/${schedule.id}/overrides`)
+            // Fetch deviations for the schedule
+            fetch(`/api/v1/schedules/${schedule.id}/deviations`)
                 .then(res => res.json())
                 .then(data => {
-                    const formattedOverrides = data.reduce((acc: any, override: any) => {
-                        acc[override.date] = override.type;
+                    const formattedDeviations = data.reduce((acc: any, deviation: any) => {
+                        acc[deviation.date] = deviation.type;
                         return acc;
                     }, {});
-                    setOverrides(formattedOverrides);
+                    setDeviations(formattedDeviations);
                 })
-                .catch(error => console.error('Error fetching overrides:', error));
+                .catch(error => console.error('Error fetching deviations:', error));
 
             // Fetch base calendar data
             const yearMonth = new Date().toISOString().slice(0, 7); // Use current month for now
@@ -46,8 +46,8 @@ const OverridesModal: FC<OverridesModalProps> = ({schedule, onClose, onSave}) =>
 
     if (!schedule) return null;
 
-    const handleOverridesChange = (newOverrides: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => {
-        setOverrides(newOverrides);
+    const handleDeviationsChange = (newDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => {
+        setDeviations(newDeviations);
     };
 
     const handleSave = () => {
@@ -61,7 +61,7 @@ const OverridesModal: FC<OverridesModalProps> = ({schedule, onClose, onSave}) =>
                         active: true,
                     },
                 ],
-                overrides: Object.entries(overrides).map(([date, type]) => ({
+                deviations: Object.entries(deviations).map(([date, type]) => ({
                     overrideDate: date,
                     action: type.toUpperCase(),
                     reason: 'User override',
@@ -79,11 +79,11 @@ const OverridesModal: FC<OverridesModalProps> = ({schedule, onClose, onSave}) =>
                     if (!res.ok) {
                         throw new Error('Save failed');
                     }
-                    onSave(overrides);
+                    onSave(deviations);
                 })
                 .catch(error => {
-                    console.error('Error saving overrides:', error);
-                    window.alert('Failed to save overrides. Please try again.');
+                    console.error('Error saving deviations:', error);
+                    window.alert('Failed to save deviations. Please try again.');
                 });
         }
     };
@@ -91,12 +91,12 @@ const OverridesModal: FC<OverridesModalProps> = ({schedule, onClose, onSave}) =>
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="w-full max-w-4xl p-8 bg-white rounded-lg shadow-xl">
-                <h2 className="mb-4 text-2xl font-bold">Manage Overrides for {schedule.name}</h2>
+                <h2 className="mb-4 text-2xl font-bold">Manage Deviations for {schedule.name}</h2>
 
-                <ScheduleOverridesCalendar
+                <DeviationCalendar
                     baseCalendar={baseCalendar}
-                    initialOverrides={overrides}
-                    onOverridesChange={handleOverridesChange}
+                    initialDeviations={deviations}
+                    onDeviationsChange={handleDeviationsChange}
                 />
 
                 <div className="flex justify-end mt-6">
@@ -116,4 +116,4 @@ const OverridesModal: FC<OverridesModalProps> = ({schedule, onClose, onSave}) =>
     );
 };
 
-export default OverridesModal;
+export default DeviationsModal;

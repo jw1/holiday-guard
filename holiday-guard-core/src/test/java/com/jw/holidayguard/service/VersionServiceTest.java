@@ -1,13 +1,13 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.domain.ScheduleVersion;
-import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
-import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
+import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.domain.Version;
+import com.jw.holidayguard.dto.request.CreateRuleRequest;
+import com.jw.holidayguard.dto.request.UpdateRuleRequest;
 import com.jw.holidayguard.repository.ScheduleRepository;
-import com.jw.holidayguard.repository.ScheduleRuleRepository;
-import com.jw.holidayguard.repository.ScheduleVersionRepository;
+import com.jw.holidayguard.repository.RuleRepository;
+import com.jw.holidayguard.repository.VersionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -24,16 +24,16 @@ import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class ScheduleVersionServiceTest {
+class VersionServiceTest {
 
     @Mock
     private ScheduleRepository scheduleRepository;
 
     @Mock
-    private ScheduleVersionRepository scheduleVersionRepository;
+    private VersionRepository versionRepository;
 
     @Mock
-    private ScheduleRuleRepository scheduleRuleRepository;
+    private RuleRepository ruleRepository;
 
     private ScheduleVersionService scheduleVersionService;
 
@@ -45,8 +45,8 @@ class ScheduleVersionServiceTest {
         MockitoAnnotations.openMocks(this);
         scheduleVersionService = new ScheduleVersionService(
                 scheduleRepository,
-                scheduleVersionRepository,
-                scheduleRuleRepository
+                versionRepository,
+                ruleRepository
         );
 
         scheduleId = UUID.randomUUID();
@@ -62,18 +62,18 @@ class ScheduleVersionServiceTest {
     @Test
     void shouldCreateNewVersionWhenUpdatingScheduleRule() {
         // given
-        ScheduleVersion currentVersion = ScheduleVersion.builder()
+        Version currentVersion = Version.builder()
                 .id(UUID.randomUUID())
                 .scheduleId(scheduleId)
                 .effectiveFrom(Instant.now().minusSeconds(3600))
                 .active(true)
                 .build();
 
-        UpdateScheduleRuleRequest request = new UpdateScheduleRuleRequest();
+        UpdateRuleRequest request = new UpdateRuleRequest();
         request.setEffectiveFrom(Instant.now());
         request.setRule(
-                new CreateScheduleRuleRequest(
-                        ScheduleRule.RuleType.WEEKDAYS_ONLY,
+                new CreateRuleRequest(
+                        Rule.RuleType.WEEKDAYS_ONLY,
                         null,
                         LocalDate.now(),
                         true
@@ -81,11 +81,11 @@ class ScheduleVersionServiceTest {
         );
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
-        when(scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId))
+        when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
                 .thenReturn(Optional.of(currentVersion));
-        when(scheduleVersionRepository.save(any(ScheduleVersion.class)))
+        when(versionRepository.save(any(Version.class)))
                 .thenAnswer(invocation -> {
-                    ScheduleVersion version = invocation.getArgument(0);
+                    Version version = invocation.getArgument(0);
                     if (version.getId() == null) {
                         version.setId(UUID.randomUUID());
                     }
@@ -93,16 +93,16 @@ class ScheduleVersionServiceTest {
                 });
 
         // when
-        ScheduleVersion newVersion = scheduleVersionService.updateScheduleRule(scheduleId, request);
+        Version newVersion = scheduleVersionService.updateScheduleRule(scheduleId, request);
 
         // then
         assertNotNull(newVersion);
-        verify(scheduleVersionRepository).save(argThat(version ->
+        verify(versionRepository).save(argThat(version ->
                 version.getScheduleId().equals(scheduleId) && version.isActive()
         ));
-        verify(scheduleVersionRepository).save(argThat(version ->
+        verify(versionRepository).save(argThat(version ->
                 version.getId().equals(currentVersion.getId()) && !version.isActive()
         ));
-        verify(scheduleRuleRepository).save(any(ScheduleRule.class));
+        verify(ruleRepository).save(any(Rule.class));
     }
 }

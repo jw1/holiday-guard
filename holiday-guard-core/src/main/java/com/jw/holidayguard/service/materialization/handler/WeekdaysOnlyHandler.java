@@ -1,6 +1,6 @@
 package com.jw.holidayguard.service.materialization.handler;
 
-import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.Rule;
 import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
@@ -17,7 +17,7 @@ import java.util.List;
 public class WeekdaysOnlyHandler implements RuleHandler {
 
     @Override
-    public List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate) {
+    public List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate) {
         // Handle invalid date range
         if (fromDate.isAfter(toDate)) {
             return Collections.emptyList();
@@ -38,13 +38,13 @@ public class WeekdaysOnlyHandler implements RuleHandler {
     }
 
     @Override
-    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+    public boolean shouldRun(Rule rule, LocalDate date) {
         DayOfWeek day = date.getDayOfWeek();
         return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY;
     }
 
     @Override
-    public ScheduleRule.RuleType getSupportedRuleType() {
-        return ScheduleRule.RuleType.WEEKDAYS_ONLY;
+    public Rule.RuleType getSupportedRuleType() {
+        return Rule.RuleType.WEEKDAYS_ONLY;
     }
 }

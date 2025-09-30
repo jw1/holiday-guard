@@ -1,18 +1,18 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.domain.ScheduleVersion;
+import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.domain.Version;
 import com.jw.holidayguard.dto.request.CreateScheduleRequest;
 import com.jw.holidayguard.dto.request.UpdateScheduleRequest;
 import com.jw.holidayguard.exception.DuplicateScheduleException;
 import com.jw.holidayguard.exception.ScheduleNotFoundException;
 import com.jw.holidayguard.repository.ScheduleRepository;
-import com.jw.holidayguard.repository.ScheduleRuleRepository;
-import com.jw.holidayguard.repository.ScheduleVersionRepository;
-import com.jw.holidayguard.dto.ScheduleCalendarDto;
-import com.jw.holidayguard.dto.ScheduleOverrideDto;
-import com.jw.holidayguard.repository.ScheduleOverrideRepository;
+import com.jw.holidayguard.repository.RuleRepository;
+import com.jw.holidayguard.repository.VersionRepository;
+import com.jw.holidayguard.dto.ScheduleMonthDto;
+import com.jw.holidayguard.dto.DeviationDto;
+import com.jw.holidayguard.repository.DeviationRepository;
 import com.jw.holidayguard.service.materialization.RuleEngine;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,13 +31,13 @@ import java.util.stream.Collectors;
 public class ScheduleService {
 
     private final ScheduleRepository repository;
-    private final ScheduleRuleRepository ruleRepository;
-    private final ScheduleVersionRepository versionRepository;
-    private final ScheduleOverrideRepository overrideRepository;
+    private final RuleRepository ruleRepository;
+    private final VersionRepository versionRepository;
+    private final DeviationRepository overrideRepository;
     private final RuleEngine ruleEngine;
     private final CurrentUserService currentUserService;
 
-    public ScheduleService(ScheduleRepository repository, ScheduleRuleRepository ruleRepository, ScheduleVersionRepository versionRepository, ScheduleOverrideRepository overrideRepository, RuleEngine ruleEngine, CurrentUserService currentUserService) {
+    public ScheduleService(ScheduleRepository repository, RuleRepository ruleRepository, VersionRepository versionRepository, DeviationRepository overrideRepository, RuleEngine ruleEngine, CurrentUserService currentUserService) {
         this.repository = repository;
         this.ruleRepository = ruleRepository;
         this.versionRepository = versionRepository;
@@ -65,17 +65,17 @@ public class ScheduleService {
 
         Schedule savedSchedule = repository.save(schedule);
 
-        ScheduleVersion version = ScheduleVersion.builder()
+        Version version = Version.builder()
                 .scheduleId(savedSchedule.getId())
                 .active(true)
                 .build();
 
-        ScheduleVersion savedVersion = versionRepository.save(version);
+        Version savedVersion = versionRepository.save(version);
 
-        ScheduleRule rule = ScheduleRule.builder()
+        Rule rule = Rule.builder()
                 .scheduleId(savedSchedule.getId())
                 .versionId(savedVersion.getId())
-                .ruleType(ScheduleRule.RuleType.valueOf(request.getRuleType()))
+                .ruleType(Rule.RuleType.valueOf(request.getRuleType()))
                 .ruleConfig(request.getRuleConfig())
                 .build();
 
@@ -107,6 +107,7 @@ public class ScheduleService {
     }
 
     public Schedule updateSchedule(UUID id, UpdateScheduleRequest updateData) {
+
         // Find existing schedule (throws exception if not found)
         Schedule existing = findScheduleById(id);
 
@@ -129,41 +130,51 @@ public class ScheduleService {
         }
 
         if (updateData.getActive() != null) {
-            if (updateData.getActive()) {
-                existing.setActive(true);
-
-            } else {
-                existing.setActive(false);
-
-            }
+            existing.setActive(updateData.getActive());
         }
 
         if (updateData.getRuleType() != null) {
-            Optional<ScheduleRule> latestRuleOpt = findLatestRuleForSchedule(id);
-            boolean ruleChanged = latestRuleOpt
-                    .map(latestRule ->
-                            !latestRule.getRuleType().name().equals(updateData.getRuleType()) ||
-                                    !latestRule.getRuleConfig().equals(updateData.getRuleConfig()))
-                    .orElse(true); // If no rule exists, it has changed
+
+            Optional<Rule> latestRuleOpt = findLatestRuleForSchedule(id);
+
+            boolean ruleChanged;
+            if (latestRuleOpt.isEmpty()) {
+                // CASE 1: No previous rule. Any new rule is a change.
+                ruleChanged = true;
+            } else {
+                // CASE 2: A rule exists. Compare its properties to the new ones.
+                Rule latestRule = latestRuleOpt.get();
+                Rule.RuleType newRuleType = Rule.RuleType.valueOf(updateData.getRuleType());
+
+                // Use Objects.equals for null-safe comparison
+                boolean ruleTypeChanged = !java.util.Objects.equals(latestRule.getRuleType(), newRuleType);
+                boolean ruleConfigChanged = !java.util.Objects.equals(latestRule.getRuleConfig(), updateData.getRuleConfig());
+
+                ruleChanged = ruleTypeChanged || ruleConfigChanged;
+            }
 
             if (ruleChanged) {
-                // Deactivate old version
-                versionRepository.findByScheduleIdAndActiveTrue(id).ifPresent(v -> v.setActive(false));
 
-                // Create new version
-                ScheduleVersion version = ScheduleVersion.builder()
+                // Deactivate old version
+                versionRepository
+                        .findByScheduleIdAndActiveTrue(id)
+                        .ifPresent(v -> v.setActive(false));
+
+                // create & save new version
+                Version version = Version.builder()
                         .scheduleId(id)
                         .active(true)
                         .build();
-                ScheduleVersion savedVersion = versionRepository.save(version);
+                Version savedVersion = versionRepository.save(version);
 
-                // Create new rule
-                ScheduleRule rule = ScheduleRule.builder()
+                // create & save new rule (on this new version)
+                Rule rule = Rule.builder()
                         .scheduleId(id)
                         .versionId(savedVersion.getId())
-                        .ruleType(ScheduleRule.RuleType.valueOf(updateData.getRuleType()))
+                        .ruleType(Rule.RuleType.valueOf(updateData.getRuleType()))
                         .ruleConfig(updateData.getRuleConfig())
                         .build();
+
                 ruleRepository.save(rule);
             }
         }
@@ -176,14 +187,14 @@ public class ScheduleService {
 
 
     @Transactional(readOnly = true)
-    public Optional<ScheduleRule> findLatestRuleForSchedule(UUID scheduleId) {
+    public Optional<Rule> findLatestRuleForSchedule(UUID scheduleId) {
         return ruleRepository.findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(scheduleId);
     }
 
     @Transactional(readOnly = true)
-    public ScheduleCalendarDto getScheduleCalendar(UUID scheduleId, YearMonth yearMonth) {
+    public ScheduleMonthDto getScheduleCalendar(UUID scheduleId, YearMonth yearMonth) {
         Schedule schedule = findScheduleById(scheduleId);
-        ScheduleRule rule = findLatestRuleForSchedule(scheduleId)
+        Rule rule = findLatestRuleForSchedule(scheduleId)
                 .orElseThrow(() -> new IllegalStateException("Schedule has no rules"));
 
         LocalDate fromDate = yearMonth.atDay(1);
@@ -200,13 +211,13 @@ public class ScheduleService {
             }
         }
 
-        return new ScheduleCalendarDto(yearMonth, days);
+        return new ScheduleMonthDto(yearMonth, days);
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleOverrideDto> getScheduleOverrides(UUID scheduleId) {
+    public List<DeviationDto> getScheduleOverrides(UUID scheduleId) {
         return overrideRepository.findByScheduleId(scheduleId).stream()
-                .map(override -> new ScheduleOverrideDto(override.getOverrideDate(), override.getAction().name()))
+                .map(override -> new DeviationDto(override.getOverrideDate(), override.getAction().name()))
                 .collect(Collectors.toList());
     }
 }

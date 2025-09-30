@@ -11,13 +11,13 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScheduleVersionResponse {
+public class VersionResponse {
     
     private UUID id;
     private UUID scheduleId;
     private Instant effectiveFrom;
     private Instant createdAt;
     private boolean active;
-    private List<ScheduleRuleResponse> rules;
-    private List<ScheduleOverrideResponse> overrides;
+    private List<RuleResponse> rules;
+    private List<DeviationResponse> overrides;
 }

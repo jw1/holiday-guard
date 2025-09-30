@@ -16,12 +16,12 @@ import java.util.UUID;
  * These records are never deleted.
  */
 @Entity
-@Table(name = "schedule_query_log")
+@Table(name = "query_log")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ScheduleQueryLog {
+public class QueryLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -39,7 +39,7 @@ public class ScheduleQueryLog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "version_id", insertable = false, updatable = false)
-    private ScheduleVersion version;
+    private Version version;
 
     @Column(name = "query_date", nullable = false)
     private LocalDate queryDate;
@@ -50,9 +50,9 @@ public class ScheduleQueryLog {
     @Column(name = "reason", nullable = false)
     private String reason;
 
-    @Column(name = "override_applied", nullable = false)
+    @Column(name = "deviation_applied", nullable = false)
     @Builder.Default
-    private boolean overrideApplied = false;
+    private boolean deviationApplied = false;
 
     @Column(name = "queried_at", nullable = false)
     private Instant queriedAt;

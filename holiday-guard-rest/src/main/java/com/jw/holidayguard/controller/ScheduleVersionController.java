@@ -1,8 +1,8 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.domain.ScheduleVersion;
-import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
-import com.jw.holidayguard.dto.response.ScheduleVersionResponse;
+import com.jw.holidayguard.domain.Version;
+import com.jw.holidayguard.dto.request.UpdateRuleRequest;
+import com.jw.holidayguard.dto.response.VersionResponse;
 import com.jw.holidayguard.service.ScheduleVersionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -24,13 +24,13 @@ public class ScheduleVersionController {
     }
 
     @PostMapping("/{scheduleId}/versions")
-    public ResponseEntity<ScheduleVersionResponse> updateScheduleRule(
+    public ResponseEntity<VersionResponse> updateScheduleRule(
             @PathVariable UUID scheduleId,
-            @Valid @RequestBody UpdateScheduleRuleRequest request) {
+            @Valid @RequestBody UpdateRuleRequest request) {
 
-        ScheduleVersion newVersion = scheduleVersionService.updateScheduleRule(scheduleId, request);
+        Version newVersion = scheduleVersionService.updateScheduleRule(scheduleId, request);
 
-        ScheduleVersionResponse response = new ScheduleVersionResponse(
+        VersionResponse response = new VersionResponse(
                 newVersion.getId(),
                 newVersion.getScheduleId(),
                 newVersion.getEffectiveFrom(),

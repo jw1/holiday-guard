@@ -12,7 +12,7 @@ interface ShouldRunResponse {
     queryDate: string;
     shouldRun: boolean;
     reason: string;
-    overrideApplied: boolean;
+    deviationApplied: boolean;
     versionId: string;
 }
 

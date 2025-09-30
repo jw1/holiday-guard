@@ -1,6 +1,5 @@
 package com.jw.holidayguard.dto.response;
 
-import com.jw.holidayguard.domain.ScheduleRule;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,14 +11,15 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScheduleRuleResponse {
-
+public class QueryLogResponse {
+    
     private UUID id;
     private UUID scheduleId;
     private UUID versionId;
-    private ScheduleRule.RuleType ruleType;
-    private String ruleConfig;
-    private LocalDate effectiveFrom;
-    private Instant createdAt;
-    private boolean active;
+    private LocalDate queryDate;
+    private boolean shouldRunResult;
+    private String reason;
+    private boolean overrideApplied;
+    private Instant queriedAt;
+    private String clientIdentifier;
 }

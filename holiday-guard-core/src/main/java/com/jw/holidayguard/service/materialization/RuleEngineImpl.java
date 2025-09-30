@@ -1,6 +1,6 @@
 package com.jw.holidayguard.service.materialization;
 
-import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.Rule;
 import com.jw.holidayguard.service.materialization.handler.RuleHandler;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Service
 public class RuleEngineImpl implements RuleEngine {
 
-    private final Map<ScheduleRule.RuleType, RuleHandler> handlers;
+    private final Map<Rule.RuleType, RuleHandler> handlers;
 
     public RuleEngineImpl(List<RuleHandler> ruleHandlers) {
         this.handlers = ruleHandlers.stream()
@@ -29,7 +29,7 @@ public class RuleEngineImpl implements RuleEngine {
     }
 
     @Override
-    public List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate) {
+    public List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate) {
 
         // empty list if not valid range
         if (fromDate.isAfter(toDate)) return List.of();
@@ -43,7 +43,7 @@ public class RuleEngineImpl implements RuleEngine {
     }
 
     @Override
-    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+    public boolean shouldRun(Rule rule, LocalDate date) {
         RuleHandler handler = handlers.get(rule.getRuleType());
         if (handler == null) {
             throw new UnsupportedOperationException("No handler found for rule type: " + rule.getRuleType());

@@ -1,8 +1,8 @@
 package com.jw.holidayguard.util;
 
 import com.jw.holidayguard.domain.*;
-import com.jw.holidayguard.dto.request.CreateScheduleOverrideRequest;
-import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
+import com.jw.holidayguard.dto.request.CreateDeviationRequest;
+import com.jw.holidayguard.dto.request.CreateRuleRequest;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -87,9 +87,9 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a simple weekdays-only rule (Monday-Friday).
      */
-    public static CreateScheduleRuleRequest createWeekdaysOnlyRule() {
-        return new CreateScheduleRuleRequest(
-                ScheduleRule.RuleType.WEEKDAYS_ONLY,
+    public static CreateRuleRequest createWeekdaysOnlyRule() {
+        return new CreateRuleRequest(
+                Rule.RuleType.WEEKDAYS_ONLY,
                 null, // No config needed for weekdays-only
                 LocalDate.now(),
                 true
@@ -100,9 +100,9 @@ public class ScheduleTestDataFactory {
      * Creates a cron rule for specific time and days.
      * Example: Every weekday at 9 AM.
      */
-    public static CreateScheduleRuleRequest createCronRule(String cronExpression) {
-        return new CreateScheduleRuleRequest(
-                ScheduleRule.RuleType.CRON_EXPRESSION,
+    public static CreateRuleRequest createCronRule(String cronExpression) {
+        return new CreateRuleRequest(
+                Rule.RuleType.CRON_EXPRESSION,
                 cronExpression, // e.g., "0 0 9 * * MON-FRI"
                 LocalDate.now(),
                 true
@@ -112,9 +112,9 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a bi-weekly rule (every other Friday starting from a base date).
      */
-    public static CreateScheduleRuleRequest createBiWeeklyRule(LocalDate startDate) {
-        return new CreateScheduleRuleRequest(
-                ScheduleRule.RuleType.CRON_EXPRESSION,
+    public static CreateRuleRequest createBiWeeklyRule(LocalDate startDate) {
+        return new CreateRuleRequest(
+                Rule.RuleType.CRON_EXPRESSION,
                 "0 0 9 ? * FRI", // Every Friday at 9 AM - logic would handle bi-weekly in service
                 startDate,
                 true
@@ -128,10 +128,10 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a holiday skip override.
      */
-    public static CreateScheduleOverrideRequest createHolidaySkipOverride(LocalDate holidayDate, String holidayName) {
-        return new CreateScheduleOverrideRequest(
+    public static CreateDeviationRequest createHolidaySkipOverride(LocalDate holidayDate, String holidayName) {
+        return new CreateDeviationRequest(
                 holidayDate,
-                ScheduleOverride.OverrideAction.SKIP,
+                Deviation.Action.SKIP,
                 "Holiday skip: " + holidayName,
                 "system",
                 null // No expiration - permanent holiday
@@ -141,10 +141,10 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a temporary skip override (with expiration).
      */
-    public static CreateScheduleOverrideRequest createTemporarySkipOverride(LocalDate skipDate, String reason, LocalDate expiresAt) {
-        return new CreateScheduleOverrideRequest(
+    public static CreateDeviationRequest createTemporarySkipOverride(LocalDate skipDate, String reason, LocalDate expiresAt) {
+        return new CreateDeviationRequest(
                 skipDate,
-                ScheduleOverride.OverrideAction.SKIP,
+                Deviation.Action.SKIP,
                 "Temporary skip: " + reason,
                 "admin",
                 expiresAt
@@ -154,10 +154,10 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a force-run override for emergency processing.
      */
-    public static CreateScheduleOverrideRequest createEmergencyRunOverride(LocalDate runDate, String reason) {
-        return new CreateScheduleOverrideRequest(
+    public static CreateDeviationRequest createEmergencyRunOverride(LocalDate runDate, String reason) {
+        return new CreateDeviationRequest(
                 runDate,
-                ScheduleOverride.OverrideAction.FORCE_RUN,
+                Deviation.Action.FORCE_RUN,
                 "Emergency run: " + reason,
                 "admin",
                 null
@@ -199,8 +199,8 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a ScheduleVersion entity for testing.
      */
-    public static ScheduleVersion createScheduleVersion(UUID scheduleId, boolean active) {
-        return ScheduleVersion.builder()
+    public static Version createScheduleVersion(UUID scheduleId, boolean active) {
+        return Version.builder()
                 .scheduleId(scheduleId)
                 .effectiveFrom(Instant.now())
                 .active(active)
@@ -211,14 +211,14 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a ScheduleQueryLog entry for testing.
      */
-    public static ScheduleQueryLog createQueryLog(UUID scheduleId, UUID versionId, LocalDate queryDate, boolean result, String reason) {
-        return ScheduleQueryLog.builder()
+    public static QueryLog createQueryLog(UUID scheduleId, UUID versionId, LocalDate queryDate, boolean result, String reason) {
+        return QueryLog.builder()
                 .scheduleId(scheduleId)
                 .versionId(versionId)
                 .queryDate(queryDate)
                 .shouldRunResult(result)
                 .reason(reason)
-                .overrideApplied(false)
+                .deviationApplied(false)
                 .clientIdentifier("test-client")
                 .build();
     }

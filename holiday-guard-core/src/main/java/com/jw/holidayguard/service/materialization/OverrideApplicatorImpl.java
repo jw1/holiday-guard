@@ -1,7 +1,7 @@
 package com.jw.holidayguard.service.materialization;
 
-import com.jw.holidayguard.domain.ScheduleOverride;
-import com.jw.holidayguard.repository.ScheduleOverrideRepository;
+import com.jw.holidayguard.domain.Deviation;
+import com.jw.holidayguard.repository.DeviationRepository;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -18,16 +18,16 @@ import java.util.UUID;
 @Component
 public class OverrideApplicatorImpl implements OverrideApplicator {
 
-    private final ScheduleOverrideRepository scheduleOverrideRepository;
+    private final DeviationRepository deviationRepository;
 
-    public OverrideApplicatorImpl(ScheduleOverrideRepository scheduleOverrideRepository) {
-        this.scheduleOverrideRepository = scheduleOverrideRepository;
+    public OverrideApplicatorImpl(DeviationRepository deviationRepository) {
+        this.deviationRepository = deviationRepository;
     }
 
     @Override
     public List<LocalDate> applyOverrides(UUID scheduleId, UUID versionId, List<LocalDate> ruleDates, LocalDate fromDate, LocalDate toDate) {
         // Get all active overrides in the date range
-        List<ScheduleOverride> activeOverrides = scheduleOverrideRepository.findByScheduleId(scheduleId)
+        List<Deviation> activeOverrides = deviationRepository.findByScheduleId(scheduleId)
             .stream()
             .filter(o -> o.getVersionId().equals(versionId) && !o.getOverrideDate().isBefore(fromDate) && !o.getOverrideDate().isAfter(toDate))
             .toList();
@@ -40,7 +40,7 @@ public class OverrideApplicatorImpl implements OverrideApplicator {
         Set<LocalDate> finalDates = new LinkedHashSet<>(ruleDates);
         
         // Apply each override
-        for (ScheduleOverride override : activeOverrides) {
+        for (Deviation override : activeOverrides) {
             LocalDate overrideDate = override.getOverrideDate();
             
             switch (override.getAction()) {

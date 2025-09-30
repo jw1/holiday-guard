@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScheduleOverrideDto {
+public class DeviationDto {
     private LocalDate date;
     private String type;
 }

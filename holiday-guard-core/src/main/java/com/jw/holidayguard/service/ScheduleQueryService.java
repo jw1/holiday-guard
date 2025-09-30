@@ -2,14 +2,14 @@ package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.*;
 import com.jw.holidayguard.dto.DailyScheduleStatusDto;
-import com.jw.holidayguard.dto.ScheduleQueryLogDto;
+import com.jw.holidayguard.dto.QueryLogDto;
 import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
-import com.jw.holidayguard.repository.ScheduleOverrideRepository;
-import com.jw.holidayguard.repository.ScheduleQueryLogRepository;
+import com.jw.holidayguard.repository.DeviationRepository;
+import com.jw.holidayguard.repository.QueryLogRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
-import com.jw.holidayguard.repository.ScheduleVersionRepository;
-import com.jw.holidayguard.repository.ScheduleRuleRepository;
+import com.jw.holidayguard.repository.VersionRepository;
+import com.jw.holidayguard.repository.RuleRepository;
 import com.jw.holidayguard.service.materialization.RuleEngine;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -27,34 +27,34 @@ import java.util.stream.Collectors;
 public class ScheduleQueryService {
 
     private final ScheduleRepository scheduleRepository;
-    private final ScheduleVersionRepository scheduleVersionRepository;
-    private final ScheduleOverrideRepository overrideRepository;
-    private final ScheduleQueryLogRepository queryLogRepository;
+    private final VersionRepository versionRepository;
+    private final DeviationRepository overrideRepository;
+    private final QueryLogRepository queryLogRepository;
     private final RuleEngine ruleEngine;
-    private final ScheduleRuleRepository scheduleRuleRepository;
+    private final RuleRepository ruleRepository;
 
     public ScheduleQueryService(
             ScheduleRepository scheduleRepository,
-            ScheduleVersionRepository scheduleVersionRepository,
-            ScheduleOverrideRepository overrideRepository,
-            ScheduleQueryLogRepository queryLogRepository,
+            VersionRepository versionRepository,
+            DeviationRepository overrideRepository,
+            QueryLogRepository queryLogRepository,
             RuleEngine ruleEngine,
-            ScheduleRuleRepository scheduleRuleRepository) {
+            RuleRepository ruleRepository) {
         this.scheduleRepository = scheduleRepository;
-        this.scheduleVersionRepository = scheduleVersionRepository;
+        this.versionRepository = versionRepository;
         this.overrideRepository = overrideRepository;
         this.queryLogRepository = queryLogRepository;
         this.ruleEngine = ruleEngine;
-        this.scheduleRuleRepository = scheduleRuleRepository;
+        this.ruleRepository = ruleRepository;
     }
 
-    public List<ScheduleQueryLogDto> findAllLogs() {
+    public List<QueryLogDto> findAllLogs() {
         // 1. Fetch all logs, sorted by newest first
-        List<ScheduleQueryLog> logs = queryLogRepository.findAll(Sort.by(Sort.Direction.DESC, "queriedAt"));
+        List<QueryLog> logs = queryLogRepository.findAll(Sort.by(Sort.Direction.DESC, "queriedAt"));
 
         // 2. Get unique schedule IDs
         var scheduleIds = logs.stream()
-                .map(ScheduleQueryLog::getScheduleId)
+                .map(QueryLog::getScheduleId)
                 .collect(Collectors.toSet());
 
         // 3. Fetch all schedules in a single batch query
@@ -63,7 +63,7 @@ public class ScheduleQueryService {
 
         // 4. Map to DTOs
         return logs.stream()
-                .map(log -> new ScheduleQueryLogDto(
+                .map(log -> new QueryLogDto(
                         log.getId(),
                         log.getScheduleId(),
                         scheduleNames.getOrDefault(log.getScheduleId(), "Unknown"),
@@ -71,7 +71,7 @@ public class ScheduleQueryService {
                         log.getQueryDate(),
                         log.isShouldRunResult(),
                         log.getReason(),
-                        log.isOverrideApplied(),
+                        log.isDeviationApplied(),
                         log.getClientIdentifier(),
                         log.getQueriedAt()
                 ))
@@ -126,11 +126,11 @@ public class ScheduleQueryService {
         }
         
         // Get active version
-        ScheduleVersion activeVersion = scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId)
+        Version activeVersion = versionRepository.findByScheduleIdAndActiveTrue(scheduleId)
             .orElseThrow(() -> new IllegalStateException("No active version found for schedule: " + scheduleId));
         
         // Check for overrides first (they take precedence)
-        Optional<ScheduleOverride> override = overrideRepository.findByScheduleId(scheduleId)
+        Optional<Deviation> override = overrideRepository.findByScheduleId(scheduleId)
             .stream()
             .filter(o -> o.getVersionId().equals(activeVersion.getId()) && o.getOverrideDate().equals(queryDate))
             .findFirst();
@@ -142,12 +142,12 @@ public class ScheduleQueryService {
         if (override.isPresent()) {
             // Override exists - apply it
             overrideApplied = true;
-            ScheduleOverride overrideRule = override.get();
-            shouldRun = overrideRule.getAction() == ScheduleOverride.OverrideAction.FORCE_RUN;
+            Deviation overrideRule = override.get();
+            shouldRun = overrideRule.getAction() == Deviation.Action.FORCE_RUN;
             reason = "Override applied: " + overrideRule.getReason();
         } else {
             // No override - evaluate rules
-            Optional<ScheduleRule> rule = scheduleRuleRepository.findByVersionId(activeVersion.getId());
+            Optional<Rule> rule = ruleRepository.findByVersionId(activeVersion.getId());
             if (rule.isEmpty()) {
                 shouldRun = false;
                 reason = "Not scheduled to run - no rules found for version";
@@ -163,13 +163,13 @@ public class ScheduleQueryService {
         }
         
         // Log the query for audit trail
-        ScheduleQueryLog queryLog = ScheduleQueryLog.builder()
+        QueryLog queryLog = QueryLog.builder()
             .scheduleId(scheduleId)
             .versionId(activeVersion.getId())
             .queryDate(queryDate)
             .shouldRunResult(shouldRun)
             .reason(reason)
-            .overrideApplied(overrideApplied)
+            .deviationApplied(overrideApplied)
             .clientIdentifier(request.getClientIdentifier())
             .build();
         

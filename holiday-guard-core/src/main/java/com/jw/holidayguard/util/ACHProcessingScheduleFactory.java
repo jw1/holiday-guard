@@ -1,9 +1,9 @@
 package com.jw.holidayguard.util;
 
 import com.jw.holidayguard.domain.*;
-import com.jw.holidayguard.dto.request.CreateScheduleOverrideRequest;
-import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
-import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
+import com.jw.holidayguard.dto.request.CreateDeviationRequest;
+import com.jw.holidayguard.dto.request.CreateRuleRequest;
+import com.jw.holidayguard.dto.request.UpdateRuleRequest;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -50,14 +50,14 @@ public class ACHProcessingScheduleFactory {
                 .active(true)
                 .build();
 
-        CreateScheduleRuleRequest weekdaysRule = new CreateScheduleRuleRequest(
-                ScheduleRule.RuleType.WEEKDAYS_ONLY,
+        CreateRuleRequest weekdaysRule = new CreateRuleRequest(
+                Rule.RuleType.WEEKDAYS_ONLY,
                 null, // No config needed for weekdays-only
                 LocalDate.of(year, 1, 1), // Effective from start of year
                 true
         );
 
-        List<CreateScheduleOverrideRequest> holidayOverrides =
+        List<CreateDeviationRequest> holidayOverrides =
                 USFederalHolidays.createSkipOverrides(year);
 
         return new ACHScheduleDefinition(schedule, weekdaysRule, holidayOverrides);
@@ -82,14 +82,14 @@ public class ACHProcessingScheduleFactory {
                 .active(true)
                 .build();
 
-        CreateScheduleRuleRequest weekdaysRule = new CreateScheduleRuleRequest(
-                ScheduleRule.RuleType.WEEKDAYS_ONLY,
+        CreateRuleRequest weekdaysRule = new CreateRuleRequest(
+                Rule.RuleType.WEEKDAYS_ONLY,
                 null,
                 LocalDate.of(year, 1, 1),
                 true
         );
 
-        List<CreateScheduleOverrideRequest> holidayOverrides =
+        List<CreateDeviationRequest> holidayOverrides =
                 USFederalHolidays.createSkipOverrides(year);
 
         return new ACHScheduleDefinition(schedule, weekdaysRule, holidayOverrides);
@@ -146,23 +146,23 @@ public class ACHProcessingScheduleFactory {
         /**
          * Creates SKIP overrides for all federal holidays in a year.
          *
-         * <p>This method generates {@link CreateScheduleOverrideRequest} objects for each
+         * <p>This method generates {@link CreateDeviationRequest} objects for each
          * federal holiday in the given year, configured as SKIP actions with descriptive
          * reasons. The overrides are permanent (no expiration) and created by "system".
          *
          * <p>Output integrates directly with Holiday Guard's override system and can be
-         * used in {@link UpdateScheduleRuleRequest}.
+         * used in {@link UpdateRuleRequest}.
          *
          * @param year the year for which to create holiday skip overrides
          * @return a list of CreateScheduleOverrideRequest objects for all federal holidays
          * @see #getHolidays(int)
          */
-        public static List<CreateScheduleOverrideRequest> createSkipOverrides(int year) {
+        public static List<CreateDeviationRequest> createSkipOverrides(int year) {
             return getHolidays(year)
                     .stream()
-                    .map(holiday -> new CreateScheduleOverrideRequest(
+                    .map(holiday -> new CreateDeviationRequest(
                             holiday,
-                            ScheduleOverride.OverrideAction.SKIP,
+                            Deviation.Action.SKIP,
                             "Federal Holiday: " + getHolidayName(holiday, year),
                             "system",
                             null // never expires
@@ -239,10 +239,10 @@ public class ACHProcessingScheduleFactory {
      */
     public static class ACHScheduleDefinition {
         private final Schedule schedule;
-        private final CreateScheduleRuleRequest rule;
-        private final List<CreateScheduleOverrideRequest> holidayOverrides;
+        private final CreateRuleRequest rule;
+        private final List<CreateDeviationRequest> holidayOverrides;
 
-        public ACHScheduleDefinition(Schedule schedule, CreateScheduleRuleRequest rule, List<CreateScheduleOverrideRequest> holidayOverrides) {
+        public ACHScheduleDefinition(Schedule schedule, CreateRuleRequest rule, List<CreateDeviationRequest> holidayOverrides) {
             this.schedule = schedule;
             this.rule = rule;
             this.holidayOverrides = holidayOverrides;
@@ -252,11 +252,11 @@ public class ACHProcessingScheduleFactory {
             return schedule;
         }
 
-        public CreateScheduleRuleRequest getRule() {
+        public CreateRuleRequest getRule() {
             return rule;
         }
 
-        public List<CreateScheduleOverrideRequest> getHolidayOverrides() {
+        public List<CreateDeviationRequest> getHolidayOverrides() {
             return holidayOverrides;
         }
 
@@ -270,8 +270,8 @@ public class ACHProcessingScheduleFactory {
          * @return an UpdateScheduleRuleRequest ready for REST API submission
          * @see com.jw.holidayguard.controller.ScheduleVersionController#updateScheduleRule
          */
-        public UpdateScheduleRuleRequest toUpdateRequest() {
-            return new UpdateScheduleRuleRequest(
+        public UpdateRuleRequest toUpdateRequest() {
+            return new UpdateRuleRequest(
                     rule.getEffectiveFrom().atStartOfDay().toInstant(java.time.ZoneOffset.UTC),
                     rule,
                     holidayOverrides

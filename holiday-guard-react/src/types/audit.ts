@@ -9,7 +9,7 @@ export interface AuditLogDto {
   queryDate: string; // Assuming YYYY-MM-DD
   shouldRunResult: boolean;
   reason: string;
-  overrideApplied: boolean;
+  deviationApplied: boolean;
   clientIdentifier: string;
   createdAt: string; // ISO 8601 timestamp
 }

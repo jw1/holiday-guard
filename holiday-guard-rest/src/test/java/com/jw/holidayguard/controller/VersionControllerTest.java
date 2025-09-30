@@ -1,10 +1,10 @@
 package com.jw.holidayguard.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.domain.ScheduleVersion;
-import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
-import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
+import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.domain.Version;
+import com.jw.holidayguard.dto.request.CreateRuleRequest;
+import com.jw.holidayguard.dto.request.UpdateRuleRequest;
 import com.jw.holidayguard.exception.GlobalExceptionHandler;
 import com.jw.holidayguard.service.ScheduleVersionService;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Import;
 @WebMvcTest(controllers = ScheduleVersionController.class)
 @ContextConfiguration(classes = ControllerTestConfiguration.class)
 @Import(GlobalExceptionHandler.class)
-class ScheduleVersionControllerTest {
+class VersionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,25 +51,25 @@ class ScheduleVersionControllerTest {
         UUID scheduleId = UUID.randomUUID();
         UUID newVersionId = UUID.randomUUID();
 
-        UpdateScheduleRuleRequest request = new UpdateScheduleRuleRequest();
+        UpdateRuleRequest request = new UpdateRuleRequest();
         request.setEffectiveFrom(Instant.parse("2024-01-01T00:00:00Z"));
         request.setRule(
-            new CreateScheduleRuleRequest(
-                ScheduleRule.RuleType.WEEKDAYS_ONLY,
+            new CreateRuleRequest(
+                Rule.RuleType.WEEKDAYS_ONLY,
                 null,
                 LocalDate.of(2024, 1, 1),
                 true
             )
         );
 
-        ScheduleVersion newVersion = ScheduleVersion.builder()
+        Version newVersion = Version.builder()
             .id(newVersionId)
             .scheduleId(scheduleId)
             .effectiveFrom(Instant.parse("2024-01-01T00:00:00Z"))
             .active(true)
             .build();
 
-        when(service.updateScheduleRule(eq(scheduleId), any(UpdateScheduleRuleRequest.class)))
+        when(service.updateScheduleRule(eq(scheduleId), any(UpdateRuleRequest.class)))
             .thenReturn(newVersion);
 
         // when & then
@@ -91,7 +91,7 @@ class ScheduleVersionControllerTest {
         // given
         UUID scheduleId = UUID.randomUUID();
 
-        UpdateScheduleRuleRequest invalidRequest = new UpdateScheduleRuleRequest();
+        UpdateRuleRequest invalidRequest = new UpdateRuleRequest();
         invalidRequest.setRule(null); // Null rule - should be invalid
 
         // when & then

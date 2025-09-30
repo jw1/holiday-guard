@@ -13,6 +13,5 @@ public record DailyScheduleStatusDto(
     UUID scheduleId,
     String scheduleName,
     boolean shouldRun,
-    String reason
-) {
+    String reason) {
 }

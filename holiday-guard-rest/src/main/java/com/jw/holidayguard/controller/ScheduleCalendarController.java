@@ -1,7 +1,7 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.dto.ScheduleCalendarDto;
-import com.jw.holidayguard.dto.ScheduleOverrideDto;
+import com.jw.holidayguard.dto.ScheduleMonthDto;
+import com.jw.holidayguard.dto.DeviationDto;
 import com.jw.holidayguard.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,14 +19,14 @@ public class ScheduleCalendarController {
     private final ScheduleService scheduleService;
 
     @GetMapping("/calendar")
-    public ScheduleCalendarDto getScheduleCalendar(
+    public ScheduleMonthDto getScheduleCalendar(
             @PathVariable UUID scheduleId,
             @RequestParam("yearMonth") @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth) {
         return scheduleService.getScheduleCalendar(scheduleId, yearMonth);
     }
 
     @GetMapping("/overrides")
-    public List<ScheduleOverrideDto> getScheduleOverrides(@PathVariable UUID scheduleId) {
+    public List<DeviationDto> getScheduleOverrides(@PathVariable UUID scheduleId) {
         return scheduleService.getScheduleOverrides(scheduleId);
     }
 }

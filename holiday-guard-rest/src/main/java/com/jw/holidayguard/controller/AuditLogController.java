@@ -1,6 +1,6 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.dto.ScheduleQueryLogDto;
+import com.jw.holidayguard.dto.QueryLogDto;
 import com.jw.holidayguard.service.ScheduleQueryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +20,8 @@ public class AuditLogController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleQueryLogDto>> getAllLogs() {
-        List<ScheduleQueryLogDto> logs = scheduleQueryService.findAllLogs();
+    public ResponseEntity<List<QueryLogDto>> getAllLogs() {
+        List<QueryLogDto> logs = scheduleQueryService.findAllLogs();
         return ResponseEntity.ok(logs);
     }
 }

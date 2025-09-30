@@ -1,7 +1,6 @@
 package com.jw.holidayguard.service.materialization.handler;
 
-import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.domain.ScheduleRule.RuleType;
+import com.jw.holidayguard.domain.Rule;
 import org.springframework.stereotype.Service;
 
 import org.springframework.scheduling.support.CronExpression;
@@ -16,7 +15,7 @@ import java.util.List;
 public class CronExpressionHandler implements RuleHandler {
 
     @Override
-    public List<LocalDate> generateDates(ScheduleRule rule, LocalDate fromDate, LocalDate toDate) {
+    public List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate) {
         CronExpression cron = CronExpression.parse(rule.getRuleConfig());
         List<LocalDate> dates = new ArrayList<>();
 
@@ -33,7 +32,7 @@ public class CronExpressionHandler implements RuleHandler {
     }
 
     @Override
-    public boolean shouldRun(ScheduleRule rule, LocalDate date) {
+    public boolean shouldRun(Rule rule, LocalDate date) {
         CronExpression cron = CronExpression.parse(rule.getRuleConfig());
         LocalDateTime nextExecution = cron.next(date.atStartOfDay().minusDays(1));
         return nextExecution != null && nextExecution.toLocalDate().equals(date);
@@ -69,7 +68,7 @@ public class CronExpressionHandler implements RuleHandler {
     }
 
     @Override
-    public ScheduleRule.RuleType getSupportedRuleType() {
-        return ScheduleRule.RuleType.CRON_EXPRESSION;
+    public Rule.RuleType getSupportedRuleType() {
+        return Rule.RuleType.CRON_EXPRESSION;
     }
 }

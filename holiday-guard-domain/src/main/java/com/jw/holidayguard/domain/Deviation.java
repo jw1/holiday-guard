@@ -12,15 +12,15 @@ import java.util.UUID;
 
 /**
  * Alterations which modify schedule rules for specific dates.
- * Overrides are tied to specific schedule versions to maintain complete audit trail of what changed between versions.
+ * Deviations are tied to specific schedule versions to maintain complete audit trail of what changed between versions.
  */
 @Entity
-@Table(name = "schedule_overrides")
+@Table(name = "deviation")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ScheduleOverride {
+public class Deviation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,14 +38,14 @@ public class ScheduleOverride {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "version_id", insertable = false, updatable = false)
-    private ScheduleVersion version;
+    private Version version;
 
     @Column(name = "override_date", nullable = false)
     private LocalDate overrideDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "action", nullable = false)
-    private OverrideAction action;
+    private Action action;
 
     @Column(name = "reason", nullable = false)
     private String reason;
@@ -65,7 +65,7 @@ public class ScheduleOverride {
         if (createdBy == null) createdBy = "system";
     }
 
-    public enum OverrideAction {
+    public enum Action {
         SKIP,     // Don't run on this date (answer "no")
         FORCE_RUN // Run even if base schedule says don't run (answer "yes")
     }

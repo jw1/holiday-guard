@@ -16,7 +16,7 @@ import java.util.UUID;
  * another might simply be "weekdays, not weekends".
  */
 @Entity
-@Table(name = "schedules")
+@Table(name = "schedule")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -36,7 +36,7 @@ public class Schedule {
     @Builder.Default
     private String country = "US";
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     @Builder.Default
     private boolean active = true;
 

@@ -1,10 +1,10 @@
 package com.jw.holidayguard.util;
 
-import com.jw.holidayguard.domain.ScheduleOverride;
-import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.dto.request.CreateScheduleOverrideRequest;
-import com.jw.holidayguard.dto.request.CreateScheduleRuleRequest;
-import com.jw.holidayguard.dto.request.UpdateScheduleRuleRequest;
+import com.jw.holidayguard.domain.Deviation;
+import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.dto.request.CreateDeviationRequest;
+import com.jw.holidayguard.dto.request.CreateRuleRequest;
+import com.jw.holidayguard.dto.request.UpdateRuleRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -31,7 +31,7 @@ class ACHProcessingScheduleFactoryTest {
         assertTrue(definition.getSchedule().isActive());
 
         assertNotNull(definition.getRule());
-        assertEquals(ScheduleRule.RuleType.WEEKDAYS_ONLY, definition.getRule().getRuleType());
+        assertEquals(Rule.RuleType.WEEKDAYS_ONLY, definition.getRule().getRuleType());
         assertNull(definition.getRule().getRuleConfig());
         assertEquals(LocalDate.of(2025, 1, 1), definition.getRule().getEffectiveFrom());
         assertTrue(definition.getRule().isActive());
@@ -51,7 +51,7 @@ class ACHProcessingScheduleFactoryTest {
                 definition.getSchedule().getDescription());
         assertTrue(definition.getSchedule().isActive());
 
-        assertEquals(ScheduleRule.RuleType.WEEKDAYS_ONLY, definition.getRule().getRuleType());
+        assertEquals(Rule.RuleType.WEEKDAYS_ONLY, definition.getRule().getRuleType());
         assertEquals(11, definition.getHolidayOverrides().size());
     }
 
@@ -94,14 +94,14 @@ class ACHProcessingScheduleFactoryTest {
 
     @Test
     void shouldCreateFederalHolidaySkipOverrides() {
-        List<CreateScheduleOverrideRequest> overrides =
+        List<CreateDeviationRequest> overrides =
                 ACHProcessingScheduleFactory.USFederalHolidays.createSkipOverrides(2025);
 
         assertEquals(11, overrides.size());
 
         // Check that all are SKIP overrides
         overrides.forEach(override -> {
-            assertEquals(ScheduleOverride.OverrideAction.SKIP, override.getAction());
+            assertEquals(Deviation.Action.SKIP, override.getAction());
             assertEquals("system", override.getCreatedBy());
             assertNull(override.getExpiresAt()); // Permanent holidays
             assertTrue(override.getReason().startsWith("Federal Holiday:"));
@@ -126,7 +126,7 @@ class ACHProcessingScheduleFactoryTest {
         ACHProcessingScheduleFactory.ACHScheduleDefinition definition =
                 ACHProcessingScheduleFactory.createACHSchedule(2025);
 
-        UpdateScheduleRuleRequest updateRequest = definition.toUpdateRequest();
+        UpdateRuleRequest updateRequest = definition.toUpdateRequest();
 
         assertNotNull(updateRequest);
         assertNotNull(updateRequest.getEffectiveFrom());
@@ -134,14 +134,14 @@ class ACHProcessingScheduleFactoryTest {
         assertEquals(11, updateRequest.getOverrides().size());
 
         // Verify rule details
-        CreateScheduleRuleRequest rule = updateRequest.getRule();
-        assertEquals(ScheduleRule.RuleType.WEEKDAYS_ONLY, rule.getRuleType());
+        CreateRuleRequest rule = updateRequest.getRule();
+        assertEquals(Rule.RuleType.WEEKDAYS_ONLY, rule.getRuleType());
         assertNull(rule.getRuleConfig());
         assertTrue(rule.isActive());
 
         // Verify override details
         updateRequest.getOverrides().forEach(override -> {
-            assertEquals(ScheduleOverride.OverrideAction.SKIP, override.getAction());
+            assertEquals(Deviation.Action.SKIP, override.getAction());
             assertEquals("system", override.getCreatedBy());
             assertTrue(override.getReason().startsWith("Federal Holiday:"));
         });

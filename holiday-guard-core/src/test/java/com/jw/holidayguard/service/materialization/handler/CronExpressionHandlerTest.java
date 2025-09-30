@@ -1,6 +1,6 @@
 package com.jw.holidayguard.service.materialization.handler;
 
-import com.jw.holidayguard.domain.ScheduleRule;
+import com.jw.holidayguard.domain.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
@@ -24,8 +24,8 @@ class CronExpressionHandlerTest {
     @Test
     void shouldGenerateWeekdaysFromCronExpression() {
         // given
-        ScheduleRule cronRule = ScheduleRule.builder()
-                .ruleType(ScheduleRule.RuleType.CRON_EXPRESSION)
+        Rule cronRule = Rule.builder()
+                .ruleType(Rule.RuleType.CRON_EXPRESSION)
                 .ruleConfig("0 0 9 * * MON-FRI")
                 .build();
 
@@ -49,8 +49,8 @@ class CronExpressionHandlerTest {
     @Test
     void shouldGenerateSpecificDaysFromCronExpression() {
         // given
-        ScheduleRule cronRule = ScheduleRule.builder()
-                .ruleType(ScheduleRule.RuleType.CRON_EXPRESSION)
+        Rule cronRule = Rule.builder()
+                .ruleType(Rule.RuleType.CRON_EXPRESSION)
                 .ruleConfig("0 0 9 * * TUE,FRI")
                 .build();
 
@@ -70,8 +70,8 @@ class CronExpressionHandlerTest {
     @Test
     void shouldHandleInvalidCronExpression() {
         // given
-        ScheduleRule invalidCronRule = ScheduleRule.builder()
-                .ruleType(ScheduleRule.RuleType.CRON_EXPRESSION)
+        Rule invalidCronRule = Rule.builder()
+                .ruleType(Rule.RuleType.CRON_EXPRESSION)
                 .ruleConfig("invalid-cron")
                 .build();
 
@@ -87,8 +87,8 @@ class CronExpressionHandlerTest {
     @Test
     void shouldHandleEmptyDateRangeForValidCron() {
         // given
-        ScheduleRule cronRule = ScheduleRule.builder()
-                .ruleType(ScheduleRule.RuleType.CRON_EXPRESSION)
+        Rule cronRule = Rule.builder()
+                .ruleType(Rule.RuleType.CRON_EXPRESSION)
                 .ruleConfig("0 0 9 * * SUN")  // Only Sundays
                 .build();
 

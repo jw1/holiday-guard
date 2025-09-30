@@ -1,10 +1,9 @@
 package com.jw.holidayguard.util;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.domain.ScheduleVersion;
+import com.jw.holidayguard.domain.Version;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.UUID;
 
 public class ScheduleTestDataFactory {
@@ -18,8 +17,8 @@ public class ScheduleTestDataFactory {
                 .build();
     }
 
-    public static ScheduleVersion createScheduleVersion(UUID scheduleId, boolean active) {
-        return ScheduleVersion.builder()
+    public static Version createScheduleVersion(UUID scheduleId, boolean active) {
+        return Version.builder()
                 .scheduleId(scheduleId)
                 .effectiveFrom(Instant.now())
                 .active(active)

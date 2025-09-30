@@ -15,12 +15,12 @@ import java.util.UUID;
  * Rules are tied to specific schedule versions to preserve complete rule history for audit and debugging.
  */
 @Entity
-@Table(name = "schedule_rule")
+@Table(name = "rule")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ScheduleRule {
+public class Rule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,7 +38,7 @@ public class ScheduleRule {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "version_id", insertable = false, updatable = false)
-    private ScheduleVersion version;
+    private Version version;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "rule_type", nullable = false)
@@ -53,7 +53,7 @@ public class ScheduleRule {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     @Builder.Default
     private boolean active = true;
 

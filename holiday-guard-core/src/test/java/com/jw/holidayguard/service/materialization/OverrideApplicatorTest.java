@@ -1,7 +1,7 @@
 package com.jw.holidayguard.service.materialization;
 
-import com.jw.holidayguard.domain.ScheduleOverride;
-import com.jw.holidayguard.repository.ScheduleOverrideRepository;
+import com.jw.holidayguard.domain.Deviation;
+import com.jw.holidayguard.repository.DeviationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class OverrideApplicatorTest {
 
     @Mock
-    private ScheduleOverrideRepository scheduleOverrideRepository;
+    private DeviationRepository deviationRepository;
 
     @InjectMocks
     private OverrideApplicatorImpl overrideApplicator;
@@ -51,7 +51,7 @@ class OverrideApplicatorTest {
             LocalDate.of(2025, 1, 5)
         );
         
-        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
+        when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of());
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
@@ -69,14 +69,14 @@ class OverrideApplicatorTest {
             LocalDate.of(2025, 1, 5)
         );
         
-        ScheduleOverride skipOverride = ScheduleOverride.builder()
+        Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
             .overrideDate(LocalDate.of(2025, 1, 3))
-            .action(ScheduleOverride.OverrideAction.SKIP)
+            .action(Deviation.Action.SKIP)
             .reason("Holiday skip")
             .build();
-        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
+        when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride));
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
@@ -95,15 +95,15 @@ class OverrideApplicatorTest {
             LocalDate.of(2025, 1, 5)
         );
         
-        ScheduleOverride forceRunOverride = ScheduleOverride.builder()
+        Deviation forceRunOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
             .overrideDate(LocalDate.of(2025, 1, 3)) // Not in rule dates
-            .action(ScheduleOverride.OverrideAction.FORCE_RUN)
+            .action(Deviation.Action.FORCE_RUN)
             .reason("Emergency run")
             .build();
         
-        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
+        when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(forceRunOverride));
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
@@ -127,23 +127,23 @@ class OverrideApplicatorTest {
             LocalDate.of(2025, 1, 5)
         );
         
-        ScheduleOverride skipOverride = ScheduleOverride.builder()
+        Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
             .overrideDate(LocalDate.of(2025, 1, 2))
-            .action(ScheduleOverride.OverrideAction.SKIP)
+            .action(Deviation.Action.SKIP)
             .reason("Holiday")
             .build();
             
-        ScheduleOverride forceRunOverride = ScheduleOverride.builder()
+        Deviation forceRunOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
             .overrideDate(LocalDate.of(2025, 1, 6)) // New date
-            .action(ScheduleOverride.OverrideAction.FORCE_RUN)
+            .action(Deviation.Action.FORCE_RUN)
             .reason("Emergency")
             .build();
         
-        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
+        when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride, forceRunOverride));
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
@@ -163,15 +163,15 @@ class OverrideApplicatorTest {
             LocalDate.of(2025, 1, 5)
         );
         
-        ScheduleOverride skipOverride = ScheduleOverride.builder()
+        Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
             .overrideDate(LocalDate.of(2025, 1, 3)) // Not in rule dates
-            .action(ScheduleOverride.OverrideAction.SKIP)
+            .action(Deviation.Action.SKIP)
             .reason("Holiday")
             .build();
         
-        when(scheduleOverrideRepository.findByScheduleId(scheduleId))
+        when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride));
         
         List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);

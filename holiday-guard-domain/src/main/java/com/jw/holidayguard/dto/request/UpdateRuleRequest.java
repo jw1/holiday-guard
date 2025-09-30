@@ -12,14 +12,14 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateScheduleRuleRequest {
+public class UpdateRuleRequest {
 
     private Instant effectiveFrom;
 
     @Valid
     @NotNull(message = "A rule is required")
-    private CreateScheduleRuleRequest rule;
+    private CreateRuleRequest rule;
 
     @Valid
-    private List<CreateScheduleOverrideRequest> overrides;
+    private List<CreateDeviationRequest> overrides;
 }

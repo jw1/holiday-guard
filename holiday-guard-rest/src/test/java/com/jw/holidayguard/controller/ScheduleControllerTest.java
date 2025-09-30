@@ -42,9 +42,10 @@ class ScheduleControllerTest {
 
     @Test
     void createSchedule() throws Exception {
-        var createRequest = new CreateScheduleRequest();
-        createRequest.setName("US Federal Holidays");
-        createRequest.setDescription("Standard US federal holidays");
+        var createRequest = CreateScheduleRequest.builder()
+                .name("US Federal Holidays")
+                .description("Standard US federal holidays")
+                .build();
 
         var savedSchedule = Schedule.builder()
                 .id(UUID.randomUUID())
@@ -65,8 +66,9 @@ class ScheduleControllerTest {
 
     @Test
     void createScheduleWithDuplicateName() throws Exception {
-        var createRequest = new CreateScheduleRequest();
-        createRequest.setName("Existing Schedule");
+        var createRequest = CreateScheduleRequest.builder()
+                .name("Existing Schedule")
+                .build();
 
         when(service.createSchedule(any(CreateScheduleRequest.class)))
                 .thenThrow(new DuplicateScheduleException("Existing Schedule"));

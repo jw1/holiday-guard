@@ -1,17 +1,17 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.Schedule;
-import com.jw.holidayguard.domain.ScheduleQueryLog;
-import com.jw.holidayguard.domain.ScheduleOverride;
-import com.jw.holidayguard.domain.ScheduleRule;
-import com.jw.holidayguard.domain.ScheduleVersion;
+import com.jw.holidayguard.domain.QueryLog;
+import com.jw.holidayguard.domain.Deviation;
+import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.domain.Version;
 import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
-import com.jw.holidayguard.repository.ScheduleOverrideRepository;
-import com.jw.holidayguard.repository.ScheduleQueryLogRepository;
+import com.jw.holidayguard.repository.DeviationRepository;
+import com.jw.holidayguard.repository.QueryLogRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
-import com.jw.holidayguard.repository.ScheduleVersionRepository;
-import com.jw.holidayguard.repository.ScheduleRuleRepository;
+import com.jw.holidayguard.repository.VersionRepository;
+import com.jw.holidayguard.repository.RuleRepository;
 import com.jw.holidayguard.service.materialization.RuleEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,16 +35,16 @@ class ScheduleQueryServiceTest {
     private ScheduleRepository scheduleRepository;
     
     @Mock
-    private ScheduleVersionRepository scheduleVersionRepository;
+    private VersionRepository versionRepository;
     
     @Mock
-    private ScheduleOverrideRepository overrideRepository;
+    private DeviationRepository overrideRepository;
     
     @Mock
-    private ScheduleQueryLogRepository queryLogRepository;
+    private QueryLogRepository queryLogRepository;
 
     @Mock
-    private ScheduleRuleRepository scheduleRuleRepository;
+    private RuleRepository ruleRepository;
 
     @Mock
     private RuleEngine ruleEngine;
@@ -53,7 +53,7 @@ class ScheduleQueryServiceTest {
     private ScheduleQueryService service;
     
     private Schedule testSchedule;
-    private ScheduleVersion activeVersion;
+    private Version activeVersion;
     private UUID scheduleId;
     private UUID versionId;
 
@@ -68,7 +68,7 @@ class ScheduleQueryServiceTest {
             .active(true)
             .build();
             
-        activeVersion = ScheduleVersion.builder()
+        activeVersion = Version.builder()
             .id(versionId)
             .scheduleId(scheduleId)
             .active(true)
@@ -82,14 +82,14 @@ class ScheduleQueryServiceTest {
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
-        when(scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId))
+        when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
             .thenReturn(Optional.of(activeVersion));
-        when(scheduleRuleRepository.findByVersionId(versionId))
-            .thenReturn(Optional.of(new ScheduleRule()));
-        when(ruleEngine.shouldRun(any(ScheduleRule.class), eq(queryDate))).thenReturn(true);
+        when(ruleRepository.findByVersionId(versionId))
+            .thenReturn(Optional.of(new Rule()));
+        when(ruleEngine.shouldRun(any(Rule.class), eq(queryDate))).thenReturn(true);
         when(overrideRepository.findByScheduleId(scheduleId))
             .thenReturn(java.util.Collections.emptyList());
-        when(queryLogRepository.save(any(ScheduleQueryLog.class)))
+        when(queryLogRepository.save(any(QueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When: Querying should I run today
@@ -118,14 +118,14 @@ class ScheduleQueryServiceTest {
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
-        when(scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId))
+        when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
             .thenReturn(Optional.of(activeVersion));
-        when(scheduleRuleRepository.findByVersionId(versionId))
-            .thenReturn(Optional.of(new ScheduleRule()));
-        when(ruleEngine.shouldRun(any(ScheduleRule.class), eq(queryDate))).thenReturn(false);
+        when(ruleRepository.findByVersionId(versionId))
+            .thenReturn(Optional.of(new Rule()));
+        when(ruleEngine.shouldRun(any(Rule.class), eq(queryDate))).thenReturn(false);
         when(overrideRepository.findByScheduleId(scheduleId))
             .thenReturn(java.util.Collections.emptyList());
-        when(queryLogRepository.save(any(ScheduleQueryLog.class)))
+        when(queryLogRepository.save(any(QueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When: Querying should I run today
@@ -151,21 +151,21 @@ class ScheduleQueryServiceTest {
         LocalDate queryDate = LocalDate.now().plusDays(15); // Future date for holiday simulation
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
             
-        ScheduleOverride skipOverride = ScheduleOverride.builder()
+        Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
             .overrideDate(queryDate)
-            .action(ScheduleOverride.OverrideAction.SKIP)
+            .action(Deviation.Action.SKIP)
             .reason("Independence Day - holiday skip")
             .build();
 
         when(scheduleRepository.findById(scheduleId))
             .thenReturn(Optional.of(testSchedule));
-        when(scheduleVersionRepository.findByScheduleIdAndActiveTrue(scheduleId))
+        when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
             .thenReturn(Optional.of(activeVersion));
         when(overrideRepository.findByScheduleId(scheduleId))
             .thenReturn(java.util.List.of(skipOverride));
-        when(queryLogRepository.save(any(ScheduleQueryLog.class)))
+        when(queryLogRepository.save(any(QueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When: Querying should I run today
@@ -179,7 +179,7 @@ class ScheduleQueryServiceTest {
         
         // Should log the query with override flag
         verify(queryLogRepository).save(argThat(log -> 
-            log.isOverrideApplied() && !log.isShouldRunResult()
+            log.isDeviationApplied() && !log.isShouldRunResult()
         ));
     }
 }

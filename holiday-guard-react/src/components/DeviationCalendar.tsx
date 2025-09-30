@@ -1,23 +1,23 @@
 import React, {useState, useEffect} from 'react';
 
 // Define the types for the calendar props
-interface ScheduleOverridesCalendarProps {
+interface DeviationCalendarProps {
     baseCalendar: { [date: string]: 'run' | 'no-run' };
-    initialOverrides: { [date: string]: 'FORCE_RUN' | 'SKIP' };
-    onOverridesChange: (newOverrides: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => void;
+    initialDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' };
+    onDeviationsChange: (newDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => void;
 }
 
-const ScheduleOverridesCalendar: React.FC<ScheduleOverridesCalendarProps> = ({
+const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
                                                                                  baseCalendar,
-                                                                                 initialOverrides,
-                                                                                 onOverridesChange
+                                                                                 initialDeviations,
+                                                                                 onDeviationsChange
                                                                              }) => {
-    const [overrides, setOverrides] = useState(initialOverrides);
+    const [deviations, setDeviations] = useState(initialDeviations);
     const [currentDate, setCurrentDate] = useState(new Date());
 
     useEffect(() => {
-        onOverridesChange(overrides);
-    }, [overrides, onOverridesChange]);
+        onDeviationsChange(deviations);
+    }, [deviations, onDeviationsChange]);
 
     // Helper functions (similar to business-day-calendar.tsx)
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
@@ -34,14 +34,14 @@ const ScheduleOverridesCalendar: React.FC<ScheduleOverridesCalendarProps> = ({
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
         const dateKey = formatDate(date);
 
-        setOverrides(prev => {
-            const newOverrides = {...prev};
-            if (newOverrides[dateKey]) {
-                delete newOverrides[dateKey];
+        setDeviations(prev => {
+            const newDeviations = {...prev};
+            if (newDeviations[dateKey]) {
+                delete newDeviations[dateKey];
             } else {
-                newOverrides[dateKey] = baseCalendar[dateKey] === 'run' ? 'SKIP' : 'FORCE_RUN';
+                newDeviations[dateKey] = baseCalendar[dateKey] === 'run' ? 'SKIP' : 'FORCE_RUN';
             }
-            return newOverrides;
+            return newDeviations;
         });
     };
 
@@ -49,8 +49,8 @@ const ScheduleOverridesCalendar: React.FC<ScheduleOverridesCalendarProps> = ({
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
         const dateKey = formatDate(date);
 
-        if (overrides[dateKey]) {
-            return overrides[dateKey]; // 'FORCE_RUN' or 'SKIP'
+        if (deviations[dateKey]) {
+            return deviations[dateKey]; // 'FORCE_RUN' or 'SKIP'
         }
         return baseCalendar[dateKey] || 'default'; // 'run', 'no-run', or 'default'
     };
@@ -111,4 +111,4 @@ const ScheduleOverridesCalendar: React.FC<ScheduleOverridesCalendarProps> = ({
     );
 };
 
-export default ScheduleOverridesCalendar;
+export default DeviationCalendar;
