@@ -21,5 +21,5 @@ public class UpdateRuleRequest {
     private CreateRuleRequest rule;
 
     @Valid
-    private List<CreateDeviationRequest> overrides;
+    private List<CreateDeviationRequest> deviations;
 }

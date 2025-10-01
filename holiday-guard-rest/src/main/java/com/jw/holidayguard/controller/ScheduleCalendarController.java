@@ -25,8 +25,8 @@ public class ScheduleCalendarController {
         return scheduleService.getScheduleCalendar(scheduleId, yearMonth);
     }
 
-    @GetMapping("/overrides")
-    public List<DeviationDto> getScheduleOverrides(@PathVariable UUID scheduleId) {
-        return scheduleService.getScheduleOverrides(scheduleId);
+    @GetMapping("/deviations")
+    public List<DeviationDto> getScheduleDeviations(@PathVariable UUID scheduleId) {
+        return scheduleService.getScheduleDeviations(scheduleId);
     }
 }

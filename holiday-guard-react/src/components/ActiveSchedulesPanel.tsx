@@ -1,12 +1,5 @@
 import {FC, useState, useEffect} from 'react';
-import api from '../services/api';
-
-interface DailyScheduleStatus {
-    scheduleId: string;
-    scheduleName: string;
-    shouldRun: boolean;
-    reason: string;
-}
+import {getScheduleStatus, DailyScheduleStatus} from '../services/backend';
 
 const ActiveSchedulesPanel: FC = () => {
 
@@ -17,8 +10,8 @@ const ActiveSchedulesPanel: FC = () => {
     useEffect(() => {
         const fetchScheduleStatus = async () => {
             try {
-                const response = await api.get<DailyScheduleStatus[]>('/dashboard/schedule-status');
-                setScheduleStatus(response.data);
+                const status = await getScheduleStatus();
+                setScheduleStatus(status);
             } catch (err) {
                 setError('Failed to fetch schedule status');
             } finally {

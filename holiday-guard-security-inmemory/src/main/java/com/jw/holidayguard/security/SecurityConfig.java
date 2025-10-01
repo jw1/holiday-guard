@@ -102,12 +102,8 @@ public class SecurityConfig {
     private static UsernamePasswordAuthenticationFilter authenticationFilter(AuthenticationManager authenticationManager) {
         var loginFilter = new UsernamePasswordAuthenticationFilter(authenticationManager);
         loginFilter.setFilterProcessesUrl("/api/login");
-        loginFilter.setAuthenticationSuccessHandler((request, response, authentication) -> {
-            response.setStatus(HttpServletResponse.SC_OK);
-        });
-        loginFilter.setAuthenticationFailureHandler((request, response, exception) -> {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        });
+        loginFilter.setAuthenticationSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK));
+        loginFilter.setAuthenticationFailureHandler((request, response, exception) -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED));
         loginFilter.setSecurityContextRepository(new DelegatingSecurityContextRepository(
                 new RequestAttributeSecurityContextRepository(),
                 new HttpSessionSecurityContextRepository()

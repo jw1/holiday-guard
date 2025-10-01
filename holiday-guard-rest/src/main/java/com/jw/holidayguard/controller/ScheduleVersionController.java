@@ -37,7 +37,7 @@ public class ScheduleVersionController {
                 newVersion.getCreatedAt(),
                 newVersion.isActive(),
                 null, // rules - would populate in full implementation
-                null  // overrides - would populate in full implementation
+                null  // deviations - would populate in full implementation
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

@@ -1,9 +1,5 @@
 import {FC, useState, useEffect} from 'react';
-import axios from 'axios';
-
-interface HealthStatus {
-    status: string;
-}
+import {getHealthStatus} from '../services/backend';
 
 const ServerHealthPanel: FC = () => {
 
@@ -13,8 +9,8 @@ const ServerHealthPanel: FC = () => {
     useEffect(() => {
         const fetchHealthStatus = async () => {
             try {
-                const response = await axios.get<HealthStatus>('/actuator/health');
-                setStatus(response.data.status);
+                const health = await getHealthStatus();
+                setStatus(health.status);
             } catch (err) {
                 setStatus('DOWN');
                 setError('Failed to fetch health');

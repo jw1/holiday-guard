@@ -1,7 +1,7 @@
 import {useState, useEffect, useMemo} from 'react';
 import {format} from 'date-fns';
 import type {AuditLog, AuditLogDto} from '@/types/audit';
-import api from '../services/api';
+import {getAuditLogs} from '../services/backend';
 
 type SortableKey = keyof AuditLog;
 
@@ -15,9 +15,9 @@ const AuditLogPage = () => {
     useEffect(() => {
         const fetchAuditLogs = async () => {
             try {
-                const response = await api.get<AuditLogDto[]>('/audit-logs');
+                const data = await getAuditLogs();
 
-                const formattedData: AuditLog[] = response.data.map(log => ({
+                const formattedData: AuditLog[] = data.map(log => ({
                     ...log,
                     createdAt: new Date(log.createdAt),
                 }));

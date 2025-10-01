@@ -33,15 +33,15 @@ public class ScheduleService {
     private final ScheduleRepository repository;
     private final RuleRepository ruleRepository;
     private final VersionRepository versionRepository;
-    private final DeviationRepository overrideRepository;
+    private final DeviationRepository deviationRepository;
     private final RuleEngine ruleEngine;
     private final CurrentUserService currentUserService;
 
-    public ScheduleService(ScheduleRepository repository, RuleRepository ruleRepository, VersionRepository versionRepository, DeviationRepository overrideRepository, RuleEngine ruleEngine, CurrentUserService currentUserService) {
+    public ScheduleService(ScheduleRepository repository, RuleRepository ruleRepository, VersionRepository versionRepository, DeviationRepository deviationRepository, RuleEngine ruleEngine, CurrentUserService currentUserService) {
         this.repository = repository;
         this.ruleRepository = ruleRepository;
         this.versionRepository = versionRepository;
-        this.overrideRepository = overrideRepository;
+        this.deviationRepository = deviationRepository;
         this.ruleEngine = ruleEngine;
         this.currentUserService = currentUserService;
     }
@@ -215,8 +215,8 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public List<DeviationDto> getScheduleOverrides(UUID scheduleId) {
-        return overrideRepository.findByScheduleId(scheduleId).stream()
+    public List<DeviationDto> getScheduleDeviations(UUID scheduleId) {
+        return deviationRepository.findByScheduleId(scheduleId).stream()
                 .map(override -> new DeviationDto(override.getOverrideDate(), override.getAction().name()))
                 .collect(Collectors.toList());
     }

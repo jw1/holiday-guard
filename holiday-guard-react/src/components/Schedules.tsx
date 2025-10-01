@@ -1,8 +1,8 @@
 import {useState, useEffect, useMemo} from 'react';
 import ScheduleModal from '@/components/ScheduleModal';
 import DeviationsModal from '@/components/DeviationsModal';
-import type {Schedule, ScheduleResponseDto} from '@/types/schedule';
-import api from '../services/api';
+import type {Schedule} from '@/types/schedule';
+import {getAllSchedules, createSchedule, updateSchedule, saveScheduleVersion, VersionPayload} from '../services/backend';
 
 type SortableKey = keyof Schedule;
 
@@ -19,8 +19,8 @@ const Schedules = () => {
     useEffect(() => {
         const fetchSchedules = async () => {
             try {
-                const response = await api.get<ScheduleResponseDto[]>('/schedules');
-                const formattedData: Schedule[] = response.data.map(s => {
+                const data = await getAllSchedules();
+                const formattedData: Schedule[] = data.map(s => {
                     const {updatedAt, ...rest} = s;
                     return {
                         ...rest,
@@ -65,11 +65,10 @@ const Schedules = () => {
         const isNew = !editingSchedule;
 
         try {
-            const response = isNew
-                ? await api.post<ScheduleResponseDto>('/schedules', scheduleData)
-                : await api.put<ScheduleResponseDto>(`/schedules/${editingSchedule!.id}`, scheduleData);
+            const savedSchedule = isNew
+                ? await createSchedule(scheduleData)
+                : await updateSchedule(editingSchedule!.id, scheduleData);
 
-            const savedSchedule = response.data;
             const {updatedAt, ...rest} = savedSchedule;
             const formatted: Schedule = {
                 ...rest,
@@ -85,6 +84,25 @@ const Schedules = () => {
         } catch (error) {
             console.error('Error saving schedule:', error);
             window.alert('Failed to save schedule. Please try again.');
+        }
+    };
+
+    // New handler for saving deviations, mirroring the pattern of handleSaveSchedule.
+    const handleSaveDeviations = async (payload: VersionPayload) => {
+        if (!editingSchedule) return;
+
+        try {
+            // 1. Call the API to save the new version with deviations.
+            await saveScheduleVersion(editingSchedule.id, payload);
+
+            // 2. Upon success, close the modal.
+            handleCloseDeviationsModal();
+
+            // Optional: You might want to refetch data or show a success notification here.
+
+        } catch (error) {
+            console.error('Error saving deviations:', error);
+            window.alert('Failed to save deviations. Please try again.');
         }
     };
 
@@ -210,8 +228,7 @@ const Schedules = () => {
                 <DeviationsModal
                     schedule={editingSchedule}
                     onClose={handleCloseDeviationsModal}
-                    onSave={() => {
-                    }}
+                    onSave={handleSaveDeviations}
                 />
             )}
         </main>

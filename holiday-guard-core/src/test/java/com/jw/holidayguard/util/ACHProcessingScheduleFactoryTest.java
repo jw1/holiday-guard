@@ -131,7 +131,7 @@ class ACHProcessingScheduleFactoryTest {
         assertNotNull(updateRequest);
         assertNotNull(updateRequest.getEffectiveFrom());
         assertNotNull(updateRequest.getRule());
-        assertEquals(11, updateRequest.getOverrides().size());
+        assertEquals(11, updateRequest.getDeviations().size());
 
         // Verify rule details
         CreateRuleRequest rule = updateRequest.getRule();
@@ -139,11 +139,11 @@ class ACHProcessingScheduleFactoryTest {
         assertNull(rule.getRuleConfig());
         assertTrue(rule.isActive());
 
-        // Verify override details
-        updateRequest.getOverrides().forEach(override -> {
-            assertEquals(Deviation.Action.SKIP, override.getAction());
-            assertEquals("system", override.getCreatedBy());
-            assertTrue(override.getReason().startsWith("Federal Holiday:"));
+        // Verify deviation details
+        updateRequest.getDeviations().forEach(deviation -> {
+            assertEquals(Deviation.Action.SKIP, deviation.getAction());
+            assertEquals("system", deviation.getCreatedBy());
+            assertTrue(deviation.getReason().startsWith("Federal Holiday:"));
         });
     }
 

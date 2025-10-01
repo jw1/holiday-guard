@@ -1,9 +1,5 @@
 import {FC, useState, useEffect} from 'react';
-import api from '../services/api';
-
-interface StatCount {
-    count: number;
-}
+import {getTotalSchedulesCount} from '../services/backend';
 
 const TotalSchedulesStatPanel: FC = () => {
 
@@ -13,8 +9,8 @@ const TotalSchedulesStatPanel: FC = () => {
     useEffect(() => {
         const fetchTotalCount = async () => {
             try {
-                const response = await api.get<StatCount>('/dashboard/stats/total-schedules');
-                setCount(response.data.count);
+                const totalCount = await getTotalSchedulesCount();
+                setCount(totalCount);
             } catch (err) {
                 setError('Failed to fetch');
             }

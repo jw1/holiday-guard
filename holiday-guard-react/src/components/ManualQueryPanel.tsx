@@ -1,22 +1,6 @@
 import {FC, useState, useEffect} from 'react';
-import api from '../services/api';
+import {getScheduleList, shouldScheduleRun, ScheduleInfo, ShouldRunResponse} from '../services/backend';
 import axios from 'axios';
-
-// From ScheduleController.java -> getAllSchedules()
-interface ScheduleInfo {
-    id: string;
-    name: string;
-}
-
-// From ShouldRunController.java -> shouldRunToday()
-interface ShouldRunResponse {
-    scheduleId: string;
-    queryDate: string;
-    shouldRun: boolean;
-    reason: string;
-    deviationApplied: boolean;
-    versionId: string;
-}
 
 const ManualQueryPanel: FC = () => {
 
@@ -28,14 +12,12 @@ const ManualQueryPanel: FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-
-        // fetch all schedules to populate the dropdown
         const fetchSchedules = async () => {
             try {
-                const response = await api.get<ScheduleInfo[]>('/schedules');
-                setSchedules(response.data);
-                if (response.data.length > 0) {
-                    setSelectedScheduleId(response.data[0].id);
+                const data = await getScheduleList();
+                setSchedules(data);
+                if (data.length > 0) {
+                    setSelectedScheduleId(data[0].id);
                 }
             } catch (err) {
                 setError('Could not load schedule list.');
@@ -55,11 +37,8 @@ const ManualQueryPanel: FC = () => {
         setQueryResult(null);
 
         try {
-            const response = await api.get<ShouldRunResponse>(
-                `/schedules/${selectedScheduleId}/should-run`,
-                { params: { client: clientIdentifier } }
-            );
-            setQueryResult(response.data);
+            const result = await shouldScheduleRun(selectedScheduleId, clientIdentifier);
+            setQueryResult(result);
         } catch (err: any) {
             const message = axios.isAxiosError(err) && err.response?.data?.message
                 ? err.response.data.message

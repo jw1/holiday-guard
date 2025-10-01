@@ -1,12 +1,13 @@
 import {FC, useState, useEffect} from 'react';
 import {Schedule} from '@/types/schedule';
 import DeviationCalendar from './DeviationCalendar';
-import api from '../services/api';
+import {getScheduleDeviations, getScheduleCalendar, VersionPayload} from '../services/backend';
 
 interface DeviationsModalProps {
     schedule: Schedule | null;
     onClose: () => void;
-    onSave: (deviations: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => void;
+    // The onSave prop will now pass the entire payload up to the parent.
+    onSave: (payload: VersionPayload) => void;
 }
 
 const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) => {
@@ -16,11 +17,9 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
 
     useEffect(() => {
         if (schedule) {
-
-            // Fetch deviations for the schedule
-            api.get<any[]>(`/schedules/${schedule.id}/deviations`)
-                .then(response => {
-                    const formattedDeviations = response.data.reduce((acc: any, deviation: any) => {
+            getScheduleDeviations(schedule.id)
+                .then(data => {
+                    const formattedDeviations = data.reduce((acc: any, deviation: any) => {
                         acc[deviation.date] = deviation.type;
                         return acc;
                     }, {});
@@ -28,13 +27,9 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                 })
                 .catch(error => console.error('Error fetching deviations:', error));
 
-            // Fetch base calendar data
-            const yearMonth = new Date().toISOString().slice(0, 7); // Use current month for now
-            api.get<any>(`/schedules/${schedule.id}/calendar`, {
-                params: { yearMonth }
-            })
-                .then(response => {
-                    const data = response.data;
+            const yearMonth = new Date().toISOString().slice(0, 7);
+            getScheduleCalendar(schedule.id, yearMonth)
+                .then(data => {
                     const calendar = Object.entries(data.days).reduce((acc: any, [day, status]) => {
                         const date = `${data.yearMonth}-${String(day).padStart(2, '0')}`;
                         acc[date] = status;
@@ -54,30 +49,23 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
 
     const handleSave = () => {
         if (schedule) {
-            const payload = {
-                rules: [
-                    {
-                        ruleType: schedule.ruleType,
-                        ruleConfig: schedule.ruleConfig,
-                        effectiveFrom: new Date().toISOString().split('T')[0],
-                        active: true,
-                    },
-                ],
+            // 1. Construct the payload with correct structure (singular 'rule', not 'rules' array)
+            const payload: VersionPayload = {
+                rule: {
+                    ruleType: schedule.ruleType,
+                    ruleConfig: schedule.ruleConfig,
+                    effectiveFrom: new Date().toISOString().split('T')[0],
+                    active: true,
+                },
                 deviations: Object.entries(deviations).map(([date, type]) => ({
-                    overrideDate: date,
+                    deviationDate: date,
                     action: type.toUpperCase(),
-                    reason: 'User override',
+                    reason: 'User deviation',
                 })),
             };
 
-            api.post(`/schedules/${schedule.id}/versions`, payload)
-                .then(() => {
-                    onSave(deviations);
-                })
-                .catch(error => {
-                    console.error('Error saving deviations:', error);
-                    window.alert('Failed to save deviations. Please try again.');
-                });
+            // 2. Pass the payload to the parent component instead of making the API call here.
+            onSave(payload);
         }
     };
 
