@@ -1,6 +1,7 @@
 import {useState, useEffect, useMemo} from 'react';
 import {format} from 'date-fns';
 import type {AuditLog, AuditLogDto} from '@/types/audit';
+import api from '../services/api';
 
 type SortableKey = keyof AuditLog;
 
@@ -14,20 +15,14 @@ const AuditLogPage = () => {
     useEffect(() => {
         const fetchAuditLogs = async () => {
             try {
-                const response = await fetch('/api/v1/audit-logs');
+                const response = await api.get<AuditLogDto[]>('/audit-logs');
 
-                if (!response.ok) {
-                    console.error('Error fetching audit logs')
-                } else {
-                    const data: AuditLogDto[] = await response.json();
+                const formattedData: AuditLog[] = response.data.map(log => ({
+                    ...log,
+                    createdAt: new Date(log.createdAt),
+                }));
 
-                    const formattedData: AuditLog[] = data.map(log => ({
-                        ...log,
-                        createdAt: new Date(log.createdAt),
-                    }));
-
-                    setLogs(formattedData);
-                }
+                setLogs(formattedData);
             } catch (err) {
                 console.error('Error fetching audit logs:', err);
             }

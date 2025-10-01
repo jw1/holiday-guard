@@ -1,4 +1,5 @@
 import {FC, useState, useEffect} from 'react';
+import api from '../services/api';
 
 interface StatCount {
     count: number;
@@ -12,14 +13,8 @@ const ActiveSchedulesStatPanel: FC = () => {
     useEffect(() => {
         const fetchActiveCount = async () => {
             try {
-                const response = await fetch('/api/v1/dashboard/stats/active-schedules');
-
-                if (!response.ok) {
-                    setError('Failed to fetch');
-                } else {
-                    const data: StatCount = await response.json();
-                    setCount(data.count);
-                }
+                const response = await api.get<StatCount>('/dashboard/stats/active-schedules');
+                setCount(response.data.count);
             } catch (err) {
                 setError('Failed to fetch');
             }

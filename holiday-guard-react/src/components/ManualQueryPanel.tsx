@@ -1,4 +1,6 @@
 import {FC, useState, useEffect} from 'react';
+import api from '../services/api';
+import axios from 'axios';
 
 // From ScheduleController.java -> getAllSchedules()
 interface ScheduleInfo {
@@ -26,15 +28,14 @@ const ManualQueryPanel: FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Fetch all schedules to populate the dropdown
+
+        // fetch all schedules to populate the dropdown
         const fetchSchedules = async () => {
             try {
-                const response = await fetch('/api/v1/schedules');
-                if (!response.ok) throw new Error('Failed to fetch schedules');
-                const data: ScheduleInfo[] = await response.json();
-                setSchedules(data);
-                if (data.length > 0) {
-                    setSelectedScheduleId(data[0].id);
+                const response = await api.get<ScheduleInfo[]>('/schedules');
+                setSchedules(response.data);
+                if (response.data.length > 0) {
+                    setSelectedScheduleId(response.data[0].id);
                 }
             } catch (err) {
                 setError('Could not load schedule list.');
@@ -54,16 +55,16 @@ const ManualQueryPanel: FC = () => {
         setQueryResult(null);
 
         try {
-            const url = `/api/v1/schedules/${selectedScheduleId}/should-run?client=${encodeURIComponent(clientIdentifier)}`;
-            const response = await fetch(url);
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Query failed');
-            }
-            const data: ShouldRunResponse = await response.json();
-            setQueryResult(data);
+            const response = await api.get<ShouldRunResponse>(
+                `/schedules/${selectedScheduleId}/should-run`,
+                { params: { client: clientIdentifier } }
+            );
+            setQueryResult(response.data);
         } catch (err: any) {
-            setError(err.message || 'An unknown error occurred.');
+            const message = axios.isAxiosError(err) && err.response?.data?.message
+                ? err.response.data.message
+                : 'An unknown error occurred.';
+            setError(message);
         } finally {
             setLoading(false);
         }

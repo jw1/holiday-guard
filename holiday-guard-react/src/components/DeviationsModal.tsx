@@ -1,6 +1,7 @@
 import {FC, useState, useEffect} from 'react';
 import {Schedule} from '@/types/schedule';
 import DeviationCalendar from './DeviationCalendar';
+import api from '../services/api';
 
 interface DeviationsModalProps {
     schedule: Schedule | null;
@@ -17,10 +18,9 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
         if (schedule) {
 
             // Fetch deviations for the schedule
-            fetch(`/api/v1/schedules/${schedule.id}/deviations`)
-                .then(res => res.json())
-                .then(data => {
-                    const formattedDeviations = data.reduce((acc: any, deviation: any) => {
+            api.get<any[]>(`/schedules/${schedule.id}/deviations`)
+                .then(response => {
+                    const formattedDeviations = response.data.reduce((acc: any, deviation: any) => {
                         acc[deviation.date] = deviation.type;
                         return acc;
                     }, {});
@@ -30,9 +30,11 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
 
             // Fetch base calendar data
             const yearMonth = new Date().toISOString().slice(0, 7); // Use current month for now
-            fetch(`/api/v1/schedules/${schedule.id}/calendar?yearMonth=${yearMonth}`)
-                .then(res => res.json())
-                .then(data => {
+            api.get<any>(`/schedules/${schedule.id}/calendar`, {
+                params: { yearMonth }
+            })
+                .then(response => {
+                    const data = response.data;
                     const calendar = Object.entries(data.days).reduce((acc: any, [day, status]) => {
                         const date = `${data.yearMonth}-${String(day).padStart(2, '0')}`;
                         acc[date] = status;
@@ -68,17 +70,8 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                 })),
             };
 
-            fetch(`/api/v1/schedules/${schedule.id}/versions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error('Save failed');
-                    }
+            api.post(`/schedules/${schedule.id}/versions`, payload)
+                .then(() => {
                     onSave(deviations);
                 })
                 .catch(error => {

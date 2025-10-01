@@ -2,6 +2,7 @@ import {useState, useEffect, useMemo} from 'react';
 import ScheduleModal from '@/components/ScheduleModal';
 import DeviationsModal from '@/components/DeviationsModal';
 import type {Schedule, ScheduleResponseDto} from '@/types/schedule';
+import api from '../services/api';
 
 type SortableKey = keyof Schedule;
 
@@ -18,20 +19,15 @@ const Schedules = () => {
     useEffect(() => {
         const fetchSchedules = async () => {
             try {
-                const response = await fetch('/api/v1/schedules');
-                if (!response.ok) {
-                    console.error('Error fetching schedules');
-                } else {
-                    const data: ScheduleResponseDto[] = await response.json();
-                    const formattedData: Schedule[] = data.map(s => {
-                        const {updatedAt, ...rest} = s;
-                        return {
-                            ...rest,
-                            createdAt: new Date(s.createdAt).toLocaleDateString(),
-                        };
-                    });
-                    setSchedules(formattedData);
-                }
+                const response = await api.get<ScheduleResponseDto[]>('/schedules');
+                const formattedData: Schedule[] = response.data.map(s => {
+                    const {updatedAt, ...rest} = s;
+                    return {
+                        ...rest,
+                        createdAt: new Date(s.createdAt).toLocaleDateString(),
+                    };
+                });
+                setSchedules(formattedData);
             } catch (error) {
                 console.error('Error fetching schedules:', error);
             }
@@ -67,23 +63,13 @@ const Schedules = () => {
 
     const handleSaveSchedule = async (scheduleData: Omit<Schedule, 'id' | 'createdAt'>) => {
         const isNew = !editingSchedule;
-        const url = isNew ? '/api/v1/schedules' : `/api/v1/schedules/${editingSchedule!.id}`;
-        const method = isNew ? 'POST' : 'PUT';
 
         try {
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(scheduleData),
-            });
+            const response = isNew
+                ? await api.post<ScheduleResponseDto>('/schedules', scheduleData)
+                : await api.put<ScheduleResponseDto>(`/schedules/${editingSchedule!.id}`, scheduleData);
 
-            if (!response.ok) {
-                throw new Error('Save failed');
-            }
-
-            const savedSchedule: ScheduleResponseDto = await response.json();
+            const savedSchedule = response.data;
             const {updatedAt, ...rest} = savedSchedule;
             const formatted: Schedule = {
                 ...rest,

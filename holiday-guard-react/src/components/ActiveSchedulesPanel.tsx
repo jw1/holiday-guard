@@ -1,4 +1,5 @@
 import {FC, useState, useEffect} from 'react';
+import api from '../services/api';
 
 interface DailyScheduleStatus {
     scheduleId: string;
@@ -16,13 +17,8 @@ const ActiveSchedulesPanel: FC = () => {
     useEffect(() => {
         const fetchScheduleStatus = async () => {
             try {
-                const response = await fetch('/api/v1/dashboard/schedule-status');
-                if (!response.ok) {
-                    setError('Network response was not ok');
-                } else {
-                    const data: DailyScheduleStatus[] = await response.json();
-                    setScheduleStatus(data);
-                }
+                const response = await api.get<DailyScheduleStatus[]>('/dashboard/schedule-status');
+                setScheduleStatus(response.data);
             } catch (err) {
                 setError('Failed to fetch schedule status');
             } finally {
