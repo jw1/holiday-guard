@@ -1,6 +1,6 @@
 import React from 'react';
-import { Schedule } from '../types/schedule';
-import { CalendarFilters } from '../types/calendar-view';
+import {Schedule} from '../types/schedule';
+import {CalendarFilters} from '../types/calendar-view';
 
 interface ScheduleFilterPanelProps {
     schedules: Schedule[];
@@ -11,12 +11,11 @@ interface ScheduleFilterPanelProps {
 }
 
 const ScheduleFilterPanel: React.FC<ScheduleFilterPanelProps> = ({
-    schedules,
-    filters,
-    onFiltersChange,
-    isOpen,
-    setIsOpen
-}) => {
+                                                                     schedules,
+                                                                     filters,
+                                                                     onFiltersChange,
+                                                                     isOpen
+                                                                 }) => {
     const handleScheduleToggle = (scheduleId: number) => {
         const newSelected = filters.selectedScheduleIds.includes(scheduleId)
             ? filters.selectedScheduleIds.filter(id => id !== scheduleId)
@@ -106,7 +105,8 @@ const ScheduleFilterPanel: React.FC<ScheduleFilterPanelProps> = ({
 
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                     {schedules.map(schedule => (
-                        <label key={schedule.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <label key={schedule.id}
+                               className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                             <input
                                 type="checkbox"
                                 checked={filters.selectedScheduleIds.includes(schedule.id)}
