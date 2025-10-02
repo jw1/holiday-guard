@@ -8,16 +8,26 @@ import { getMultiScheduleCalendar, getAllSchedules } from '../services/backend';
 import { Schedule } from '../types/schedule';
 import ScheduleFilterPanel from './ScheduleFilterPanel';
 import { exportToCSV, exportToICS } from '../utils/exportUtils';
+import useWindowWidth from "../hooks/useWindowWidth";
+import {Bars3Icon} from "@heroicons/react/24/outline";
 
 const localizer = momentLocalizer(moment);
 
 const ScheduleViewer: React.FC = () => {
-    const [view, setView] = useState<View>('month');
+    const windowWidth = useWindowWidth();
+
+    // Set initial view based on screen size, but don't auto-switch after that
+    const [view, setView] = useState<View>(() => {
+        // Only evaluate once on initial render
+        return windowWidth < 768 ? 'agenda' : 'month';
+    });
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
     const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
     const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+    const [isFilterPanelOpen, setFilterPanelOpen] = useState(false);
+
     const [filters, setFilters] = useState<CalendarFilters>({
         selectedScheduleIds: [],
         showRun: true,
@@ -198,69 +208,32 @@ const ScheduleViewer: React.FC = () => {
                 schedules={allSchedules}
                 filters={filters}
                 onFiltersChange={setFilters}
+                isOpen={isFilterPanelOpen}
+                setIsOpen={setFilterPanelOpen}
             />
 
             {/* Main Calendar Area */}
             <div className="flex-1 p-6 flex flex-col">
                 <div className="bg-white rounded-lg shadow p-6 flex flex-col flex-grow">
-                    {/* Legend and Export Buttons */}
-                    <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                        <div className="flex items-center gap-4 text-sm flex-wrap">
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 bg-green-100 border border-green-200 rounded"></div>
-                                <span>Run</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 bg-red-100 border border-red-200 rounded"></div>
-                                <span>No-Run</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 bg-green-600 rounded"></div>
-                                <span>Force Run</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 bg-red-600 rounded"></div>
-                                <span>Skip</span>
-                            </div>
-                            <div className="flex items-center gap-2 ml-4 border-l pl-4 border-gray-300">
-                                <span>ℹ️</span>
-                                <span className="text-gray-600 italic">Has deviation reason</span>
-                            </div>
-                        </div>
-
-                        {/* Export Buttons */}
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={handleExportCSV}
-                                disabled={events.length === 0}
-                                className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                title="Export as CSV"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                CSV
-                            </button>
-                            <button
-                                onClick={handleExportICS}
-                                disabled={events.length === 0}
-                                className="flex items-center gap-2 px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                title="Export as ICS (iCalendar)"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                ICS
-                            </button>
-                        </div>
+                    {/* Filter Button (mobile only) */}
+                    <div className="md:hidden mb-4">
+                        <button
+                            onClick={() => setFilterPanelOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
+                            title="Show Filters"
+                        >
+                            <Bars3Icon className="h-4 w-4" />
+                            Filters
+                        </button>
                     </div>
 
+                    {/* Calendar */}
                     {loading ? (
-                        <div className="flex items-center justify-center h-96">
+                        <div className="flex items-center justify-center flex-grow">
                             <div className="text-gray-500">Loading calendar data...</div>
                         </div>
                     ) : filters.selectedScheduleIds.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-96 text-gray-500">
+                        <div className="flex flex-col items-center justify-center flex-grow text-gray-500">
                             <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
@@ -268,7 +241,7 @@ const ScheduleViewer: React.FC = () => {
                             <p className="text-sm mt-2">Select one or more schedules from the sidebar to view the calendar</p>
                         </div>
                     ) : (
-                        <div className="flex-grow">
+                        <div className="flex-grow mb-4">
                             <Calendar
                                 localizer={localizer}
                                 events={events}
@@ -285,6 +258,63 @@ const ScheduleViewer: React.FC = () => {
                                 }}
                                 views={['month', 'agenda']}
                             />
+                        </div>
+                    )}
+
+                    {/* Legend and Export Buttons - Bottom */}
+                    {!loading && filters.selectedScheduleIds.length > 0 && (
+                        <div className="border-t pt-4 mt-4">
+                            <div className="flex items-center justify-between flex-wrap gap-4">
+                                {/* Legend */}
+                                <div className="flex items-center gap-4 text-sm flex-wrap">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 bg-green-100 border border-green-200 rounded"></div>
+                                        <span>Run</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 bg-red-100 border border-red-200 rounded"></div>
+                                        <span>No-Run</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 bg-green-600 rounded"></div>
+                                        <span>Force Run</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 bg-red-600 rounded"></div>
+                                        <span>Skip</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 ml-4 border-l pl-4 border-gray-300">
+                                        <span>ℹ️</span>
+                                        <span className="text-gray-600 italic">Has deviation reason</span>
+                                    </div>
+                                </div>
+
+                                {/* Export Buttons */}
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={handleExportCSV}
+                                        disabled={events.length === 0}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                        title="Export as CSV"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <span className="hidden sm:inline">CSV</span>
+                                    </button>
+                                    <button
+                                        onClick={handleExportICS}
+                                        disabled={events.length === 0}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                        title="Export as ICS (iCalendar)"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span className="hidden sm:inline">ICS</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -363,6 +393,14 @@ const ScheduleViewer: React.FC = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Backdrop for mobile filter panel */}
+            {isFilterPanelOpen && (
+                <div
+                    className="md:hidden fixed inset-0 bg-black opacity-50 z-10"
+                    onClick={() => setFilterPanelOpen(false)}
+                ></div>
             )}
         </div>
     );

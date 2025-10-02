@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Routes, Route, Navigate, Outlet, useNavigate} from 'react-router-dom';
 import {AuthProvider, useAuth} from './context/AuthContext';
 import Sidebar from './components/Sidebar';
@@ -15,17 +15,28 @@ import {setOnUnauthorized} from './services/api';
  * Main application layout including sidebar and header.
  * The content is rendered via the <Outlet /> component from react-router-dom.
  */
-const AppLayout = () => (
-    <div className="flex bg-gray-100 h-screen overflow-hidden">
-        <Sidebar/>
-        <div className="flex-1 flex flex-col">
-            <Header/>
-            <main className="flex-1 overflow-y-auto">
-                <Outlet/>
-            </main>
+const AppLayout = () => {
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+    return (
+        <div className="flex bg-gray-100 h-screen overflow-hidden">
+            <Sidebar isOpen={isSidebarOpen} setIsOpen={setSidebarOpen}/>
+            <div className="flex-1 flex flex-col">
+                <Header onMenuClick={() => setSidebarOpen(true)}/>
+                <main className="flex-1 overflow-y-auto">
+                    <Outlet/>
+                </main>
+            </div>
+            {/* Backdrop for mobile sidebar */}
+            {isSidebarOpen && (
+                <div
+                    className="lg:hidden fixed inset-0 bg-black opacity-50 z-30"
+                    onClick={() => setSidebarOpen(false)}
+                ></div>
+            )}
         </div>
-    </div>
-);
+    );
+};
 
 /**
  * Inner component that sets up the 401 interceptor.

@@ -133,8 +133,8 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                                                 </span>
                                                 <span className={`px-2 py-1 rounded text-xs font-semibold ${
                                                     deviation.type === 'FORCE_RUN'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-red-100 text-red-800'
+                                                        ? 'bg-green-600 text-white'
+                                                        : 'bg-red-600 text-white'
                                                 }`}>
                                                     {deviation.type === 'FORCE_RUN' ? 'Force Run' : 'Skip'}
                                                 </span>

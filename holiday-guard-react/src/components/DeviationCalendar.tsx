@@ -83,9 +83,9 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
             case 'no-run':
                 return `${baseClasses} bg-red-100 text-red-800`;
             case 'FORCE_RUN':
-                return `${baseClasses} bg-green-200 text-green-900 ring-2 ring-green-500`;
+                return `${baseClasses} bg-green-600 text-white`;
             case 'SKIP':
-                return `${baseClasses} bg-red-200 text-red-900 ring-2 ring-red-500`;
+                return `${baseClasses} bg-red-600 text-white`;
             default:
                 return `${baseClasses} bg-gray-100`;
         }

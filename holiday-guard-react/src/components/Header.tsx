@@ -1,7 +1,12 @@
 import {useLocation} from 'react-router-dom';
 import {UserMenu} from "./UserMenu";
+import {Bars3Icon} from "@heroicons/react/24/outline";
 
-const Header = () => {
+interface HeaderProps {
+    onMenuClick: () => void;
+}
+
+const Header = ({ onMenuClick }: HeaderProps) => {
 
     const location = useLocation();
 
@@ -21,10 +26,15 @@ const Header = () => {
     const title = getTitle(location.pathname);
 
     return (
-        <header className="bg-white shadow-md p-4 flex justify-between items-center">
-            <div>
-                <h1 className="text-xl px-6 text-gray-600">{title}</h1>
-                <p className="text-sm px-6 text-gray-500">Home / {title}</p>
+        <header className="bg-white shadow-md p-4 flex justify-between items-center z-20">
+            <div className="flex items-center">
+                <button onClick={onMenuClick} className="lg:hidden text-gray-500 hover:text-gray-700 mr-4">
+                    <Bars3Icon className="h-6 w-6"/>
+                </button>
+                <div>
+                    <h1 className="text-xl px-6 text-gray-600">{title}</h1>
+                    <p className="text-sm px-6 text-gray-500">Home / {title}</p>
+                </div>
             </div>
             <div className="flex items-center">
                 <div>

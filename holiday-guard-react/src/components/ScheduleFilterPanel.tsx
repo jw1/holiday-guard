@@ -6,12 +6,16 @@ interface ScheduleFilterPanelProps {
     schedules: Schedule[];
     filters: CalendarFilters;
     onFiltersChange: (filters: CalendarFilters) => void;
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
 }
 
 const ScheduleFilterPanel: React.FC<ScheduleFilterPanelProps> = ({
     schedules,
     filters,
-    onFiltersChange
+    onFiltersChange,
+    isOpen,
+    setIsOpen
 }) => {
     const handleScheduleToggle = (scheduleId: number) => {
         const newSelected = filters.selectedScheduleIds.includes(scheduleId)
@@ -65,8 +69,15 @@ const ScheduleFilterPanel: React.FC<ScheduleFilterPanelProps> = ({
         });
     };
 
+    const panelClasses = `
+        bg-white border-r border-gray-200 p-6 overflow-y-auto w-64
+        transform transition-transform duration-300 ease-in-out
+        absolute md:static md:translate-x-0 z-20
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+    `;
+
     return (
-        <div className="w-64 bg-white border-r border-gray-200 p-6 overflow-y-auto">
+        <div className={panelClasses}>
             <h2 className="text-lg font-bold text-gray-800 mb-4">Filters</h2>
 
             {/* Schedule Selection */}
