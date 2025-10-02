@@ -42,7 +42,7 @@ export interface ShouldRunResponse {
 export interface Deviation {
     date: string;
     type: 'FORCE_RUN' | 'SKIP';
-    reason?: string;
+    reason: string;
 }
 
 export interface CalendarResponse {

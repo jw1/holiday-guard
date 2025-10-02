@@ -230,7 +230,7 @@ public class ScheduleService {
 
         // Query deviations for the active version only
         var deviations = deviationRepository.findByScheduleIdAndVersionId(scheduleId, activeVersion.get().getId()).stream()
-                .map(deviation -> new DeviationDto(deviation.getOverrideDate(), deviation.getAction().name()))
+                .map(deviation -> new DeviationDto(deviation.getOverrideDate(), deviation.getAction().name(), deviation.getReason()))
                 .collect(Collectors.toList());
         log.info("found " + deviations.size() + " deviations");
 

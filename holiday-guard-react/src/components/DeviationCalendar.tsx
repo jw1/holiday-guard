@@ -3,8 +3,8 @@ import React, {useState, useEffect} from 'react';
 // Define the types for the calendar props
 interface DeviationCalendarProps {
     baseCalendar: { [date: string]: 'run' | 'no-run' };
-    initialDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' };
-    onDeviationsChange: (newDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => void;
+    initialDeviations: { [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } };
+    onDeviationsChange: (newDeviations: { [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } }) => void;
     onMonthChange: (newMonth: Date) => void;
 }
 
@@ -43,7 +43,8 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
         if (newDeviations[dateKey]) {
             delete newDeviations[dateKey];
         } else {
-            newDeviations[dateKey] = baseCalendar[dateKey] === 'run' ? 'SKIP' : 'FORCE_RUN';
+            const deviationType = baseCalendar[dateKey] === 'run' ? 'SKIP' : 'FORCE_RUN';
+            newDeviations[dateKey] = { type: deviationType, reason: '' };
         }
 
         setDeviations(newDeviations);
@@ -56,7 +57,7 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
         const dateKey = formatDate(date);
 
         if (deviations[dateKey]) {
-            return deviations[dateKey]; // 'FORCE_RUN' or 'SKIP'
+            return deviations[dateKey].type; // 'FORCE_RUN' or 'SKIP'
         }
         return baseCalendar[dateKey] || 'default'; // 'run', 'no-run', or 'default'
     };

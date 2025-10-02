@@ -12,7 +12,7 @@ interface DeviationsModalProps {
 
 const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) => {
 
-    const [deviations, setDeviations] = useState<{ [date: string]: 'FORCE_RUN' | 'SKIP' }>({});
+    const [deviations, setDeviations] = useState<{ [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } }>({});
     const [baseCalendar, setBaseCalendar] = useState<{ [date: string]: 'run' | 'no-run' }>({});
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
@@ -23,7 +23,7 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                     console.log('Received deviations from backend:', data);
                     const formattedDeviations = data.reduce((acc: any, deviation: any) => {
                         console.log('Processing deviation:', deviation);
-                        acc[deviation.date] = deviation.type;
+                        acc[deviation.date] = { type: deviation.type, reason: deviation.reason || '' };
                         return acc;
                     }, {});
                     console.log('Formatted deviations:', formattedDeviations);
@@ -51,7 +51,7 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
 
     if (!schedule) return null;
 
-    const handleDeviationsChange = (newDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => {
+    const handleDeviationsChange = (newDeviations: { [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } }) => {
         setDeviations(newDeviations);
     };
 
@@ -69,10 +69,10 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                     effectiveFrom: new Date().toISOString().split('T')[0],
                     active: true,
                 },
-                deviations: Object.entries(deviations).map(([date, type]) => ({
+                deviations: Object.entries(deviations).map(([date, deviation]) => ({
                     deviationDate: date,
-                    action: type.toUpperCase(),
-                    reason: 'User-created deviation', // Default reason - can be updated via right-click later
+                    action: deviation.type.toUpperCase(),
+                    reason: deviation.reason.trim() || '', // Trim whitespace, allow empty string
                 })),
             };
 
@@ -118,7 +118,7 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                                 <p className="text-gray-500 text-sm italic">No deviations configured</p>
                             ) : (
                                 <div className="space-y-0">
-                                    {sortedDeviations.map(([date, type]) => (
+                                    {sortedDeviations.map(([date, deviation]) => (
                                         <div key={date} className="border-b py-3 last:border-b-0">
                                             <div className="flex items-center justify-between mb-1">
                                                 <span className="text-sm font-medium text-gray-700">
@@ -132,16 +132,42 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                                                     })()}
                                                 </span>
                                                 <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                                    type === 'FORCE_RUN'
+                                                    deviation.type === 'FORCE_RUN'
                                                         ? 'bg-green-100 text-green-800'
                                                         : 'bg-red-100 text-red-800'
                                                 }`}>
-                                                    {type === 'FORCE_RUN' ? 'Force Run' : 'Skip'}
+                                                    {deviation.type === 'FORCE_RUN' ? 'Force Run' : 'Skip'}
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-gray-500 italic">
-                                                User-created deviation
-                                            </p>
+                                            <textarea
+                                                value={deviation.reason}
+                                                onChange={(e) => {
+                                                    const newDeviations = {...deviations};
+                                                    newDeviations[date] = {
+                                                        type: deviation.type,
+                                                        reason: e.target.value
+                                                    };
+                                                    setDeviations(newDeviations);
+                                                }}
+                                                placeholder="Optional: Add reason for this deviation"
+                                                maxLength={500}
+                                                className="w-full text-xs text-gray-600 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-blue-400 resize-none"
+                                                rows={1}
+                                                style={{
+                                                    minHeight: '24px',
+                                                    height: 'auto'
+                                                }}
+                                                onInput={(e) => {
+                                                    const target = e.target as HTMLTextAreaElement;
+                                                    target.style.height = 'auto';
+                                                    target.style.height = target.scrollHeight + 'px';
+                                                }}
+                                            />
+                                            {(deviation.reason?.length || 0) > 400 && (
+                                                <div className="text-xs text-gray-400 mt-1">
+                                                    {deviation.reason.length}/500 characters
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

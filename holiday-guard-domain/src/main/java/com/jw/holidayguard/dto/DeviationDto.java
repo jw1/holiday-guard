@@ -12,4 +12,5 @@ import java.time.LocalDate;
 public class DeviationDto {
     private LocalDate date;
     private String type;
+    private String reason;
 }
