@@ -14,6 +14,7 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
 
     const [deviations, setDeviations] = useState<{ [date: string]: 'FORCE_RUN' | 'SKIP' }>({});
     const [baseCalendar, setBaseCalendar] = useState<{ [date: string]: 'run' | 'no-run' }>({});
+    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
     useEffect(() => {
         if (schedule) {
@@ -29,8 +30,12 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                     setDeviations(formattedDeviations);
                 })
                 .catch(error => console.error('Error fetching deviations:', error));
+        }
+    }, [schedule]);
 
-            const yearMonth = new Date().toISOString().slice(0, 7);
+    useEffect(() => {
+        if (schedule) {
+            const yearMonth = currentMonth.toISOString().slice(0, 7);
             getScheduleCalendar(schedule.id, yearMonth)
                 .then(data => {
                     const calendar = Object.entries(data.days).reduce((acc: any, [day, status]) => {
@@ -42,12 +47,16 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                 })
                 .catch(error => console.error('Error fetching base calendar:', error));
         }
-    }, [schedule]);
+    }, [schedule, currentMonth]);
 
     if (!schedule) return null;
 
     const handleDeviationsChange = (newDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => {
         setDeviations(newDeviations);
+    };
+
+    const handleMonthChange = (newMonth: Date) => {
+        setCurrentMonth(newMonth);
     };
 
     const handleSave = () => {
@@ -89,6 +98,7 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                             baseCalendar={baseCalendar}
                             initialDeviations={deviations}
                             onDeviationsChange={handleDeviationsChange}
+                            onMonthChange={handleMonthChange}
                         />
                     </div>
 

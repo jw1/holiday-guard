@@ -5,12 +5,14 @@ interface DeviationCalendarProps {
     baseCalendar: { [date: string]: 'run' | 'no-run' };
     initialDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' };
     onDeviationsChange: (newDeviations: { [date: string]: 'FORCE_RUN' | 'SKIP' }) => void;
+    onMonthChange: (newMonth: Date) => void;
 }
 
 const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
                                                                                  baseCalendar,
                                                                                  initialDeviations,
-                                                                                 onDeviationsChange
+                                                                                 onDeviationsChange,
+                                                                                 onMonthChange
                                                                              }) => {
     const [deviations, setDeviations] = useState(initialDeviations);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -28,7 +30,9 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
     const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
     const changeMonth = (delta: number) => {
-        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
+        const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1);
+        setCurrentDate(newDate);
+        onMonthChange(newDate);
     };
 
     const handleDayClick = (day: number) => {
