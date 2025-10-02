@@ -16,11 +16,13 @@ import {setOnUnauthorized} from './services/api';
  * The content is rendered via the <Outlet /> component from react-router-dom.
  */
 const AppLayout = () => (
-    <div className="flex bg-gray-100 min-h-screen">
+    <div className="flex bg-gray-100 h-screen overflow-hidden">
         <Sidebar/>
         <div className="flex-1 flex flex-col">
             <Header/>
-            <Outlet/>
+            <main className="flex-1 overflow-y-auto">
+                <Outlet/>
+            </main>
         </div>
     </div>
 );

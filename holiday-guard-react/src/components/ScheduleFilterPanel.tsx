@@ -66,7 +66,7 @@ const ScheduleFilterPanel: React.FC<ScheduleFilterPanelProps> = ({
     };
 
     return (
-        <div className="w-80 bg-white border-r border-gray-200 p-6 overflow-y-auto">
+        <div className="w-64 bg-white border-r border-gray-200 p-6 overflow-y-auto">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Filters</h2>
 
             {/* Schedule Selection */}
