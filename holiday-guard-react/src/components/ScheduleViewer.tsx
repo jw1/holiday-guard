@@ -15,10 +15,10 @@ const localizer = momentLocalizer(moment);
 
 const ScheduleViewer: React.FC = () => {
     const windowWidth = useWindowWidth();
+    const isMobile = windowWidth < 768;
 
-    // Set initial view based on screen size, but don't auto-switch after that
+    // Set initial view based on screen size
     const [view, setView] = useState<View>(() => {
-        // Only evaluate once on initial render
         return windowWidth < 768 ? 'agenda' : 'month';
     });
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -35,6 +35,16 @@ const ScheduleViewer: React.FC = () => {
         showForceRun: true,
         showSkip: true,
     });
+
+    // Auto-switch to agenda view on narrow screens
+    useEffect(() => {
+        if (isMobile && view === 'month') {
+            // Switch to agenda when screen becomes too narrow
+            setView('agenda');
+        }
+        // Note: We don't auto-switch back to month when screen becomes wider
+        // to respect user's choice if they manually selected agenda on desktop
+    }, [isMobile, view]);
 
     // Fetch all schedules on mount
     useEffect(() => {
