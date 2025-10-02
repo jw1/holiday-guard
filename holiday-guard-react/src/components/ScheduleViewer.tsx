@@ -4,12 +4,12 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../styles/calendar.css';
 import { CalendarEvent, CalendarFilters, CalendarDay } from '../types/calendar-view';
-import { getMultiScheduleCalendar, getAllSchedules } from '../services/backend';
 import { Schedule } from '../types/schedule';
 import ScheduleFilterPanel from './ScheduleFilterPanel';
 import { exportToCSV, exportToICS } from '../utils/exportUtils';
 import useWindowWidth from "../hooks/useWindowWidth";
 import {Bars3Icon} from "@heroicons/react/24/outline";
+import { useActiveSchedules, useMultiScheduleCalendar } from '../hooks/queries';
 
 const localizer = momentLocalizer(moment);
 
@@ -22,9 +22,6 @@ const ScheduleViewer: React.FC = () => {
         return windowWidth < 768 ? 'agenda' : 'month';
     });
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
-    const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
-    const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
-    const [loading, setLoading] = useState(true);
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
     const [isFilterPanelOpen, setFilterPanelOpen] = useState(false);
 
@@ -36,6 +33,19 @@ const ScheduleViewer: React.FC = () => {
         showSkip: true,
     });
 
+    // Fetch all active schedules
+    const {data: allSchedules = []} = useActiveSchedules();
+
+    // Fetch calendar data
+    const yearMonth = moment(currentDate).format('YYYY-MM');
+    const {data: calendarData, isLoading: loading} = useMultiScheduleCalendar(
+        filters.selectedScheduleIds,
+        yearMonth,
+        true
+    );
+
+    const calendarDays = calendarData?.days || [];
+
     // Auto-switch to agenda view on narrow screens
     useEffect(() => {
         if (isMobile && view === 'month') {
@@ -46,54 +56,15 @@ const ScheduleViewer: React.FC = () => {
         // to respect user's choice if they manually selected agenda on desktop
     }, [isMobile, view]);
 
-    // Fetch all schedules on mount
+    // Select all schedules by default when they load
     useEffect(() => {
-        getAllSchedules()
-            .then(rawSchedules => {
-                // Convert to Schedule format
-                const schedules: Schedule[] = rawSchedules
-                    .filter(s => s.active) // Only show active schedules
-                    .map(s => ({
-                        id: s.id,
-                        name: s.name,
-                        description: s.description,
-                        country: s.country,
-                        active: s.active,
-                        createdAt: new Date(s.createdAt).toLocaleDateString(),
-                        ruleType: s.ruleType,
-                        ruleConfig: s.ruleConfig
-                    }));
-                setAllSchedules(schedules);
-                // Select all schedules by default
-                setFilters(prev => ({
-                    ...prev,
-                    selectedScheduleIds: schedules.map(s => s.id)
-                }));
-            })
-            .catch(error => console.error('Error fetching schedules:', error));
-    }, []);
-
-    // Fetch calendar data when filters or date changes
-    useEffect(() => {
-        if (filters.selectedScheduleIds.length === 0) {
-            setCalendarDays([]);
-            setLoading(false);
-            return;
+        if (allSchedules.length > 0 && filters.selectedScheduleIds.length === 0) {
+            setFilters(prev => ({
+                ...prev,
+                selectedScheduleIds: allSchedules.map(s => s.id)
+            }));
         }
-
-        setLoading(true);
-        const yearMonth = moment(currentDate).format('YYYY-MM');
-
-        getMultiScheduleCalendar(filters.selectedScheduleIds, yearMonth, true)
-            .then(data => {
-                setCalendarDays(data.days);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('Error fetching calendar data:', error);
-                setLoading(false);
-            });
-    }, [filters.selectedScheduleIds, currentDate]);
+    }, [allSchedules, filters.selectedScheduleIds.length]);
 
     // Convert calendar days to react-big-calendar events
     const events = useMemo(() => {

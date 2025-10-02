@@ -1,39 +1,19 @@
-import {FC, useState, useEffect} from 'react';
-import {getHealthStatus} from '../services/backend';
+import {FC} from 'react';
+import {useHealthStatus} from '../hooks/queries';
 
 const ServerHealthPanel: FC = () => {
+    const {data, isLoading, error} = useHealthStatus();
 
-    const [status, setStatus] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchHealthStatus = async () => {
-            try {
-                const health = await getHealthStatus();
-                setStatus(health.status);
-            } catch (err) {
-                setStatus('DOWN');
-                setError('Failed to fetch health');
-            }
-        };
-
-        void fetchHealthStatus();
-
-        // Optional: Poll every 30 seconds
-        const intervalId = setInterval(fetchHealthStatus, 30000);
-
-        return () => clearInterval(intervalId);
-    }, []);
-
+    const status = data?.status;
     const isHealthy = status === 'UP';
-    const displayStatus = status ? (isHealthy ? 'Healthy' : 'Unhealthy') : 'Loading...';
+    const displayStatus = isLoading ? 'Loading...' : (status ? (isHealthy ? 'Healthy' : 'Unhealthy') : 'Unknown');
 
     return (
         <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-gray-500 text-sm">Server Health</h3>
             <p className={`text-2xl font-bold ${isHealthy ? 'text-green-500' : 'text-red-500'}`}>
                 {displayStatus}
-                {error && <span className="text-red-500 text-sm block">{error}</span>}
+                {error && <span className="text-red-500 text-sm block">Failed to fetch health</span>}
             </p>
         </div>
     );

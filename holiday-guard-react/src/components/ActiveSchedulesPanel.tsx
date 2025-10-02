@@ -1,33 +1,14 @@
-import {FC, useState, useEffect} from 'react';
-import {getScheduleStatus, DailyScheduleStatus} from '../services/backend';
+import {FC} from 'react';
+import {useScheduleStatus} from '../hooks/queries';
 
 const ActiveSchedulesPanel: FC = () => {
-
-    const [scheduleStatus, setScheduleStatus] = useState<DailyScheduleStatus[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchScheduleStatus = async () => {
-            try {
-                const status = await getScheduleStatus();
-                setScheduleStatus(status);
-            } catch (err) {
-                setError('Failed to fetch schedule status');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        void fetchScheduleStatus();
-
-    }, []);
+    const {data: scheduleStatus = [], isLoading: loading, error} = useScheduleStatus();
 
     return (
         <div className="p-6 bg-white rounded-lg shadow mb-8">
             <h3 className="text-xl font-bold mb-4">Active Schedules - Run Status Today</h3>
             {loading && <p>Loading...</p>}
-            {error && <p className="text-red-500">{error}</p>}
+            {error && <p className="text-red-500">Failed to fetch schedule status</p>}
             {!loading && !error && (
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">

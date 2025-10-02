@@ -1,7 +1,8 @@
 import {FC, useState, useEffect} from 'react';
 import {Schedule} from '@/types/schedule';
 import DeviationCalendar from './DeviationCalendar';
-import {getScheduleDeviations, getScheduleCalendar, VersionPayload} from '../services/backend';
+import {VersionPayload} from '../services/backend';
+import {useScheduleDeviations, useScheduleCalendar} from '../hooks/queries';
 
 interface DeviationsModalProps {
     schedule: Schedule | null;
@@ -13,41 +14,36 @@ interface DeviationsModalProps {
 const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) => {
 
     const [deviations, setDeviations] = useState<{ [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } }>({});
-    const [baseCalendar, setBaseCalendar] = useState<{ [date: string]: 'run' | 'no-run' }>({});
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
-    useEffect(() => {
-        if (schedule) {
-            getScheduleDeviations(schedule.id)
-                .then(data => {
-                    console.log('Received deviations from backend:', data);
-                    const formattedDeviations = data.reduce((acc: any, deviation: any) => {
-                        console.log('Processing deviation:', deviation);
-                        acc[deviation.date] = { type: deviation.type, reason: deviation.reason || '' };
-                        return acc;
-                    }, {});
-                    console.log('Formatted deviations:', formattedDeviations);
-                    setDeviations(formattedDeviations);
-                })
-                .catch(error => console.error('Error fetching deviations:', error));
-        }
-    }, [schedule]);
+    const yearMonth = currentMonth.toISOString().slice(0, 7);
 
+    // Fetch deviations using React Query
+    const {data: deviationsData} = useScheduleDeviations(schedule?.id || null);
+
+    // Fetch base calendar using React Query
+    const {data: calendarData} = useScheduleCalendar(schedule?.id || null, yearMonth);
+
+    // Process deviations data
     useEffect(() => {
-        if (schedule) {
-            const yearMonth = currentMonth.toISOString().slice(0, 7);
-            getScheduleCalendar(schedule.id, yearMonth)
-                .then(data => {
-                    const calendar = Object.entries(data.days).reduce((acc: any, [day, status]) => {
-                        const date = `${data.yearMonth}-${String(day).padStart(2, '0')}`;
-                        acc[date] = status;
-                        return acc;
-                    }, {});
-                    setBaseCalendar(calendar);
-                })
-                .catch(error => console.error('Error fetching base calendar:', error));
+        if (deviationsData) {
+            console.log('Received deviations from backend:', deviationsData);
+            const formattedDeviations = deviationsData.reduce((acc: any, deviation: any) => {
+                console.log('Processing deviation:', deviation);
+                acc[deviation.date] = { type: deviation.type, reason: deviation.reason || '' };
+                return acc;
+            }, {});
+            console.log('Formatted deviations:', formattedDeviations);
+            setDeviations(formattedDeviations);
         }
-    }, [schedule, currentMonth]);
+    }, [deviationsData]);
+
+    // Process base calendar data
+    const baseCalendar = calendarData ? Object.entries(calendarData.days).reduce((acc: any, [day, status]) => {
+        const date = `${calendarData.yearMonth}-${String(day).padStart(2, '0')}`;
+        acc[date] = status;
+        return acc;
+    }, {}) : {};
 
     if (!schedule) return null;
 

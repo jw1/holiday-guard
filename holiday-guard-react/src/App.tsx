@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Routes, Route, Navigate, Outlet, useNavigate} from 'react-router-dom';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {AuthProvider, useAuth} from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -10,6 +12,17 @@ import AuditLog from './components/AuditLog';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import {setOnUnauthorized} from './services/api';
+
+// Create a client
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 1000 * 60 * 5, // 5 minutes
+            retry: 1,
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
 /**
  * Main application layout including sidebar and header.
@@ -72,9 +85,12 @@ const AppRoutes = () => {
 
 function App(): React.ReactElement {
     return (
-        <AuthProvider>
-            <AppRoutes/>
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <AppRoutes/>
+            </AuthProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
     );
 }
 

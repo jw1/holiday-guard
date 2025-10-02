@@ -1,35 +1,15 @@
-import {useState, useEffect, useMemo} from 'react';
+import {useState, useMemo} from 'react';
 import {format} from 'date-fns';
-import type {AuditLog, AuditLogDto} from '@/types/audit';
-import {getAuditLogs} from '../services/backend';
+import type {AuditLog} from '@/types/audit';
+import {useAuditLogs} from '../hooks/queries';
 
 type SortableKey = keyof AuditLog;
 
 const AuditLogPage = () => {
-
-    const [logs, setLogs] = useState<AuditLog[]>([]);
+    const {data: logs = [], isLoading, error} = useAuditLogs();
     const [searchTerm, setSearchTerm] = useState('');
     const [sortColumn, setSortColumn] = useState<SortableKey>('createdAt');
     const [sortDirection, setSortDirection] = useState('descending');
-
-    useEffect(() => {
-        const fetchAuditLogs = async () => {
-            try {
-                const data = await getAuditLogs();
-
-                const formattedData: AuditLog[] = data.map(log => ({
-                    ...log,
-                    createdAt: new Date(log.createdAt),
-                }));
-
-                setLogs(formattedData);
-            } catch (err) {
-                console.error('Error fetching audit logs:', err);
-            }
-        };
-
-        void fetchAuditLogs();
-    }, []);
 
     const handleSort = (columnKey: SortableKey) => {
         if (sortColumn === columnKey) {
@@ -87,6 +67,9 @@ const AuditLogPage = () => {
                         className="w-full px-3 py-2 pr-10 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                     />
                 </div>
+                {isLoading && <div className="p-8 text-center text-gray-500">Loading audit logs...</div>}
+                {error && <div className="p-8 text-center text-red-500">Failed to fetch audit logs</div>}
+                {!isLoading && !error && (
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -121,6 +104,7 @@ const AuditLogPage = () => {
                         </tbody>
                     </table>
                 </div>
+                )}
             </div>
         </main>
     );

@@ -1,30 +1,15 @@
-import {FC, useState, useEffect} from 'react';
-import {getTotalSchedulesCount} from '../services/backend';
+import {FC} from 'react';
+import {useTotalSchedulesCount} from '../hooks/queries';
 
 const TotalSchedulesStatPanel: FC = () => {
-
-    const [count, setCount] = useState<number | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchTotalCount = async () => {
-            try {
-                const totalCount = await getTotalSchedulesCount();
-                setCount(totalCount);
-            } catch (err) {
-                setError('Failed to fetch');
-            }
-        };
-
-        void fetchTotalCount();
-    }, []);
+    const {data: count, isLoading, error} = useTotalSchedulesCount();
 
     return (
         <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-gray-500 text-sm">Total Schedules</h3>
             <p className="text-2xl font-bold">
-                {count !== null ? count : 'Loading...'}
-                {error && <span className="text-red-500 text-sm"> {error}</span>}
+                {isLoading ? 'Loading...' : count ?? 0}
+                {error && <span className="text-red-500 text-sm"> Failed to fetch</span>}
             </p>
         </div>
     );

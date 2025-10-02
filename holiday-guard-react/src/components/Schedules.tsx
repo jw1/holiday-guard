@@ -1,40 +1,25 @@
-import {useState, useEffect, useMemo} from 'react';
+import {useState, useMemo} from 'react';
 import ScheduleModal from '@/components/ScheduleModal';
 import DeviationsModal from '@/components/DeviationsModal';
 import type {Schedule} from '@/types/schedule';
-import {getAllSchedules, createSchedule, updateSchedule, saveScheduleVersion, VersionPayload} from '../services/backend';
+import type {VersionPayload} from '../services/backend';
+import {useSchedules, useCreateSchedule, useUpdateSchedule, useSaveScheduleDeviations} from '../hooks/queries';
 
 type SortableKey = keyof Schedule;
 
 const Schedules = () => {
 
-    const [schedules, setSchedules] = useState<Schedule[]>([]);
+    const {data: schedules = [], isLoading, error} = useSchedules();
+    const createScheduleMutation = useCreateSchedule();
+    const updateScheduleMutation = useUpdateSchedule();
+    const saveDeviationsMutation = useSaveScheduleDeviations();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeviationsModalOpen, setIsDeviationsModalOpen] = useState(false);
     const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortColumn, setSortColumn] = useState<SortableKey>('name');
     const [sortDirection, setSortDirection] = useState('ascending');
-
-    useEffect(() => {
-        const fetchSchedules = async () => {
-            try {
-                const data = await getAllSchedules();
-                const formattedData: Schedule[] = data.map(s => {
-                    const {updatedAt, ...rest} = s;
-                    return {
-                        ...rest,
-                        createdAt: new Date(s.createdAt).toLocaleDateString(),
-                    };
-                });
-                setSchedules(formattedData);
-            } catch (error) {
-                console.error('Error fetching schedules:', error);
-            }
-        };
-
-        void fetchSchedules();
-    }, []);
 
     const handleNewSchedule = () => {
         setEditingSchedule(null);
@@ -65,20 +50,13 @@ const Schedules = () => {
         const isNew = !editingSchedule;
 
         try {
-            const savedSchedule = isNew
-                ? await createSchedule(scheduleData)
-                : await updateSchedule(editingSchedule!.id, scheduleData);
-
-            const {updatedAt, ...rest} = savedSchedule;
-            const formatted: Schedule = {
-                ...rest,
-                createdAt: new Date(savedSchedule.createdAt).toLocaleDateString(),
-            };
-
             if (isNew) {
-                setSchedules([...schedules, formatted]);
+                await createScheduleMutation.mutateAsync(scheduleData);
             } else {
-                setSchedules(schedules.map(s => (s.id === formatted.id ? formatted : s)));
+                await updateScheduleMutation.mutateAsync({
+                    scheduleId: editingSchedule!.id,
+                    scheduleData,
+                });
             }
             handleCloseModal();
         } catch (error) {
@@ -87,19 +65,15 @@ const Schedules = () => {
         }
     };
 
-    // New handler for saving deviations, mirroring the pattern of handleSaveSchedule.
     const handleSaveDeviations = async (payload: VersionPayload) => {
         if (!editingSchedule) return;
 
         try {
-            // 1. Call the API to save the new version with deviations.
-            await saveScheduleVersion(editingSchedule.id, payload);
-
-            // 2. Upon success, close the modal.
+            await saveDeviationsMutation.mutateAsync({
+                scheduleId: editingSchedule.id,
+                payload,
+            });
             handleCloseDeviationsModal();
-
-            // Optional: You might want to refetch data or show a success notification here.
-
         } catch (error) {
             console.error('Error saving deviations:', error);
             window.alert('Failed to save deviations. Please try again.');
@@ -175,6 +149,9 @@ const Schedules = () => {
                         )}
                     </div>
                 </div>
+                {isLoading && <div className="p-8 text-center text-gray-500">Loading schedules...</div>}
+                {error && <div className="p-8 text-center text-red-500">Failed to fetch schedules</div>}
+                {!isLoading && !error && (
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -215,6 +192,7 @@ const Schedules = () => {
                         </tbody>
                     </table>
                 </div>
+                )}
             </div>
 
             {isModalOpen && (
