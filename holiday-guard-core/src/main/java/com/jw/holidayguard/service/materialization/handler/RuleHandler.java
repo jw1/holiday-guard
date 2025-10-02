@@ -15,11 +15,11 @@ public interface RuleHandler {
      * Generates dates for this specific rule type within the given range.
      *
      * @param rule The schedule rule (may be null for simple handlers like weekdays-only)
-     * @param fromDate Start date (inclusive)
-     * @param toDate End date (inclusive)
+     * @param from Start date (inclusive)
+     * @param to End date (inclusive)
      * @return List of dates when the schedule should run, sorted chronologically
      */
-    List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate);
+    List<LocalDate> generateDates(Rule rule, LocalDate from, LocalDate to);
 
     /**
      * Checks if a schedule should run on a specific date based on the given rule.

@@ -11,21 +11,61 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.jw.holidayguard.domain.Rule.RuleType.CRON_EXPRESSION;
+
+/**
+ * Handles date generation for rules based on a cron expression.
+ * <p>
+ * This implementation uses Spring Framework's {@link CronExpression}, which supports a six-field format.
+ * The fields are separated by spaces and represent:
+ * <ol>
+ *     <li>Seconds (0-59)</li>
+ *     <li>Minutes (0-59)</li>
+ *     <li>Hours (0-23)</li>
+ *     <li>Day of Month (1-31)</li>
+ *     <li>Month (1-12 or JAN-DEC)</li>
+ *     <li>Day of Week (0-7 or SUN-SAT, where both 0 and 7 are Sunday)</li>
+ * </ol>
+ * <p>
+ * Special characters are also supported:
+ * <ul>
+ *     <li>{@code *} - Matches any value.</li>
+ *     <li>{@code ?} - No specific value. Used when specifying a day-of-week and not a day-of-month, or vice-versa.</li>
+ *     <li>{@code ,} - Separates multiple values... such as 1,2,3</li>
+ *     <li>{@code -} - Defines a range... such as MON-FRI or 4-9</li>
+ *     <li>{@code /} - Specifies increments. For example, {@code 1/2} in the day-of-month field means every 2 days starting on the 1st (i.e., odd-numbered days).</li>
+ * </ul>
+ * <p>
+ * Since this application is only concerned with dates, time fields (seconds, minutes, hours) should
+ * be set to start of day, for example {@code "0 0 0 ..."}.
+ * <p>
+ * Example: To run on the 15th of every month, the expression would be {@code "0 0 0 15 * ?"}.
+ */
 @Service
 public class CronExpressionHandler implements RuleHandler {
 
     @Override
-    public List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate) {
+    public List<LocalDate> generateDates(Rule rule, LocalDate from, LocalDate to) {
         CronExpression cron = CronExpression.parse(rule.getRuleConfig());
-        List<LocalDate> dates = new ArrayList<>();
 
-        LocalDate currentDate = fromDate;
-        while (!currentDate.isAfter(toDate)) {
-            LocalDateTime nextExecution = cron.next(currentDate.atStartOfDay());
-            if (nextExecution != null && !nextExecution.toLocalDate().isAfter(currentDate)) {
-                dates.add(currentDate);
+        // accumulate business days in requested date range
+        var dates = new ArrayList<LocalDate>();
+
+        LocalDate day = from;
+
+        // step through days one at a time
+        // accumulate if current day is same as next execution of cron (i.e. it runs that day)
+        while (!day.isAfter(to)) {
+
+            // find next execution of cron (starting from "day")
+            LocalDateTime nextExecution = cron.next(day.atStartOfDay());
+
+            // if it's not after "day", then it runs that day
+            if (nextExecution != null && ! nextExecution.toLocalDate().isAfter(day)) {
+                dates.add(day);
             }
-            currentDate = currentDate.plusDays(1);
+
+            day = day.plusDays(1);
         }
 
         return dates;
@@ -34,41 +74,16 @@ public class CronExpressionHandler implements RuleHandler {
     @Override
     public boolean shouldRun(Rule rule, LocalDate date) {
         CronExpression cron = CronExpression.parse(rule.getRuleConfig());
+
+        // what's the next execution after yesterday
         LocalDateTime nextExecution = cron.next(date.atStartOfDay().minusDays(1));
+
+        // true if next execution exists, and it equals "date"
         return nextExecution != null && nextExecution.toLocalDate().equals(date);
-    }
-
-    private List<LocalDate> generateDatesFromCron(CronExpression cronExpression, LocalDate fromDate, LocalDate toDate) {
-        List<LocalDate> dates = new ArrayList<>();
-
-        // Start checking from the beginning of the fromDate
-        LocalDateTime current = fromDate.atStartOfDay();
-        LocalDateTime endDateTime = toDate.atTime(LocalTime.MAX);
-
-        // Find the next execution time starting from current
-        while (current.toLocalDate().isBefore(toDate) || current.toLocalDate().equals(toDate)) {
-            LocalDateTime nextExecution = cronExpression.next(current);
-
-            if (nextExecution == null || nextExecution.isAfter(endDateTime)) {
-                break;
-            }
-
-            LocalDate executionDate = nextExecution.toLocalDate();
-
-            // Only add dates within our range and avoid duplicates
-            if (!executionDate.isBefore(fromDate) && !executionDate.isAfter(toDate) && !dates.contains(executionDate)) {
-                dates.add(executionDate);
-            }
-
-            // Move to the next day to find the next execution
-            current = nextExecution.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        }
-
-        return dates;
     }
 
     @Override
     public Rule.RuleType getSupportedRuleType() {
-        return Rule.RuleType.CRON_EXPRESSION;
+        return CRON_EXPRESSION;
     }
 }

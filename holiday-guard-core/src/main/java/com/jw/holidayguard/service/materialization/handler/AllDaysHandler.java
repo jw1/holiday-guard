@@ -5,19 +5,26 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static com.jw.holidayguard.domain.Rule.RuleType.ALL_DAYS;
+
+/**
+ * Simply returns true for all days
+ * <p>
+ * Use when your schedule needs almost every day, and deviations can plug the
+ * gaps.
+ */
 @Component
 public class AllDaysHandler implements RuleHandler {
 
     @Override
     public Rule.RuleType getSupportedRuleType() {
-        return Rule.RuleType.ALL_DAYS;
+        return ALL_DAYS;
     }
 
     @Override
-    public List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate) {
-        return fromDate.datesUntil(toDate.plusDays(1)).collect(Collectors.toList());
+    public List<LocalDate> generateDates(Rule rule, LocalDate from, LocalDate to) {
+        return from.datesUntil(to.plusDays(1)).toList();
     }
 
     @Override

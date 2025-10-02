@@ -4,20 +4,27 @@ import com.jw.holidayguard.domain.Rule;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
+import static com.jw.holidayguard.domain.Rule.RuleType.NO_DAYS;
+
+/**
+ * Simply returns false for all days
+ * <p>
+ * Use when your schedule rarely runs.  Deviations can be used for
+ * all run days.
+ */
 @Component
 public class NoDaysHandler implements RuleHandler {
 
     @Override
     public Rule.RuleType getSupportedRuleType() {
-        return Rule.RuleType.NO_DAYS;
+        return NO_DAYS;
     }
 
     @Override
-    public List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate) {
-        return Collections.emptyList();
+    public List<LocalDate> generateDates(Rule rule, LocalDate from, LocalDate to) {
+        return from.datesUntil(to.plusDays(1)).toList();
     }
 
     @Override
