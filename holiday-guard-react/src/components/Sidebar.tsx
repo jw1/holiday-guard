@@ -1,4 +1,4 @@
-import {HomeIcon, CalendarIcon, BookOpenIcon} from '@heroicons/react/24/outline';
+import {HomeIcon, CalendarIcon, CalendarDaysIcon, BookOpenIcon} from '@heroicons/react/24/outline';
 import {Link, useLocation} from 'react-router-dom';
 
 const Sidebar = () => {
@@ -26,6 +26,12 @@ const Sidebar = () => {
                         <Link to="/schedules" className={navItemClasses('/schedules')}>
                             <CalendarIcon className="h-6 w-6 mr-2"/>
                             Schedules
+                        </Link>
+                    </li>
+                    <li className="mb-2">
+                        <Link to="/schedule-viewer" className={navItemClasses('/schedule-viewer')}>
+                            <CalendarDaysIcon className="h-6 w-6 mr-2"/>
+                            Schedule Viewer
                         </Link>
                     </li>
                     <li className="mb-2">

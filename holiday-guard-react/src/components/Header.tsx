@@ -11,6 +11,7 @@ const Header = () => {
      * @param pathname path given by router
      */
     const getTitle = (pathname: string) => {
+        if (pathname.startsWith('/schedule-viewer')) return 'Schedule Viewer';
         if (pathname.startsWith('/schedules')) return 'Schedules';
         if (pathname.startsWith('/dashboard')) return 'Dashboard';
         if (pathname.startsWith('/audit-log')) return 'Audit Log';

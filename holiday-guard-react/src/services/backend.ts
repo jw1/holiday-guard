@@ -5,6 +5,7 @@
 import api from './api';
 import {ScheduleResponseDto, Schedule} from '../types/schedule';
 import {AuditLogDto} from '../types/audit';
+import {MultiScheduleCalendar} from '../types/calendar-view';
 
 // ============================================================================
 // Type Definitions
@@ -207,5 +208,26 @@ export const getAuditLogs = async (): Promise<AuditLogDto[]> => {
 export const getHealthStatus = async (): Promise<HealthStatus> => {
     const axios = (await import('axios')).default;
     const response = await axios.get<HealthStatus>('/actuator/health');
+    return response.data;
+};
+
+// ============================================================================
+// Calendar View Services
+// ============================================================================
+
+/**
+ * Fetches calendar data for multiple schedules for a given month.
+ */
+export const getMultiScheduleCalendar = async (
+    scheduleIds: number[],
+    yearMonth: string,
+    includeDeviations: boolean = true
+): Promise<MultiScheduleCalendar> => {
+    const params = new URLSearchParams();
+    scheduleIds.forEach(id => params.append('scheduleIds', id.toString()));
+    params.append('yearMonth', yearMonth);
+    params.append('includeDeviations', includeDeviations.toString());
+
+    const response = await api.get<MultiScheduleCalendar>(`/calendar-view?${params.toString()}`);
     return response.data;
 };

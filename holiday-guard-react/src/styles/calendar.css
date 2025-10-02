@@ -1,0 +1,25 @@
+/* Custom styling for react-big-calendar */
+
+/* Fix for Agenda view - make date column neutral colored */
+.rbc-agenda-view .rbc-agenda-date-cell,
+.rbc-agenda-view .rbc-agenda-time-cell {
+    background-color: #f9fafb !important; /* gray-50 */
+    color: #374151 !important; /* gray-700 */
+    border: 1px solid #e5e7eb !important; /* gray-200 - neutral border */
+}
+
+/* Remove colored borders from agenda event cells and use neutral borders */
+.rbc-agenda-view .rbc-agenda-event-cell {
+    border-left: 1px solid #e5e7eb !important; /* gray-200 */
+    border-right: 1px solid #e5e7eb !important; /* gray-200 */
+}
+
+/* Ensure agenda table rows have neutral borders */
+.rbc-agenda-view tr {
+    border-bottom: 1px solid #e5e7eb !important; /* gray-200 */
+}
+
+/* Ensure the event content itself doesn't have colored borders bleeding through */
+.rbc-agenda-view .rbc-event {
+    border: none !important;
+}

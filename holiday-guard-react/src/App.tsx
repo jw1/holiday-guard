@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import Schedules from './components/Schedules';
+import ScheduleViewer from './components/ScheduleViewer';
 import AuditLog from './components/AuditLog';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -48,6 +49,7 @@ const AppRoutes = () => {
                     <Route path="/" element={<Navigate to="/dashboard"/>}/>
                     <Route path="/dashboard" element={<Dashboard/>}/>
                     <Route path="/schedules" element={<Schedules/>}/>
+                    <Route path="/schedule-viewer" element={<ScheduleViewer/>}/>
                     <Route path="/audit-log" element={<AuditLog/>}/>
                 </Route>
             </Route>
