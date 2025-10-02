@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {Schedule} from '@/types/schedule';
+import CronExpressionBuilder from './CronExpressionBuilder';
 
 interface ScheduleModalProps {
     schedule: Schedule | null;
@@ -93,8 +94,8 @@ const ScheduleModal = ({schedule, onClose, onSave}: ScheduleModalProps) => {
 
     return (
         <div
-            className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+            className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center p-4">
+            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <h2 className="text-2xl font-bold mb-4">{schedule ? 'Edit Schedule' : 'New Schedule'}</h2>
                 {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
                 <form onSubmit={handleSubmit}>
@@ -164,16 +165,17 @@ const ScheduleModal = ({schedule, onClose, onSave}: ScheduleModalProps) => {
                     </div>
                     {showRuleConfig && (
                         <div className="mb-4">
-                            <label htmlFor="ruleConfig" className="block text-gray-700 text-sm font-bold mb-2">Rule
-                                Config</label>
-                            <textarea
-                                id="ruleConfig"
-                                rows={3}
+                            <label className="block text-gray-700 text-sm font-bold mb-2">
+                                Cron Expression
+                            </label>
+                            <CronExpressionBuilder
                                 value={ruleConfig}
-                                onChange={handleRuleConfigChange}
-                                className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${configError ? 'border-red-500' : ''}`}
-                            ></textarea>
-                            {configError && <p className="text-red-500 text-xs italic">{configError}</p>}
+                                onChange={setRuleConfig}
+                                onValidationChange={(isValid, error) => {
+                                    setConfigError(error || '');
+                                }}
+                            />
+                            {configError && <p className="text-red-500 text-xs italic mt-2">{configError}</p>}
                         </div>
                     )}
                     <div className="mb-6">

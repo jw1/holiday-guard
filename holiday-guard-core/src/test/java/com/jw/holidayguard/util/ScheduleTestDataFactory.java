@@ -98,12 +98,12 @@ public class ScheduleTestDataFactory {
 
     /**
      * Creates a cron rule for specific time and days.
-     * Example: Every weekday at 9 AM.
+     * Example: Every weekday at midnight.
      */
     public static CreateRuleRequest createCronRule(String cronExpression) {
         return new CreateRuleRequest(
                 Rule.RuleType.CRON_EXPRESSION,
-                cronExpression, // e.g., "0 0 9 * * MON-FRI"
+                cronExpression, // e.g., "0 0 0 * * MON-FRI"
                 LocalDate.now(),
                 true
         );
@@ -115,7 +115,7 @@ public class ScheduleTestDataFactory {
     public static CreateRuleRequest createBiWeeklyRule(LocalDate startDate) {
         return new CreateRuleRequest(
                 Rule.RuleType.CRON_EXPRESSION,
-                "0 0 9 ? * FRI", // Every Friday at 9 AM - logic would handle bi-weekly in service
+                "0 0 0 ? * FRI", // Every Friday at midnight - logic would handle bi-weekly in service
                 startDate,
                 true
         );

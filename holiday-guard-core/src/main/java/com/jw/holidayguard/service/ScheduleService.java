@@ -201,6 +201,9 @@ public class ScheduleService {
         LocalDate fromDate = yearMonth.atDay(1);
         LocalDate toDate = yearMonth.atEndOfMonth();
 
+        log.info("getting info for schedule rule " + rule.getRuleType());
+        log.info("getting info for schedule rule " + rule.getRuleConfig());
+
         List<LocalDate> runDates = ruleEngine.generateDates(rule, fromDate, toDate);
         Map<Integer, String> days = new HashMap<>();
         for (int i = 1; i <= yearMonth.lengthOfMonth(); i++) {

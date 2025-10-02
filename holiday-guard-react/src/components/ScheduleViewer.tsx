@@ -7,6 +7,7 @@ import { CalendarEvent, CalendarFilters, CalendarDay } from '../types/calendar-v
 import { Schedule } from '../types/schedule';
 import ScheduleFilterPanel from './ScheduleFilterPanel';
 import { exportToCSV, exportToICS } from '../utils/exportUtils';
+import { parseISODateString } from '../utils/dateUtils';
 import useWindowWidth from "../hooks/useWindowWidth";
 import {Bars3Icon} from "@heroicons/react/24/outline";
 import { useActiveSchedules, useMultiScheduleCalendar } from '../hooks/queries';
@@ -78,7 +79,7 @@ const ScheduleViewer: React.FC = () => {
                 return true;
             })
             .map(day => {
-                const date = new Date(day.date);
+                const date = parseISODateString(day.date);
                 return {
                     title: day.scheduleName,
                     start: date,

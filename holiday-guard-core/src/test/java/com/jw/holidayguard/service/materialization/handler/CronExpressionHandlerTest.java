@@ -26,7 +26,7 @@ class CronExpressionHandlerTest {
         // given
         Rule cronRule = Rule.builder()
                 .ruleType(Rule.RuleType.CRON_EXPRESSION)
-                .ruleConfig("0 0 9 * * MON-FRI")
+                .ruleConfig("0 0 0 * * MON-FRI")
                 .build();
 
         LocalDate fromDate = LocalDate.of(2025, 1, 1);  // Wednesday
@@ -51,7 +51,7 @@ class CronExpressionHandlerTest {
         // given
         Rule cronRule = Rule.builder()
                 .ruleType(Rule.RuleType.CRON_EXPRESSION)
-                .ruleConfig("0 0 9 * * TUE,FRI")
+                .ruleConfig("0 0 0 * * TUE,FRI")
                 .build();
 
         LocalDate fromDate = LocalDate.of(2025, 1, 1);  // Wednesday
@@ -89,7 +89,7 @@ class CronExpressionHandlerTest {
         // given
         Rule cronRule = Rule.builder()
                 .ruleType(Rule.RuleType.CRON_EXPRESSION)
-                .ruleConfig("0 0 9 * * SUN")  // Only Sundays
+                .ruleConfig("0 0 0 * * SUN")  // Only Sundays
                 .build();
 
         LocalDate monday = LocalDate.of(2025, 1, 6);    // Monday

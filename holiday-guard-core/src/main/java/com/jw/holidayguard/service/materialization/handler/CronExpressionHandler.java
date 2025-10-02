@@ -7,7 +7,6 @@ import org.springframework.scheduling.support.CronExpression;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,23 +47,16 @@ public class CronExpressionHandler implements RuleHandler {
     public List<LocalDate> generateDates(Rule rule, LocalDate from, LocalDate to) {
         CronExpression cron = CronExpression.parse(rule.getRuleConfig());
 
-        // accumulate business days in requested date range
         var dates = new ArrayList<LocalDate>();
 
         LocalDate day = from;
 
-        // step through days one at a time
-        // accumulate if current day is same as next execution of cron (i.e. it runs that day)
         while (!day.isAfter(to)) {
-
-            // find next execution of cron (starting from "day")
-            LocalDateTime nextExecution = cron.next(day.atStartOfDay());
-
-            // if it's not after "day", then it runs that day
-            if (nextExecution != null && ! nextExecution.toLocalDate().isAfter(day)) {
+            // Find next execution after yesterday - if it's today, then it runs today
+            LocalDateTime nextExecution = cron.next(day.atStartOfDay().minusDays(1));
+            if (nextExecution != null && nextExecution.toLocalDate().equals(day)) {
                 dates.add(day);
             }
-
             day = day.plusDays(1);
         }
 
@@ -74,11 +66,7 @@ public class CronExpressionHandler implements RuleHandler {
     @Override
     public boolean shouldRun(Rule rule, LocalDate date) {
         CronExpression cron = CronExpression.parse(rule.getRuleConfig());
-
-        // what's the next execution after yesterday
         LocalDateTime nextExecution = cron.next(date.atStartOfDay().minusDays(1));
-
-        // true if next execution exists, and it equals "date"
         return nextExecution != null && nextExecution.toLocalDate().equals(date);
     }
 
