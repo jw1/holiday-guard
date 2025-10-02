@@ -16,6 +16,7 @@ const ruleTypeConfig: Record<string, { hasConfig: boolean; validation?: RegExp; 
         displayName: 'Cron Expression',
     },
     ALL_DAYS: {hasConfig: false, displayName: 'All Days'},
+    NO_DAYS: {hasConfig: false, displayName: 'No Days'},
 };
 
 const ScheduleModal = ({schedule, onClose, onSave}: ScheduleModalProps) => {

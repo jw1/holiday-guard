@@ -41,9 +41,12 @@ export const useUpdateSchedule = () => {
         }) => {
             return await updateSchedule(scheduleId, scheduleData);
         },
-        onSuccess: () => {
+        onSuccess: (_data, variables) => {
             // Invalidate schedules queries to trigger refetch
             queryClient.invalidateQueries({queryKey: ['schedules']});
+            // Invalidate calendar queries since rule changes affect the base calendar
+            queryClient.invalidateQueries({queryKey: ['scheduleCalendar', variables.scheduleId]});
+            queryClient.invalidateQueries({queryKey: ['multiScheduleCalendar']});
         },
     });
 };

@@ -64,29 +64,36 @@ public class Rule {
 
     /**
      * Rule types and their expected ruleConfig format:
-     * 
+     *
      * WEEKDAYS_ONLY: ruleConfig = null or empty
      *   - Runs Monday-Friday, excludes weekends
-     * 
+     *
      * CRON_EXPRESSION: ruleConfig = "0 0 9 * * MON-FRI"
      *   - Standard cron expression for scheduling
      *   - Example: "0 0 9 * * MON-FRI" = 9 AM weekdays
-     * 
+     *
      * CUSTOM_DATES: ruleConfig = JSON array of dates
      *   - Example: ["2024-01-15", "2024-02-15", "2024-03-15"]
      *   - Explicit list of dates when schedule should run
-     * 
+     *
      * MONTHLY_PATTERN: ruleConfig = JSON object with pattern
      *   - Example: {"dayOfMonth": 15, "skipWeekends": true}
      *   - Example: {"dayOfWeek": "FRIDAY", "weekOfMonth": "LAST"}
-     * 
+     *
      * AVOID_US_FEDERAL_HOLIDAYS: ruleConfig = null or empty
      *  - Runs on weekdays, but skips all official US federal holidays
+     *
+     * ALL_DAYS: ruleConfig = null or empty
+     *   - Runs every single day (use with deviations to skip specific dates)
+     *
+     * NO_DAYS: ruleConfig = null or empty
+     *   - Runs no days by default (use with deviations to force run on specific dates)
      */
     public enum RuleType {
         WEEKDAYS_ONLY,
         US_FEDERAL_RESERVE_BUSINESS_DAYS,
         CRON_EXPRESSION,
-        ALL_DAYS
+        ALL_DAYS,
+        NO_DAYS
     }
 }

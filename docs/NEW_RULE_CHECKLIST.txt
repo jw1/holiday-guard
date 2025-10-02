@@ -1,0 +1,11 @@
+For reference when adding more rule types, here's the pattern to follow:
+
+  - Add new enum value to Rule.RuleType in Rule.java
+  - Add documentation comment explaining the rule in Rule.java
+  - Create new handler class implementing RuleHandler in handler/ package
+  - Implement three required methods: getSupportedRuleType(), generateDates(), shouldRun()
+  - Annotate handler with @Component for auto-discovery
+  - Create database migration to update CHECK constraint
+  - Add rule to frontend ruleTypeConfig in ScheduleModal.tsx
+  - Specify hasConfig, displayName, and optionally validation regex
+  - Build and test with ./mvnw clean compile
