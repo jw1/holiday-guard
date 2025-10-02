@@ -1,7 +1,5 @@
 package com.jw.holidayguard.dto;
 
-import java.util.UUID;
-
 /**
  * DTO representing the daily run status of a single schedule.
  *
@@ -10,7 +8,7 @@ import java.util.UUID;
  * @param shouldRun    A boolean indicating if the schedule is expected to run today.
  */
 public record DailyScheduleStatusDto(
-    UUID scheduleId,
+    Long scheduleId,
     String scheduleName,
     boolean shouldRun,
     String reason) {

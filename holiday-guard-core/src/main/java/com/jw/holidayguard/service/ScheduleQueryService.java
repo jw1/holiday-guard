@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -58,7 +58,7 @@ public class ScheduleQueryService {
                 .collect(Collectors.toSet());
 
         // 3. Fetch all schedules in a single batch query
-        Map<UUID, String> scheduleNames = scheduleRepository.findAllById(scheduleIds).stream()
+        Map<Long, String> scheduleNames = scheduleRepository.findAllById(scheduleIds).stream()
                 .collect(Collectors.toMap(Schedule::getId, Schedule::getName));
 
         // 4. Map to DTOs
@@ -103,7 +103,7 @@ public class ScheduleQueryService {
                 .collect(Collectors.toList());
     }
 
-    public ShouldRunQueryResponse shouldRunToday(UUID scheduleId, ShouldRunQueryRequest request) {
+    public ShouldRunQueryResponse shouldRunToday(Long scheduleId, ShouldRunQueryRequest request) {
         // Validate schedule exists and is active
         Schedule schedule = scheduleRepository.findById(scheduleId)
             .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + scheduleId));

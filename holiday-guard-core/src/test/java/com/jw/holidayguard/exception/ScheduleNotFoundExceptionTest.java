@@ -2,7 +2,7 @@ package com.jw.holidayguard.exception;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +27,7 @@ class ScheduleNotFoundExceptionTest {
     @Test
     void shouldCreateExceptionWithScheduleId() {
         // given
-        UUID scheduleId = UUID.randomUUID();
+        Long scheduleId = null;
 
         // when
         ScheduleNotFoundException exception = new ScheduleNotFoundException(scheduleId);
@@ -50,7 +50,7 @@ class ScheduleNotFoundExceptionTest {
     @Test
     void shouldHandleNullScheduleId() {
         // when
-        ScheduleNotFoundException exception = new ScheduleNotFoundException((UUID) null);
+        ScheduleNotFoundException exception = new ScheduleNotFoundException((Long) null);
 
         // then
         assertEquals("Schedule not found with id: null", exception.getMessage());

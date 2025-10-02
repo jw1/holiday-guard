@@ -14,6 +14,7 @@ import com.jw.holidayguard.dto.ScheduleMonthDto;
 import com.jw.holidayguard.dto.DeviationDto;
 import com.jw.holidayguard.repository.DeviationRepository;
 import com.jw.holidayguard.service.materialization.RuleEngine;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 public class ScheduleService {
@@ -85,7 +86,7 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public Schedule findScheduleById(UUID id) {
+    public Schedule findScheduleById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ScheduleNotFoundException(id));
     }
@@ -106,7 +107,7 @@ public class ScheduleService {
         return repository.findAll();
     }
 
-    public Schedule updateSchedule(UUID id, UpdateScheduleRequest updateData) {
+    public Schedule updateSchedule(Long id, UpdateScheduleRequest updateData) {
 
         // Find existing schedule (throws exception if not found)
         Schedule existing = findScheduleById(id);
@@ -187,12 +188,12 @@ public class ScheduleService {
 
 
     @Transactional(readOnly = true)
-    public Optional<Rule> findLatestRuleForSchedule(UUID scheduleId) {
+    public Optional<Rule> findLatestRuleForSchedule(Long scheduleId) {
         return ruleRepository.findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(scheduleId);
     }
 
     @Transactional(readOnly = true)
-    public ScheduleMonthDto getScheduleCalendar(UUID scheduleId, YearMonth yearMonth) {
+    public ScheduleMonthDto getScheduleCalendar(Long scheduleId, YearMonth yearMonth) {
         Schedule schedule = findScheduleById(scheduleId);
         Rule rule = findLatestRuleForSchedule(scheduleId)
                 .orElseThrow(() -> new IllegalStateException("Schedule has no rules"));
@@ -215,9 +216,24 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public List<DeviationDto> getScheduleDeviations(UUID scheduleId) {
-        return deviationRepository.findByScheduleId(scheduleId).stream()
-                .map(override -> new DeviationDto(override.getOverrideDate(), override.getAction().name()))
+    public List<DeviationDto> getScheduleDeviations(Long scheduleId) {
+        // Find the active version for this schedule
+        Optional<Version> activeVersion = versionRepository.findByScheduleIdAndActiveTrue(scheduleId);
+
+        if (activeVersion.isEmpty()) {
+            // No active version means no deviations
+            log.warn("no active version found");
+            return List.of();
+        } else {
+            log.info("active version found: " + activeVersion.get().getId() + ", schedule id: " + scheduleId);
+        }
+
+        // Query deviations for the active version only
+        var deviations = deviationRepository.findByScheduleIdAndVersionId(scheduleId, activeVersion.get().getId()).stream()
+                .map(deviation -> new DeviationDto(deviation.getOverrideDate(), deviation.getAction().name()))
                 .collect(Collectors.toList());
+        log.info("found " + deviations.size() + " deviations");
+
+        return deviations;
     }
 }

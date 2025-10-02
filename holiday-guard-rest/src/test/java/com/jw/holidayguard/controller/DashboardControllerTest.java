@@ -10,7 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.UUID;
+
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -29,8 +29,8 @@ class DashboardControllerTest {
     @Test
     void getStatusToday_shouldReturnDailyStatusForAllActiveSchedules() throws Exception {
         // given
-        UUID scheduleId1 = UUID.randomUUID();
-        UUID scheduleId2 = UUID.randomUUID();
+        Long scheduleId1 = 1L;
+        Long scheduleId2 = 2L;
         List<DailyScheduleStatusDto> statuses = List.of(
                 new DailyScheduleStatusDto(scheduleId1, "ACH File Generation", true, "Scheduled to run"),
                 new DailyScheduleStatusDto(scheduleId2, "Daily Reporting", false, "Not scheduled to run")

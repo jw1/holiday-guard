@@ -7,16 +7,15 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class RuleResponse {
 
-    private UUID id;
-    private UUID scheduleId;
-    private UUID versionId;
+    private Long id;
+    private Long scheduleId;
+    private Long versionId;
     private Rule.RuleType ruleType;
     private String ruleConfig;
     private LocalDate effectiveFrom;

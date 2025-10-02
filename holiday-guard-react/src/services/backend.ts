@@ -11,7 +11,7 @@ import {AuditLogDto} from '../types/audit';
 // ============================================================================
 
 export interface DailyScheduleStatus {
-    scheduleId: string;
+    scheduleId: number;
     scheduleName: string;
     shouldRun: boolean;
     reason: string;
@@ -26,22 +26,23 @@ export interface HealthStatus {
 }
 
 export interface ScheduleInfo {
-    id: string;
+    id: number;
     name: string;
 }
 
 export interface ShouldRunResponse {
-    scheduleId: string;
+    scheduleId: number;
     queryDate: string;
     shouldRun: boolean;
     reason: string;
     deviationApplied: boolean;
-    versionId: string;
+    versionId: number;
 }
 
 export interface Deviation {
     date: string;
     type: 'FORCE_RUN' | 'SKIP';
+    reason?: string;
 }
 
 export interface CalendarResponse {
@@ -126,7 +127,7 @@ export const createSchedule = async (
  * Updates an existing schedule.
  */
 export const updateSchedule = async (
-    scheduleId: string,
+    scheduleId: number,
     scheduleData: Omit<Schedule, 'id' | 'createdAt'>
 ): Promise<ScheduleResponseDto> => {
     const response = await api.put<ScheduleResponseDto>(`/schedules/${scheduleId}`, scheduleData);
@@ -137,7 +138,7 @@ export const updateSchedule = async (
  * Queries whether a schedule should run for a given client.
  */
 export const shouldScheduleRun = async (
-    scheduleId: string,
+    scheduleId: number,
     clientIdentifier: string
 ): Promise<ShouldRunResponse> => {
     const response = await api.get<ShouldRunResponse>(
@@ -154,7 +155,7 @@ export const shouldScheduleRun = async (
 /**
  * Fetches all deviations for a specific schedule.
  */
-export const getScheduleDeviations = async (scheduleId: string): Promise<Deviation[]> => {
+export const getScheduleDeviations = async (scheduleId: number): Promise<Deviation[]> => {
     const response = await api.get<Deviation[]>(`/schedules/${scheduleId}/deviations`);
     return response.data;
 };
@@ -163,7 +164,7 @@ export const getScheduleDeviations = async (scheduleId: string): Promise<Deviati
  * Fetches the base calendar for a schedule for a given month.
  */
 export const getScheduleCalendar = async (
-    scheduleId: string,
+    scheduleId: number,
     yearMonth: string
 ): Promise<CalendarResponse> => {
     const response = await api.get<CalendarResponse>(
@@ -177,7 +178,7 @@ export const getScheduleCalendar = async (
  * Creates a new version with updated deviations for a schedule.
  */
 export const saveScheduleVersion = async (
-    scheduleId: string,
+    scheduleId: number,
     payload: VersionPayload
 ): Promise<void> => {
     await api.post(`/schedules/${scheduleId}/versions`, payload);

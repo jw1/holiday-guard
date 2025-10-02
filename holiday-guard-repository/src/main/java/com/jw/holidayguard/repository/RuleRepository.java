@@ -9,26 +9,25 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface RuleRepository extends JpaRepository<Rule, UUID> {
+public interface RuleRepository extends JpaRepository<Rule, Long> {
 
-    Optional<Rule> findByVersionId(UUID versionId);
+    Optional<Rule> findByVersionId(Long versionId);
 
-    Optional<Rule> findByVersionIdAndActiveTrue(UUID versionId);
+    Optional<Rule> findByVersionIdAndActiveTrue(Long versionId);
 
-    Optional<Rule> findByScheduleIdAndVersionId(UUID scheduleId, UUID versionId);
+    Optional<Rule> findByScheduleIdAndVersionId(Long scheduleId, Long versionId);
 
-    Optional<Rule> findByScheduleIdAndVersionIdAndActiveTrue(UUID scheduleId, UUID versionId);
+    Optional<Rule> findByScheduleIdAndVersionIdAndActiveTrue(Long scheduleId, Long versionId);
 
     @Query("SELECT sr FROM Rule sr WHERE sr.versionId = :versionId AND sr.active = true AND sr.effectiveFrom <= :date ORDER BY sr.effectiveFrom DESC")
-    Optional<Rule> findActiveRuleForDateAndVersion(@Param("versionId") UUID versionId, @Param("date") LocalDate date);
+    Optional<Rule> findActiveRuleForDateAndVersion(@Param("versionId") Long versionId, @Param("date") LocalDate date);
 
     List<Rule> findByRuleType(Rule.RuleType ruleType);
 
     @Query("SELECT sr FROM Rule sr WHERE sr.scheduleId = :scheduleId AND sr.ruleType = :ruleType AND sr.active = true")
-    List<Rule> findByScheduleIdAndRuleTypeAndActiveTrue(@Param("scheduleId") UUID scheduleId, @Param("ruleType") Rule.RuleType ruleType);
+    List<Rule> findByScheduleIdAndRuleTypeAndActiveTrue(@Param("scheduleId") Long scheduleId, @Param("ruleType") Rule.RuleType ruleType);
 
-    Optional<Rule> findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(UUID scheduleId);
+    Optional<Rule> findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(Long scheduleId);
 }

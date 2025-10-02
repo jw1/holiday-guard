@@ -13,7 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.UUID;
+
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,7 +48,7 @@ class ScheduleControllerTest {
                 .build();
 
         var savedSchedule = Schedule.builder()
-                .id(UUID.randomUUID())
+                .id(null)
                 .name("US Federal Holidays")
                 .description("Standard US federal holidays")
                 .build();
@@ -83,7 +83,7 @@ class ScheduleControllerTest {
 
     @Test
     void updateSchedule() throws Exception {
-        var scheduleId = UUID.randomUUID();
+        Long scheduleId = 1L;
         var updateRequest = UpdateScheduleRequest.builder()
                 .name("Updated Name")
                 .build();
@@ -106,7 +106,7 @@ class ScheduleControllerTest {
 
     @Test
     void updateScheduleNotFound() throws Exception {
-        var scheduleId = UUID.randomUUID();
+        Long scheduleId = 1L;
         var updateRequest = UpdateScheduleRequest.builder().name("Updated Name").build();
 
         when(service.updateSchedule(eq(scheduleId), any(UpdateScheduleRequest.class)))

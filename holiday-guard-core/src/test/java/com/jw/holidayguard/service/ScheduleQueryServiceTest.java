@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,20 +54,20 @@ class ScheduleQueryServiceTest {
     
     private Schedule testSchedule;
     private Version activeVersion;
-    private UUID scheduleId;
-    private UUID versionId;
+    private Long scheduleId;
+    private Long versionId;
 
     @BeforeEach
     void setUp() {
-        scheduleId = UUID.randomUUID();
-        versionId = UUID.randomUUID();
-        
+        scheduleId = 1L;
+        versionId = 10L;
+
         testSchedule = Schedule.builder()
             .id(scheduleId)
             .name("Payroll Schedule")
             .active(true)
             .build();
-            
+
         activeVersion = Version.builder()
             .id(versionId)
             .scheduleId(scheduleId)

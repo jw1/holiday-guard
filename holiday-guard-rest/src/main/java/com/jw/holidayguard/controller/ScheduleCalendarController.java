@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
 import java.util.List;
-import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/api/v1/schedules/{scheduleId}")
@@ -20,13 +20,13 @@ public class ScheduleCalendarController {
 
     @GetMapping("/calendar")
     public ScheduleMonthDto getScheduleCalendar(
-            @PathVariable UUID scheduleId,
+            @PathVariable Long scheduleId,
             @RequestParam("yearMonth") @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth) {
         return scheduleService.getScheduleCalendar(scheduleId, yearMonth);
     }
 
     @GetMapping("/deviations")
-    public List<DeviationDto> getScheduleDeviations(@PathVariable UUID scheduleId) {
+    public List<DeviationDto> getScheduleDeviations(@PathVariable Long scheduleId) {
         return scheduleService.getScheduleDeviations(scheduleId);
     }
 }

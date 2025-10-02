@@ -14,7 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,8 +47,8 @@ class ShouldRunControllerTest {
     void shouldRunTodayWithClientQueryParam() throws Exception {
 
         // given - request details and a canned response from service
-        UUID scheduleId = UUID.randomUUID();
-        UUID versionId = UUID.randomUUID();
+        Long scheduleId = 1L;
+        Long versionId = 10L;
         LocalDate today = LocalDate.now();
 
         ShouldRunQueryResponse response = new ShouldRunQueryResponse(
@@ -79,8 +79,8 @@ class ShouldRunControllerTest {
     void shouldRunTodayWithoutClientQueryParam() throws Exception {
 
         // given - request details and a canned response from service
-        UUID scheduleId = UUID.randomUUID();
-        UUID versionId = UUID.randomUUID();
+        Long scheduleId = 1L;
+        Long versionId = 10L;
         LocalDate today = LocalDate.now();
         
         ShouldRunQueryResponse response = new ShouldRunQueryResponse(
@@ -105,8 +105,8 @@ class ShouldRunControllerTest {
     @Test
     void shouldRunOnSpecificDateWithPostRequest() throws Exception {
         // Given: POST request with specific date
-        UUID scheduleId = UUID.randomUUID();
-        UUID versionId = UUID.randomUUID();
+        Long scheduleId = 1L;
+        Long versionId = 10L;
         LocalDate queryDate = LocalDate.of(2024, 3, 15);
         
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "report-generator");
@@ -136,8 +136,8 @@ class ShouldRunControllerTest {
     @Test
     void shouldDefaultToTodayWhenQueryDateMissing() throws Exception {
         // Given: Request with missing queryDate should default to today
-        UUID scheduleId = UUID.randomUUID();
-        UUID versionId = UUID.randomUUID();
+        Long scheduleId = 1L;
+        Long versionId = 10L;
         LocalDate today = LocalDate.now();
         
         ShouldRunQueryRequest request = new ShouldRunQueryRequest();
@@ -169,7 +169,7 @@ class ShouldRunControllerTest {
     @Test
     void shouldFailForOutOfBoundsDate() throws Exception {
         // Given: Request with date too far in future (beyond reasonable planning horizon)
-        UUID scheduleId = UUID.randomUUID();
+        Long scheduleId = 1L;
         LocalDate farFuture = LocalDate.now().plusYears(10); // 10 years in future
         
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(farFuture, "test-client");

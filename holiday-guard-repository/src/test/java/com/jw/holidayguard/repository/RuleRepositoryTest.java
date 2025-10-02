@@ -10,7 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 import static com.jw.holidayguard.domain.Rule.RuleType.ALL_DAYS;
 import static com.jw.holidayguard.domain.Rule.RuleType.WEEKDAYS_ONLY;
@@ -193,16 +193,16 @@ class RuleRepositoryTest {
         return scheduleRepository.save(schedule);
     }
 
-    private Version createVersion(UUID scheduleId) {
+    private Version createVersion(Long scheduleId) {
         Version version = Version.builder().scheduleId(scheduleId).build();
         return versionRepository.save(version);
     }
 
-    private Rule createRule(UUID scheduleId, UUID versionId, Rule.RuleType ruleType, boolean active) {
+    private Rule createRule(Long scheduleId, Long versionId, Rule.RuleType ruleType, boolean active) {
         return createRule(scheduleId, versionId, ruleType, active, LocalDate.now());
     }
 
-    private Rule createRule(UUID scheduleId, UUID versionId, Rule.RuleType ruleType, boolean active, LocalDate effectiveFrom) {
+    private Rule createRule(Long scheduleId, Long versionId, Rule.RuleType ruleType, boolean active, LocalDate effectiveFrom) {
         Rule rule = Rule.builder()
                 .scheduleId(scheduleId)
                 .versionId(versionId)

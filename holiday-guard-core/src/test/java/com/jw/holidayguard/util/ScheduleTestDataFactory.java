@@ -7,7 +7,7 @@ import com.jw.holidayguard.dto.request.CreateRuleRequest;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+
 
 /**
  * Factory class for creating test schedule data.
@@ -199,7 +199,7 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a ScheduleVersion entity for testing.
      */
-    public static Version createScheduleVersion(UUID scheduleId, boolean active) {
+    public static Version createScheduleVersion(Long scheduleId, boolean active) {
         return Version.builder()
                 .scheduleId(scheduleId)
                 .effectiveFrom(Instant.now())
@@ -211,7 +211,7 @@ public class ScheduleTestDataFactory {
     /**
      * Creates a ScheduleQueryLog entry for testing.
      */
-    public static QueryLog createQueryLog(UUID scheduleId, UUID versionId, LocalDate queryDate, boolean result, String reason) {
+    public static QueryLog createQueryLog(Long scheduleId, Long versionId, LocalDate queryDate, boolean result, String reason) {
         return QueryLog.builder()
                 .scheduleId(scheduleId)
                 .versionId(versionId)

@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/api/v1/schedules")
@@ -33,7 +33,7 @@ public class ScheduleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ScheduleResponse> getScheduleById(@PathVariable UUID id) {
+    public ResponseEntity<ScheduleResponse> getScheduleById(@PathVariable Long id) {
         var schedule = service.findScheduleById(id);
         return ResponseEntity.ok(toResponse(schedule));
     }
@@ -47,7 +47,7 @@ public class ScheduleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ScheduleResponse> updateSchedule(@PathVariable UUID id, @Valid @RequestBody UpdateScheduleRequest request) {
+    public ResponseEntity<ScheduleResponse> updateSchedule(@PathVariable Long id, @Valid @RequestBody UpdateScheduleRequest request) {
         var updated = service.updateSchedule(id, request);
         return ResponseEntity.ok(toResponse(updated));
     }

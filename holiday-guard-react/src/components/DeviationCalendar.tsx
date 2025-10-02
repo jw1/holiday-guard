@@ -15,9 +15,10 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
     const [deviations, setDeviations] = useState(initialDeviations);
     const [currentDate, setCurrentDate] = useState(new Date());
 
+    // Sync internal state when initialDeviations prop changes (only from parent)
     useEffect(() => {
-        onDeviationsChange(deviations);
-    }, [deviations, onDeviationsChange]);
+        setDeviations(initialDeviations);
+    }, [initialDeviations]);
 
     // Helper functions (similar to business-day-calendar.tsx)
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
@@ -34,15 +35,16 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
         const dateKey = formatDate(date);
 
-        setDeviations(prev => {
-            const newDeviations = {...prev};
-            if (newDeviations[dateKey]) {
-                delete newDeviations[dateKey];
-            } else {
-                newDeviations[dateKey] = baseCalendar[dateKey] === 'run' ? 'SKIP' : 'FORCE_RUN';
-            }
-            return newDeviations;
-        });
+        const newDeviations = {...deviations};
+        if (newDeviations[dateKey]) {
+            delete newDeviations[dateKey];
+        } else {
+            newDeviations[dateKey] = baseCalendar[dateKey] === 'run' ? 'SKIP' : 'FORCE_RUN';
+        }
+
+        setDeviations(newDeviations);
+        // Notify parent of user changes (after state update, not during)
+        onDeviationsChange(newDeviations);
     };
 
     const getDayState = (day: number) => {

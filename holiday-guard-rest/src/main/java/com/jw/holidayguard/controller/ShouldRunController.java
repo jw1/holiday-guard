@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/api/v1/schedules")
@@ -29,7 +29,7 @@ public class ShouldRunController {
      */
     @GetMapping("/{scheduleId}/should-run")
     public ResponseEntity<ShouldRunQueryResponse> shouldRunToday(
-            @PathVariable UUID scheduleId,
+            @PathVariable Long scheduleId,
             @RequestParam(required = false) String clientIdentifier) {
 
         var request = new ShouldRunQueryRequest(clientIdentifier);
@@ -46,7 +46,7 @@ public class ShouldRunController {
      */
     @PostMapping("/{scheduleId}/should-run")
     public ResponseEntity<ShouldRunQueryResponse> shouldRunOnDate(
-            @PathVariable UUID scheduleId,
+            @PathVariable Long scheduleId,
             @Valid @RequestBody ShouldRunQueryRequest request) {
 
         var response = service.shouldRunToday(scheduleId, request);

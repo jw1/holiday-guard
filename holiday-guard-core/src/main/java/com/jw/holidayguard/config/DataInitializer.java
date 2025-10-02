@@ -123,23 +123,7 @@ public class DataInitializer implements ApplicationRunner {
                     .reason("Thanksgiving")
                     .build();
 
-            Deviation override7 = Deviation.builder()
-                    .scheduleId(schedule4.getId())
-                    .versionId(version4.getId())
-                    .overrideDate(LocalDate.of(2025, 9, 26))
-                    .action(Deviation.Action.SKIP)
-                    .reason("Friday before AFL Grand Final")
-                    .build();
-
-            Deviation override8 = Deviation.builder()
-                    .scheduleId(schedule4.getId())
-                    .versionId(version4.getId())
-                    .overrideDate(LocalDate.of(2025, 10, 6))
-                    .action(Deviation.Action.FORCE_RUN)
-                    .reason("Labour Day")
-                    .build();
-
-            overrideRepository.saveAll(List.of(override1, override2, override3, override4, override5, override6, override7, override8));
+            overrideRepository.saveAll(List.of(override1, override2, override3, override4, override5, override6));
         }
     }
 }

@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -29,15 +29,15 @@ class OverrideApplicatorTest {
     @InjectMocks
     private OverrideApplicatorImpl overrideApplicator;
     
-    private UUID scheduleId;
-    private UUID versionId;
+    private Long scheduleId;
+    private Long versionId;
     private LocalDate fromDate;
     private LocalDate toDate;
     
     @BeforeEach
     void setUp() {
-        scheduleId = UUID.randomUUID();
-        versionId = UUID.randomUUID();
+        scheduleId = 1L;
+        versionId = 10L;
         fromDate = LocalDate.of(2025, 1, 1);
         toDate = LocalDate.of(2025, 1, 7);
     }

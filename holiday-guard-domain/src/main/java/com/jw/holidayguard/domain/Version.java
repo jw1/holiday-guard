@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Each time a schedule, its rule, or overrides is modified, the updated set is saved as a new version.
@@ -22,11 +21,11 @@ import java.util.UUID;
 public class Version {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "schedule_id", nullable = false)
-    private UUID scheduleId;
+    private Long scheduleId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", insertable = false, updatable = false)

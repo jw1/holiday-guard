@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 /**
  * Permanent audit trail that records every "should I run today?" query and the answer given.
@@ -24,14 +23,14 @@ import java.util.UUID;
 public class QueryLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "schedule_id", nullable = false)
-    private UUID scheduleId;
+    private Long scheduleId;
 
     @Column(name = "version_id", nullable = false)
-    private UUID versionId;
+    private Long versionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", insertable = false, updatable = false)

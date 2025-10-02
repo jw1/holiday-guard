@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:./holiday-guard-local.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  h2:
+    console:
+      enabled: false

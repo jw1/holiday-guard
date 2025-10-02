@@ -9,22 +9,21 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface VersionRepository extends JpaRepository<Version, UUID> {
-    
-    Optional<Version> findByScheduleIdAndActiveTrue(UUID scheduleId);
-    
-    List<Version> findByScheduleIdOrderByCreatedAtDesc(UUID scheduleId);
-    
-    List<Version> findByScheduleIdAndActiveFalseOrderByCreatedAtDesc(UUID scheduleId);
-    
+public interface VersionRepository extends JpaRepository<Version, Long> {
+
+    Optional<Version> findByScheduleIdAndActiveTrue(Long scheduleId);
+
+    List<Version> findByScheduleIdOrderByCreatedAtDesc(Long scheduleId);
+
+    List<Version> findByScheduleIdAndActiveFalseOrderByCreatedAtDesc(Long scheduleId);
+
     @Query("SELECT sv FROM Version sv WHERE sv.scheduleId = :scheduleId AND sv.effectiveFrom <= :asOfDate ORDER BY sv.effectiveFrom DESC")
-    List<Version> findVersionsAsOf(@Param("scheduleId") UUID scheduleId, @Param("asOfDate") Instant asOfDate);
-    
+    List<Version> findVersionsAsOf(@Param("scheduleId") Long scheduleId, @Param("asOfDate") Instant asOfDate);
+
     @Query("SELECT sv FROM Version sv WHERE sv.scheduleId = :scheduleId AND sv.effectiveFrom <= :asOfDate ORDER BY sv.effectiveFrom DESC LIMIT 1")
-    Optional<Version> findActiveVersionAsOf(@Param("scheduleId") UUID scheduleId, @Param("asOfDate") Instant asOfDate);
-    
-    boolean existsByScheduleIdAndActiveTrue(UUID scheduleId);
+    Optional<Version> findActiveVersionAsOf(@Param("scheduleId") Long scheduleId, @Param("asOfDate") Instant asOfDate);
+
+    boolean existsByScheduleIdAndActiveTrue(Long scheduleId);
 }

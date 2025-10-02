@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,8 +48,8 @@ class VersionControllerTest {
     void shouldUpdateScheduleRuleSuccessfully() throws Exception {
 
         // given
-        UUID scheduleId = UUID.randomUUID();
-        UUID newVersionId = UUID.randomUUID();
+        Long scheduleId = 1L;
+        Long newVersionId = 20L;
 
         UpdateRuleRequest request = new UpdateRuleRequest();
         request.setEffectiveFrom(Instant.parse("2024-01-01T00:00:00Z"));
@@ -89,7 +89,7 @@ class VersionControllerTest {
     void shouldReturnBadRequestForInvalidScheduleRuleRequest() throws Exception {
 
         // given
-        UUID scheduleId = UUID.randomUUID();
+        Long scheduleId = 1L;
 
         UpdateRuleRequest invalidRequest = new UpdateRuleRequest();
         invalidRequest.setRule(null); // Null rule - should be invalid

@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -31,9 +31,9 @@ class AuditLogControllerTest {
     @Test
     void getAllLogs_shouldReturnLogs() throws Exception {
         // given
-        UUID logId = UUID.randomUUID();
-        UUID scheduleId = UUID.randomUUID();
-        UUID versionId = UUID.randomUUID();
+        Long logId = 100L;
+        Long scheduleId = 1L;
+        Long versionId = 10L;
         Instant now = Instant.now();
 
         List<QueryLogDto> logs = List.of(

@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
-import java.util.UUID;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -55,13 +55,13 @@ class ScheduleServiceTest {
                 .build();
 
         var savedSchedule = Schedule.builder()
-                .id(UUID.randomUUID())
+                .id(null)
                 .name("US Federal Holidays")
                 .description("Standard US federal holidays")
                 .build();
 
         var savedVersion = Version.builder()
-                .id(UUID.randomUUID())
+                .id(null)
                 .build();
 
         when(repository.findByName(anyString())).thenReturn(Optional.empty());
@@ -103,7 +103,7 @@ class ScheduleServiceTest {
     void findScheduleById() {
 
         // given - existing schedule with some ID
-        var scheduleId = UUID.randomUUID();
+        Long scheduleId = null;
         var existingSchedule = Schedule.builder().id(scheduleId).build();
         when(repository.findById(scheduleId)).thenReturn(Optional.of(existingSchedule));
 
@@ -118,7 +118,7 @@ class ScheduleServiceTest {
     void findScheduleByIdNotFound() {
 
         // given - id not in schedule table
-        var scheduleId = UUID.randomUUID();
+        Long scheduleId = null;
         when(repository.findById(scheduleId)).thenReturn(Optional.empty());
 
         // when/then - exception thrown because it is not found
@@ -129,7 +129,7 @@ class ScheduleServiceTest {
     @Test
     void updateSchedule_shouldCreateNewVersion_whenRuleIsAddedForTheFirstTime() {
         // given
-        var scheduleId = UUID.randomUUID();
+        Long scheduleId = null;
         var existingSchedule = new Schedule();
         existingSchedule.setName("Original Name");
         existingSchedule.setCreatedBy("original-user");
@@ -159,7 +159,7 @@ class ScheduleServiceTest {
     @Test
     void updateSchedule_shouldCreateNewVersion_whenRuleIsChanged() {
         // given
-        var scheduleId = UUID.randomUUID();
+        Long scheduleId = null;
         var existingSchedule = new Schedule();
         var existingRule = Rule.builder().ruleType(Rule.RuleType.WEEKDAYS_ONLY).ruleConfig("").build();
 
@@ -183,7 +183,7 @@ class ScheduleServiceTest {
     @Test
     void updateSchedule_shouldNotCreateNewVersion_whenRuleIsUnchanged() {
         // given
-        var scheduleId = UUID.randomUUID();
+        Long scheduleId = null;
         var existingSchedule = new Schedule();
         var existingRule = Rule.builder().ruleType(Rule.RuleType.WEEKDAYS_ONLY).ruleConfig("").build();
 

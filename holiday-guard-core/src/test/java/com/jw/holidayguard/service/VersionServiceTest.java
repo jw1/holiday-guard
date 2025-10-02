@@ -5,6 +5,7 @@ import com.jw.holidayguard.domain.Rule;
 import com.jw.holidayguard.domain.Version;
 import com.jw.holidayguard.dto.request.CreateRuleRequest;
 import com.jw.holidayguard.dto.request.UpdateRuleRequest;
+import com.jw.holidayguard.repository.DeviationRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
 import com.jw.holidayguard.repository.RuleRepository;
 import com.jw.holidayguard.repository.VersionRepository;
@@ -16,7 +17,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
+
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,10 +36,13 @@ class VersionServiceTest {
     @Mock
     private RuleRepository ruleRepository;
 
+    @Mock
+    private DeviationRepository deviationRepository;
+
     private ScheduleVersionService scheduleVersionService;
 
     private Schedule testSchedule;
-    private UUID scheduleId;
+    private Long scheduleId;
 
     @BeforeEach
     void setUp() {
@@ -46,10 +50,11 @@ class VersionServiceTest {
         scheduleVersionService = new ScheduleVersionService(
                 scheduleRepository,
                 versionRepository,
-                ruleRepository
+                ruleRepository,
+                deviationRepository
         );
 
-        scheduleId = UUID.randomUUID();
+        scheduleId = 1L;
         testSchedule = Schedule.builder()
                 .id(scheduleId)
                 .name("Test Schedule")
@@ -63,7 +68,7 @@ class VersionServiceTest {
     void shouldCreateNewVersionWhenUpdatingScheduleRule() {
         // given
         Version currentVersion = Version.builder()
-                .id(UUID.randomUUID())
+                .id(10L)
                 .scheduleId(scheduleId)
                 .effectiveFrom(Instant.now().minusSeconds(3600))
                 .active(true)
@@ -87,7 +92,7 @@ class VersionServiceTest {
                 .thenAnswer(invocation -> {
                     Version version = invocation.getArgument(0);
                     if (version.getId() == null) {
-                        version.setId(UUID.randomUUID());
+                        version.setId(20L);
                     }
                     return version;
                 });

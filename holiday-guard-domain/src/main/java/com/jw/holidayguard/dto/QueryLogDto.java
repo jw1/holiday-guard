@@ -2,16 +2,15 @@ package com.jw.holidayguard.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 /**
  * DTO for representing a schedule query log entry in the API.
  */
 public record QueryLogDto(
-    UUID logId,
-    UUID scheduleId,
+    Long logId,
+    Long scheduleId,
     String scheduleName,
-    UUID versionId,
+    Long versionId,
     LocalDate queryDate,
     boolean shouldRunResult,
     String reason,

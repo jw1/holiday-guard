@@ -6,16 +6,15 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class QueryLogResponse {
-    
-    private UUID id;
-    private UUID scheduleId;
-    private UUID versionId;
+
+    private Long id;
+    private Long scheduleId;
+    private Long versionId;
     private LocalDate queryDate;
     private boolean shouldRunResult;
     private String reason;

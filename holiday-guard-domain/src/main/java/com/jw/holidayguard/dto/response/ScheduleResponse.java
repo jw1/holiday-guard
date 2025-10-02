@@ -3,7 +3,6 @@ package com.jw.holidayguard.dto.response;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Data
 public class ScheduleResponse {
@@ -15,7 +14,7 @@ public class ScheduleResponse {
     private boolean active;
 
     // Own fields
-    private UUID id;
+    private Long id;
     private Instant createdAt;
     private Instant updatedAt;
 

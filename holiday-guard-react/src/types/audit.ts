@@ -2,10 +2,10 @@
  * Data structure for an audit log entry from the backend API.
  */
 export interface AuditLogDto {
-  logId: string;
-  scheduleId: string;
+  logId: number;
+  scheduleId: number;
   scheduleName: string;
-  versionId: string;
+  versionId: number;
   queryDate: string; // Assuming YYYY-MM-DD
   shouldRunResult: boolean;
   reason: string;

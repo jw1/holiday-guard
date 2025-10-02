@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 /**
  * Defines the actual scheduling logic (when should this schedule run) using various rule types.
@@ -23,14 +22,14 @@ import java.util.UUID;
 public class Rule {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "schedule_id", nullable = false)
-    private UUID scheduleId;
+    private Long scheduleId;
 
     @Column(name = "version_id", nullable = false, unique = true)
-    private UUID versionId;
+    private Long versionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", insertable = false, updatable = false)

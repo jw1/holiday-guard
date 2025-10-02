@@ -7,16 +7,15 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeviationResponse {
-    
-    private UUID id;
-    private UUID scheduleId;
-    private UUID versionId;
+
+    private Long id;
+    private Long scheduleId;
+    private Long versionId;
     private LocalDate overrideDate;
     private Deviation.Action action;
     private String reason;

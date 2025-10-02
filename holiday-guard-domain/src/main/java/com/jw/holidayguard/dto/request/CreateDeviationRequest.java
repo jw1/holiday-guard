@@ -20,11 +20,10 @@ public class CreateDeviationRequest {
     
     @NotNull(message = "Deviation action is required")
     private Deviation.Action action;
-    
-    @NotBlank(message = "Reason is required")
+
     @Size(max = 500, message = "Reason must be no more than 500 characters")
     private String reason;
-    
+
     private String createdBy;
     
     private LocalDate expiresAt;

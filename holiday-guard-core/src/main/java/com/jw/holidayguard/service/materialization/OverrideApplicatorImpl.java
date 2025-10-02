@@ -25,7 +25,7 @@ public class OverrideApplicatorImpl implements OverrideApplicator {
     }
 
     @Override
-    public List<LocalDate> applyOverrides(UUID scheduleId, UUID versionId, List<LocalDate> ruleDates, LocalDate fromDate, LocalDate toDate) {
+    public List<LocalDate> applyOverrides(Long scheduleId, Long versionId, List<LocalDate> ruleDates, LocalDate fromDate, LocalDate toDate) {
         // Get all active overrides in the date range
         List<Deviation> activeOverrides = deviationRepository.findByScheduleId(scheduleId)
             .stream()
