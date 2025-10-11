@@ -155,7 +155,7 @@ class ScheduleQueryServiceTest {
         Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
-            .overrideDate(queryDate)
+            .deviationDate(queryDate)
             .action(RunStatus.FORCE_SKIP)
             .reason("Independence Day - holiday skip")
             .build();

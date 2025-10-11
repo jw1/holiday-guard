@@ -80,7 +80,7 @@ public class Calendar {
 
         // use deviation or fallback to rule
         return deviation
-                .map(value -> value.getAction() == RunStatus.FORCE_RUN)
+                .map(Deviation::shouldRun)
                 .orElseGet(() -> ruleEvaluator.shouldRun(rule, date));
 
         // No deviation found, evaluate rule
@@ -98,16 +98,14 @@ public class Calendar {
      * @return Map of date → boolean indicating whether schedule should run on each date
      */
     public Map<LocalDate, Boolean> shouldRun(LocalDate start, LocalDate end) {
+
         Map<LocalDate, Boolean> results = new LinkedHashMap<>();
+        if (start.isAfter(end)) return results;
 
-        // Invalid range → return empty map
-        if (start.isAfter(end)) {
-            return results;
-        }
-
-        // Iterate through date range, using same algorithm as single-date query
+        // iterate through date range, using same algorithm as single-date query
         LocalDate current = start;
-        while (!current.isAfter(end)) {
+
+        while (! current.isAfter(end)) {
             results.put(current, shouldRun(current)); // Delegates to single-date method
             current = current.plusDays(1);
         }
@@ -123,14 +121,15 @@ public class Calendar {
      */
     private Optional<Deviation> findDeviationForDate(LocalDate date) {
         return deviations.stream()
-                .filter(d -> d.getOverrideDate().equals(date))
+                .filter(d -> d.getDeviationDate().equals(date))
                 .findFirst();
     }
 
     /**
-     * Serializes this Calendar to JSON format.
-     * Note: The RuleEvaluator strategy is not serialized (it's behavior, not data).
-     * Use fromJson() with a RuleEvaluator to reconstruct a functional Calendar.
+     * serialize to json
+     * <p>
+     * RuleEvaluator strategy is not serialized (it's behavior, not data).
+     * Use fromJson() with a RuleEvaluator to reconstruct
      *
      * @return JSON string representation of this calendar
      * @throws RuntimeException if serialization fails
@@ -144,8 +143,8 @@ public class Calendar {
     }
 
     /**
-     * Deserializes a Calendar from JSON format.
-     * Since RuleEvaluator is not serialized, you must provide one to create a functional Calendar.
+     * deserialize from json
+     * Must provide RuleEvaluator as it's not serialized
      *
      * @param json JSON string representation of a calendar
      * @param ruleEvaluator The rule evaluator strategy to use
@@ -154,13 +153,14 @@ public class Calendar {
      */
     public static Calendar fromJson(String json, RuleEvaluator ruleEvaluator) {
         try {
-            CalendarData data = mapper.readValue(json, CalendarData.class);
+            var data = mapper.readValue(json, CalendarData.class);
+
             return new Calendar(
-                    data.schedule,
-                    data.rule,
-                    data.deviations,
-                    ruleEvaluator
-            );
+                    data.schedule(),
+                    data.rule(),
+                    data.deviations(),
+                    ruleEvaluator);
+
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to deserialize Calendar from JSON", e);
         }
@@ -170,18 +170,17 @@ public class Calendar {
      * Internal DTO for JSON deserialization.
      * Needed because Calendar has a @JsonIgnore field (ruleEvaluator) that we don't want to deserialize.
      */
-    private static class CalendarData {
-        public Schedule schedule;
-        public Rule rule;
-        public List<Deviation> deviations;
+    private record CalendarData(Schedule schedule, Rule rule, List<Deviation> deviations) {
     }
 
     /**
      * Strategy interface for evaluating rules.
-     * This abstraction allows Calendar to work with any rule evaluation logic
+     * <p>
+     * Allows Calendar to work with any rule evaluation logic
      * without depending on specific implementations (RuleEngine, handlers, etc.).
      */
     public interface RuleEvaluator {
+
         /**
          * Evaluates whether a rule indicates the schedule should run on a given date.
          *

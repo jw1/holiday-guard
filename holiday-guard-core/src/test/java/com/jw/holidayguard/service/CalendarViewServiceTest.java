@@ -208,7 +208,7 @@ class CalendarViewServiceTest {
         Deviation skipDeviation = Deviation.builder()
                 .scheduleId(scheduleId)
                 .versionId(versionId)
-                .overrideDate(skipDate)
+                .deviationDate(skipDate)
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Holiday - MLK Day")
                 .build();
@@ -251,7 +251,7 @@ class CalendarViewServiceTest {
         Deviation forceRunDeviation = Deviation.builder()
                 .scheduleId(scheduleId)
                 .versionId(versionId)
-                .overrideDate(forceRunDate)
+                .deviationDate(forceRunDate)
                 .action(RunStatus.FORCE_RUN)
                 .reason("Emergency processing")
                 .build();
@@ -331,7 +331,7 @@ class CalendarViewServiceTest {
         Deviation forceSkip = Deviation.builder()
                 .scheduleId(scheduleId)
                 .versionId(versionId)
-                .overrideDate(skipDate)
+                .deviationDate(skipDate)
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Holiday")
                 .build();

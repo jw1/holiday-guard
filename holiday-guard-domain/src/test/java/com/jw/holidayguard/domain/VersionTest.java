@@ -33,7 +33,7 @@ class VersionTest {
         List<Deviation> newDeviations = List.of(
                 Deviation.builder()
                         .scheduleId(100L)
-                        .overrideDate(LocalDate.of(2025, 1, 6))
+                        .deviationDate(LocalDate.of(2025, 1, 6))
                         .action(RunStatus.FORCE_SKIP)
                         .reason("Holiday")
                         .build()
@@ -106,7 +106,7 @@ class VersionTest {
 
         Deviation initialDeviation = Deviation.builder()
                 .scheduleId(100L)
-                .overrideDate(LocalDate.of(2025, 12, 25))
+                .deviationDate(LocalDate.of(2025, 12, 25))
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Christmas")
                 .build();

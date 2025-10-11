@@ -2,18 +2,9 @@ package com.jw.holidayguard.domain;
 
 /**
  * Enumeration of possible run statuses for a schedule on a given date.
- *
- * <p>This enum normalizes status representation across the entire application,
- * replacing magic strings like "run", "no-run", "FORCE_RUN", "SKIP".
- *
- * <ul>
- *   <li><b>RUN</b> - Schedule should run based on its rule</li>
- *   <li><b>SKIP</b> - Schedule should not run (either by rule or deviation)</li>
- *   <li><b>FORCE_RUN</b> - Deviation overrides rule to force execution</li>
- *   <li><b>FORCE_SKIP</b> - Deviation overrides rule to prevent execution</li>
- * </ul>
  */
 public enum RunStatus {
+
     /**
      * Schedule should run on this date (based on rule evaluation).
      */
@@ -45,7 +36,7 @@ public enum RunStatus {
     }
 
     /**
-     * Determines the appropriate RunStatus based on shouldRun result and optional deviation.
+     * Determines the appropriate RunStatus based on shouldRun result and deviation.
      *
      * <p>If a deviation exists, it directly contains the forced run status (FORCE_RUN or FORCE_SKIP).
      * Otherwise, the status is determined by the rule evaluation result.

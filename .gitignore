@@ -57,3 +57,8 @@ Thumbs.db
 
 ### Node ###
 node_modules/
+
+### my local environment
+./frontend.sh
+./backend.sh
+./start.sh

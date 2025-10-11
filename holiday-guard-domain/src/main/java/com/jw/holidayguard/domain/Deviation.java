@@ -43,7 +43,7 @@ public class Deviation {
     private Version version;
 
     @Column(name = "override_date", nullable = false)
-    private LocalDate overrideDate;
+    private LocalDate deviationDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "action", nullable = false)
@@ -73,6 +73,10 @@ public class Deviation {
         validateAction();
     }
 
+    public boolean shouldRun() {
+        return RunStatus.FORCE_RUN == this.getAction();
+    }
+
     /**
      * Validates that the action is one of the valid deviation types (FORCE_RUN or FORCE_SKIP).
      * Deviations cannot have RUN or SKIP status - those come from the base rule.
@@ -84,5 +88,14 @@ public class Deviation {
                 ". Use FORCE_RUN to override rule and run, or FORCE_SKIP to override rule and skip."
             );
         }
+    }
+
+    public static Deviation.DeviationBuilder builderFrom(Schedule schedule, Version version) {
+        return builder()
+                .deviationDate(null)
+                .action(null)
+                .reason(null)
+                .scheduleId(schedule.getId())
+                .versionId(version.getId());
     }
 }

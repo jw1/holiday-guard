@@ -150,13 +150,13 @@ public class ScheduleQueryService {
 
         // Determine if deviation was applied (check if any deviation exists for this date)
         boolean deviationApplied = deviations.stream()
-                .anyMatch(d -> d.getOverrideDate().equals(queryDate));
+                .anyMatch(d -> d.getDeviationDate().equals(queryDate));
 
         // Build reason message
         String reason;
         if (deviationApplied) {
             Deviation deviation = deviations.stream()
-                    .filter(d -> d.getOverrideDate().equals(queryDate))
+                    .filter(d -> d.getDeviationDate().equals(queryDate))
                     .findFirst()
                     .orElseThrow();
             reason = "Override applied: " + deviation.getReason();

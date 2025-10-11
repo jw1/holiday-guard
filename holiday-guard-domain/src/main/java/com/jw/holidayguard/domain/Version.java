@@ -48,12 +48,10 @@ public class Version {
     }
 
     /**
-     * Creates unsaved version from existing schedule
-     *
-     * </li>
-     *   <li>Even a "new" schedule needs a version to track when it was created</li>
-     *   <li>The domain model handles version creation - database handles activation</li>
-     * </ul>
+     * creates unsaved version from existing schedule
+     * <p>
+     * even a "new" schedule needs a version to track when it was created
+     * domain model handles version creation - database handles activation
      *
      * @param schedule The schedule this version belongs to
      * @return A new Version instance representing version 1
@@ -63,13 +61,11 @@ public class Version {
     }
 
     /**
-     * Creates unsaved version from existing schedule
+     * creates unsaved version from existing schedule
      * This one primarily used in domain testing
-     *
-     * </li>
-     *   <li>Even a "new" schedule needs a version to track when it was created</li>
-     *   <li>The domain model handles version creation - database handles activation</li>
-     * </ul>
+     * <p>
+     * even a "new" schedule needs a version to track when it was created
+     * domain model handles version creation - database handles activation
      *
      * @param scheduleId The primary key of the schedule
      * @return A new Version instance representing version 1

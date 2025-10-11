@@ -87,7 +87,7 @@ public class ScheduleVersionService {
                 Deviation deviation = Deviation.builder()
                         .scheduleId(scheduleId)
                         .versionId(newVersion.getId())
-                        .overrideDate(deviationRequest.getDeviationDate())
+                        .deviationDate(deviationRequest.getDeviationDate())
                         .action(deviationRequest.getAction())
                         .reason(deviationRequest.getReason())
                         .createdBy(deviationRequest.getCreatedBy())

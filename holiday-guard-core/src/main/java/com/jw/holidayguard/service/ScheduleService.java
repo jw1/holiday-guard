@@ -233,10 +233,13 @@ public class ScheduleService {
 
             // Find deviation for this date to determine if it's a forced status
             Optional<Deviation> deviationOpt = deviations.stream()
-                    .filter(d -> d.getOverrideDate().equals(date))
+                    .filter(d -> d.getDeviationDate().equals(date))
                     .findFirst();
 
-            RunStatus status = RunStatus.fromCalendar(shouldRun, deviationOpt.orElse(null));
+            RunStatus status = deviationOpt.map
+                    (d -> RunStatus.fromCalendar(shouldRun, d))
+                    .orElse(RunStatus.fromCalendar(shouldRun));
+
             days.put(dayOfMonth, status);
         }
 
@@ -258,7 +261,7 @@ public class ScheduleService {
 
         // Query deviations for the active version only
         var deviations = deviationRepo.findByScheduleIdAndVersionId(scheduleId, activeVersion.get().getId()).stream()
-                .map(deviation -> new DeviationDto(deviation.getOverrideDate(), deviation.getAction().name(), deviation.getReason()))
+                .map(deviation -> new DeviationDto(deviation.getDeviationDate(), deviation.getAction().name(), deviation.getReason()))
                 .collect(Collectors.toList());
         log.info("found {} deviations", deviations.size());
 

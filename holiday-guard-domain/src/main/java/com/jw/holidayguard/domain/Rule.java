@@ -63,13 +63,6 @@ public class Rule {
         if (effectiveFrom == null) effectiveFrom = LocalDate.now();
     }
 
-    public static Rule.RuleBuilder builderFrom(Long scheduleId, Rule.RuleType ruleType, String ruleConfig) {
-        return Rule.builder()
-                .scheduleId(scheduleId)
-                .ruleType(ruleType)
-                .ruleConfig(ruleConfig);
-    }
-
     public static Rule.RuleBuilder builderFrom(Schedule schedule, CreateScheduleRequest createScheduleRequest) {
         return Rule.builder()
                 .scheduleId(schedule.getId())
@@ -79,28 +72,28 @@ public class Rule {
 
     /**
      * Rule types and their expected ruleConfig format:
-     *
+     * <p>
      * WEEKDAYS_ONLY: ruleConfig = null or empty
      *   - Runs Monday-Friday, excludes weekends
-     *
+     * <p>
      * CRON_EXPRESSION: ruleConfig = "0 0 9 * * MON-FRI"
      *   - Standard cron expression for scheduling
      *   - Example: "0 0 9 * * MON-FRI" = 9 AM weekdays
-     *
+     * <p>
      * CUSTOM_DATES: ruleConfig = JSON array of dates
      *   - Example: ["2024-01-15", "2024-02-15", "2024-03-15"]
      *   - Explicit list of dates when schedule should run
-     *
+     * <p>
      * MONTHLY_PATTERN: ruleConfig = JSON object with pattern
      *   - Example: {"dayOfMonth": 15, "skipWeekends": true}
      *   - Example: {"dayOfWeek": "FRIDAY", "weekOfMonth": "LAST"}
-     *
+     * <p>
      * AVOID_US_FEDERAL_HOLIDAYS: ruleConfig = null or empty
      *  - Runs on weekdays, but skips all official US federal holidays
-     *
+     * <p>
      * ALL_DAYS: ruleConfig = null or empty
      *   - Runs every single day (use with deviations to skip specific dates)
-     *
+     * <p>
      * NO_DAYS: ruleConfig = null or empty
      *   - Runs no days by default (use with deviations to force run on specific dates)
      */

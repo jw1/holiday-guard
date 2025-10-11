@@ -14,12 +14,14 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 import static com.jw.holidayguard.domain.Rule.RuleType.US_FEDERAL_RESERVE_BUSINESS_DAYS;
 import static com.jw.holidayguard.domain.Rule.RuleType.WEEKDAYS_ONLY;
 import static com.jw.holidayguard.domain.RunStatus.FORCE_RUN;
 import static com.jw.holidayguard.domain.RunStatus.FORCE_SKIP;
+import static java.time.DayOfWeek.MONDAY;
 
 /**
  * Preloads data into a new database when the application is started up under the
@@ -71,19 +73,20 @@ public class DataInitializer implements ApplicationRunner {
                 Deviation.builder()
                         .scheduleId(schedule.getId())
                         .versionId(version.getId())
-                        .overrideDate(LocalDate.of(2025, 9, 15)) // TODO:  calculate "next Monday"
+                        .deviationDate(LocalDate.now().with(TemporalAdjusters.next(MONDAY)))
                         .action(FORCE_SKIP)
                         .reason("Team Offsite Next Monday")
                         .build(),
                 Deviation.builder()
                         .scheduleId(schedule.getId())
                         .versionId(version.getId())
-                        .overrideDate(LocalDate.of(2025, 12, 31))
+                        .deviationDate(LocalDate.of(2025, 12, 31))
                         .action(FORCE_RUN)
                         .reason("New Year's Bonus Payroll Run")
                         .build()));
 
 
+        // just weekdays with a few deviations
         schedule = scheduleRepository.save(Schedule.builder()
                 .name("UK Bank Holidays")
                 .description("Official bank holidays in the United Kingdom")
@@ -103,25 +106,37 @@ public class DataInitializer implements ApplicationRunner {
                 .build());
 
         overrideRepository.saveAll(List.of(
-                Deviation.builder()
-                        .scheduleId(schedule.getId())
-                        .versionId(version.getId())
-                        .overrideDate(LocalDate.of(2025, 9, 22))
-                        .action(FORCE_SKIP)
-                        .reason("UK Team Event")
-                        .build(),
-                Deviation.builder()
-                        .scheduleId(schedule.getId())
-                        .versionId(version.getId())
-                        .overrideDate(LocalDate.of(2025, 10, 27))
-                        .action(FORCE_RUN)
-                        .reason("End of Month Processing")
-                        .build()));
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 1, 1))
+                        .action(FORCE_SKIP).reason("New Year's Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 4, 3))
+                        .action(FORCE_SKIP).reason("Good Friday").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 4, 6))
+                        .action(FORCE_SKIP).reason("Easter Monday").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 5, 4))
+                        .action(FORCE_SKIP).reason("Early May Bank Holiday").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 5, 25))
+                        .action(FORCE_SKIP).reason("Spring Bank Holiday").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 8, 31))
+                        .action(FORCE_SKIP).reason("Summer Bank Holiday").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 12, 25))
+                        .action(FORCE_SKIP).reason("Christmas Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 12, 28))
+                        .action(FORCE_SKIP).reason("Boxing Day").build()
+        ));
 
 
+        // Canadian Public Holidays
         schedule = scheduleRepository.save(Schedule.builder()
                 .name("Canadian Public Holidays")
-                .description("Statutory holidays for Canada")
+                .description("Holidays in Canada, but not US")
                 .country("CA")
                 .active(false)
                 .build());
@@ -138,24 +153,42 @@ public class DataInitializer implements ApplicationRunner {
                 .build());
 
         overrideRepository.saveAll(List.of(
-                Deviation.builder()
-                        .scheduleId(schedule.getId())
-                        .versionId(version.getId())
-                        .overrideDate(LocalDate.of(2025, 9, 1))
-                        .action(FORCE_SKIP)
-                        .reason("Labour Day")
-                        .build(),
-                Deviation.builder()
-                        .scheduleId(schedule.getId())
-                        .versionId(version.getId())
-                        .overrideDate(LocalDate.of(2025, 10, 13))
-                        .action(FORCE_RUN)
-                        .reason("Thanksgiving")
-                        .build()));
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 1, 1))
+                        .action(FORCE_SKIP).reason("New Year's Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 4, 3))
+                        .action(FORCE_SKIP).reason("Good Friday").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 5, 18))
+                        .action(FORCE_SKIP).reason("Victoria Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 7, 1))
+                        .action(FORCE_SKIP).reason("Canada Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 9, 7))
+                        .action(FORCE_SKIP).reason("Labour Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 9, 30))
+                        .action(FORCE_SKIP).reason("National Day for Truth and Reconciliation").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 10, 12))
+                        .action(FORCE_SKIP).reason("Thanksgiving Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 11, 11))
+                        .action(FORCE_SKIP).reason("Remembrance Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 12, 25))
+                        .action(FORCE_SKIP).reason("Christmas Day").build(),
+                Deviation.builderFrom(schedule, version)
+                        .deviationDate(LocalDate.of(2026, 12, 28))
+                        .action(FORCE_SKIP).reason("Boxing Day").build()
+        ));
 
+        // Australian Public Holidays
         schedule = scheduleRepository.save(Schedule.builder()
                 .name("Australian Public Holidays")
-                .description("Public holidays across Australia")
+                .description("National public holidays in Australia")
                 .country("AU")
                 .active(true)
                 .build());
@@ -171,6 +204,21 @@ public class DataInitializer implements ApplicationRunner {
                 .versionId(version.getId())
                 .build());
 
-        // No deviations for Australian schedule
+        overrideRepository.saveAll(List.of(
+                Deviation.builderFrom(schedule, version).deviationDate(LocalDate.of(2026, 1, 1))
+                        .action(FORCE_SKIP).reason("New Year's Day").build(),
+                Deviation.builderFrom(schedule, version).deviationDate(LocalDate.of(2026, 1, 26))
+                        .action(FORCE_SKIP).reason("Australia Day").build(),
+                Deviation.builderFrom(schedule, version).deviationDate(LocalDate.of(2026, 4, 3))
+                        .action(FORCE_SKIP).reason("Good Friday").build(),
+                Deviation.builderFrom(schedule, version).deviationDate(LocalDate.of(2026, 4, 6))
+                        .action(FORCE_SKIP).reason("Easter Monday").build(),
+                Deviation.builderFrom(schedule, version).deviationDate(LocalDate.of(2026, 4, 25))
+                        .action(FORCE_SKIP).reason("Anzac Day").build(),
+                Deviation.builderFrom(schedule, version).deviationDate(LocalDate.of(2026, 12, 25))
+                        .action(FORCE_SKIP).reason("Christmas Day").build(),
+                Deviation.builderFrom(schedule, version).deviationDate(LocalDate.of(2026, 12, 28))
+                        .action(FORCE_SKIP).reason("Boxing Day").build()
+        ));
     }
 }

@@ -73,7 +73,7 @@ class OverrideApplicatorTest {
         Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
-            .overrideDate(LocalDate.of(2025, 1, 3))
+            .deviationDate(LocalDate.of(2025, 1, 3))
             .action(RunStatus.FORCE_SKIP)
             .reason("Holiday skip")
             .build();
@@ -99,7 +99,7 @@ class OverrideApplicatorTest {
         Deviation forceRunOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
-            .overrideDate(LocalDate.of(2025, 1, 3)) // Not in rule dates
+            .deviationDate(LocalDate.of(2025, 1, 3)) // Not in rule dates
             .action(RunStatus.FORCE_RUN)
             .reason("Emergency run")
             .build();
@@ -131,7 +131,7 @@ class OverrideApplicatorTest {
         Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
-            .overrideDate(LocalDate.of(2025, 1, 2))
+            .deviationDate(LocalDate.of(2025, 1, 2))
             .action(RunStatus.FORCE_SKIP)
             .reason("Holiday")
             .build();
@@ -139,7 +139,7 @@ class OverrideApplicatorTest {
         Deviation forceRunOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
-            .overrideDate(LocalDate.of(2025, 1, 6)) // New date
+            .deviationDate(LocalDate.of(2025, 1, 6)) // New date
             .action(RunStatus.FORCE_RUN)
             .reason("Emergency")
             .build();
@@ -167,7 +167,7 @@ class OverrideApplicatorTest {
         Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
-            .overrideDate(LocalDate.of(2025, 1, 3)) // Not in rule dates
+            .deviationDate(LocalDate.of(2025, 1, 3)) // Not in rule dates
             .action(RunStatus.FORCE_SKIP)
             .reason("Holiday")
             .build();

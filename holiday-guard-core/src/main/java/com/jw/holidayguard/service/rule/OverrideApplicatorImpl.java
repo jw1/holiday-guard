@@ -1,7 +1,6 @@
 package com.jw.holidayguard.service.rule;
 
 import com.jw.holidayguard.domain.Deviation;
-import com.jw.holidayguard.domain.RunStatus;
 import com.jw.holidayguard.repository.DeviationRepository;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +9,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * GREEN: Implementation of OverrideApplicator that applies FORCE_SKIP and FORCE_RUN overrides.
@@ -30,7 +28,7 @@ public class OverrideApplicatorImpl implements OverrideApplicator {
         // Get all active overrides in the date range
         List<Deviation> activeOverrides = deviationRepository.findByScheduleId(scheduleId)
             .stream()
-            .filter(o -> o.getVersionId().equals(versionId) && !o.getOverrideDate().isBefore(fromDate) && !o.getOverrideDate().isAfter(toDate))
+            .filter(o -> o.getVersionId().equals(versionId) && !o.getDeviationDate().isBefore(fromDate) && !o.getDeviationDate().isAfter(toDate))
             .toList();
 
         if (activeOverrides.isEmpty()) {
@@ -42,7 +40,7 @@ public class OverrideApplicatorImpl implements OverrideApplicator {
 
         // Apply each override
         for (Deviation override : activeOverrides) {
-            LocalDate overrideDate = override.getOverrideDate();
+            LocalDate overrideDate = override.getDeviationDate();
 
             switch (override.getAction()) {
                 case FORCE_SKIP:

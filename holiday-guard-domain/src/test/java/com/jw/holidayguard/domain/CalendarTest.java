@@ -81,9 +81,7 @@ class CalendarTest {
         // Given: A calendar with a SKIP deviation on Monday
         LocalDate monday = LocalDate.of(2025, 1, 6);
         Deviation skipDeviation = Deviation.builder()
-                .scheduleId(1L)
-                .versionId(100L)
-                .overrideDate(monday)
+                .deviationDate(monday)
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Holiday")
                 .build();
@@ -105,7 +103,7 @@ class CalendarTest {
         Deviation forceRunDeviation = Deviation.builder()
                 .scheduleId(1L)
                 .versionId(100L)
-                .overrideDate(saturday)
+                .deviationDate(saturday)
                 .action(RunStatus.FORCE_RUN)
                 .reason("Special processing day")
                 .build();
@@ -152,7 +150,7 @@ class CalendarTest {
         Deviation skipWednesday = Deviation.builder()
                 .scheduleId(1L)
                 .versionId(100L)
-                .overrideDate(wednesday)
+                .deviationDate(wednesday)
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Mid-week holiday")
                 .build();
@@ -231,7 +229,7 @@ class CalendarTest {
                 .id(5L)
                 .scheduleId(1L)
                 .versionId(100L)
-                .overrideDate(monday)
+                .deviationDate(monday)
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Holiday")
                 .build();
@@ -257,7 +255,7 @@ class CalendarTest {
                 .id(5L)
                 .scheduleId(1L)
                 .versionId(100L)
-                .overrideDate(monday)
+                .deviationDate(monday)
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Holiday")
                 .build();
@@ -284,7 +282,7 @@ class CalendarTest {
         Deviation skipWednesday = Deviation.builder()
                 .scheduleId(1L)
                 .versionId(100L)
-                .overrideDate(wednesday)
+                .deviationDate(wednesday)
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Mid-week holiday")
                 .build();

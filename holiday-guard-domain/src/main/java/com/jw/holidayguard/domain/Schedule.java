@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 
 /**
- * The application supports multiple schedules with different sets of holidays.
+ * app supports multiple schedules with different sets of holidays.
  * <p>
  * For example, one schedule could follow Federal Reserve holidays while
  * another might simply be "weekdays, not weekends".

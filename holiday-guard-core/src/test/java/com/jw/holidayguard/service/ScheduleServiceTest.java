@@ -304,7 +304,7 @@ class ScheduleServiceTest {
         Deviation skipDeviation = Deviation.builder()
                 .scheduleId(scheduleId)
                 .versionId(versionId)
-                .overrideDate(skipDate)
+                .deviationDate(skipDate)
                 .action(RunStatus.FORCE_SKIP)
                 .reason("Holiday")
                 .build();

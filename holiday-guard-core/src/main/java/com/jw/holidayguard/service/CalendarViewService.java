@@ -107,20 +107,25 @@ public class CalendarViewService {
 
                 // Find deviation for this date (if applicable) to get reason
                 Optional<Deviation> deviationOpt = deviations.stream()
-                        .filter(d -> d.getOverrideDate().equals(date))
+                        .filter(d -> d.getDeviationDate().equals(date))
                         .findFirst();
 
                 // calculate RunStatus and a reason
-                RunStatus status = RunStatus.fromCalendar(shouldRun, deviationOpt.orElse(null));
-                String reason = deviationOpt.map(Deviation::getReason).orElse(null);
+                RunStatus status = deviationOpt
+                        .map(d -> RunStatus.fromCalendar(shouldRun, d))
+                        .orElse(RunStatus.fromCalendar(shouldRun));
+
+                String reason = deviationOpt
+                        .map(Deviation::getReason)
+                        .orElse(null);
 
                 CalendarDayDto dayDto = new CalendarDayDto(
                         scheduleId,
                         schedule.getName(),
                         date,
                         status,
-                        reason
-                );
+                        reason);
+
                 allDays.add(dayDto);
             }
         }
