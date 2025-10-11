@@ -59,6 +59,6 @@ Thumbs.db
 node_modules/
 
 ### my local environment
-./frontend.sh
-./backend.sh
-./start.sh
+frontend.sh
+backend.sh
+start.sh
