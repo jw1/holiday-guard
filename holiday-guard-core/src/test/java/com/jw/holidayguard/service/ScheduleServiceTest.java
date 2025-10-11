@@ -1,15 +1,20 @@
 package com.jw.holidayguard.service;
 
+import com.jw.holidayguard.domain.Deviation;
 import com.jw.holidayguard.domain.Schedule;
 import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.domain.RunStatus;
 import com.jw.holidayguard.domain.Version;
+import com.jw.holidayguard.dto.ScheduleMonthDto;
 import com.jw.holidayguard.dto.request.CreateScheduleRequest;
 import com.jw.holidayguard.dto.request.UpdateScheduleRequest;
 import com.jw.holidayguard.exception.DuplicateScheduleException;
 import com.jw.holidayguard.exception.ScheduleNotFoundException;
+import com.jw.holidayguard.repository.DeviationRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
 import com.jw.holidayguard.repository.RuleRepository;
 import com.jw.holidayguard.repository.VersionRepository;
+import com.jw.holidayguard.service.rule.RuleEngine;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,6 +22,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -36,6 +44,12 @@ class ScheduleServiceTest {
 
     @Mock
     private VersionRepository versionRepository;
+
+    @Mock
+    private DeviationRepository deviationRepository;
+
+    @Mock
+    private RuleEngine ruleEngine;
 
     @Mock
     private CurrentUserService currentUserService;
@@ -201,5 +215,143 @@ class ScheduleServiceTest {
         // then
         verify(versionRepository, never()).save(any(Version.class));
         verify(ruleRepository, never()).save(any(Rule.class));
+    }
+
+    @Test
+    void getScheduleCalendar_shouldReturnMonthWithRunDays() {
+        // Given: Schedule with weekdays-only rule for January 2025
+        Long scheduleId = 1L;
+        Long versionId = 10L;
+        YearMonth yearMonth = YearMonth.of(2025, 1);
+
+        Schedule schedule = Schedule.builder()
+                .id(scheduleId)
+                .name("Test Schedule")
+                .build();
+
+        Version version = Version.builder()
+                .id(versionId)
+                .scheduleId(scheduleId)
+                .active(true)
+                .build();
+
+        Rule rule = Rule.builder()
+                .id(100L)
+                .scheduleId(scheduleId)
+                .versionId(versionId)
+                .ruleType(Rule.RuleType.WEEKDAYS_ONLY)
+                .build();
+
+        when(repository.findById(scheduleId)).thenReturn(Optional.of(schedule));
+        when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
+                .thenReturn(Optional.of(version));
+        when(ruleRepository.findByVersionId(versionId)).thenReturn(Optional.of(rule));
+        when(deviationRepository.findByScheduleIdAndVersionId(scheduleId, versionId))
+                .thenReturn(List.of());
+
+        // Mock RuleEngine to return true for weekdays (Mon-Fri)
+        when(ruleEngine.shouldRun(any(Rule.class), any(LocalDate.class)))
+                .thenAnswer(invocation -> {
+                    LocalDate date = invocation.getArgument(1);
+                    int dayOfWeek = date.getDayOfWeek().getValue();
+                    return dayOfWeek >= 1 && dayOfWeek <= 5; // Mon-Fri
+                });
+
+        // When: Getting calendar for January 2025
+        ScheduleMonthDto result = service.getScheduleCalendar(scheduleId, yearMonth);
+
+        // Then: Should return 31 days with correct run/no-run status
+        assertThat(result).isNotNull();
+        assertThat(result.getYearMonth()).isEqualTo(yearMonth);
+        assertThat(result.getDays()).hasSize(31);
+
+        // Jan 1, 2025 is Wednesday (weekday) - should run
+        assertThat(result.getDays().get(1)).isEqualTo(com.jw.holidayguard.domain.RunStatus.RUN);
+
+        // Jan 4, 2025 is Saturday (weekend) - should not run
+        assertThat(result.getDays().get(4)).isEqualTo(com.jw.holidayguard.domain.RunStatus.SKIP);
+
+        // Jan 6, 2025 is Monday (weekday) - should run
+        assertThat(result.getDays().get(6)).isEqualTo(com.jw.holidayguard.domain.RunStatus.RUN);
+    }
+
+    @Test
+    void getScheduleCalendar_shouldApplyDeviations() {
+        // Given: Schedule with SKIP deviation on a weekday
+        Long scheduleId = 1L;
+        Long versionId = 10L;
+        YearMonth yearMonth = YearMonth.of(2025, 1);
+        LocalDate skipDate = LocalDate.of(2025, 1, 6); // Monday
+
+        Schedule schedule = Schedule.builder()
+                .id(scheduleId)
+                .name("Test Schedule")
+                .build();
+
+        Version version = Version.builder()
+                .id(versionId)
+                .scheduleId(scheduleId)
+                .active(true)
+                .build();
+
+        Rule rule = Rule.builder()
+                .id(100L)
+                .scheduleId(scheduleId)
+                .versionId(versionId)
+                .ruleType(Rule.RuleType.WEEKDAYS_ONLY)
+                .build();
+
+        Deviation skipDeviation = Deviation.builder()
+                .scheduleId(scheduleId)
+                .versionId(versionId)
+                .overrideDate(skipDate)
+                .action(RunStatus.FORCE_SKIP)
+                .reason("Holiday")
+                .build();
+
+        when(repository.findById(scheduleId)).thenReturn(Optional.of(schedule));
+        when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
+                .thenReturn(Optional.of(version));
+        when(ruleRepository.findByVersionId(versionId)).thenReturn(Optional.of(rule));
+        when(deviationRepository.findByScheduleIdAndVersionId(scheduleId, versionId))
+                .thenReturn(List.of(skipDeviation));
+
+        // Mock RuleEngine to return true for weekdays
+        when(ruleEngine.shouldRun(any(Rule.class), any(LocalDate.class)))
+                .thenAnswer(invocation -> {
+                    LocalDate date = invocation.getArgument(1);
+                    int dayOfWeek = date.getDayOfWeek().getValue();
+                    return dayOfWeek >= 1 && dayOfWeek <= 5;
+                });
+
+        // When: Getting calendar
+        ScheduleMonthDto result = service.getScheduleCalendar(scheduleId, yearMonth);
+
+        // Then: Jan 6 (Monday) should be FORCE_SKIP due to SKIP deviation
+        assertThat(result.getDays().get(6)).isEqualTo(com.jw.holidayguard.domain.RunStatus.FORCE_SKIP);
+
+        // Jan 7 (Tuesday) should still be RUN (no deviation)
+        assertThat(result.getDays().get(7)).isEqualTo(com.jw.holidayguard.domain.RunStatus.RUN);
+    }
+
+    @Test
+    void getScheduleCalendar_shouldThrowExceptionWhenNoActiveVersion() {
+        // Given: Schedule with no active version
+        Long scheduleId = 1L;
+        YearMonth yearMonth = YearMonth.of(2025, 1);
+
+        Schedule schedule = Schedule.builder()
+                .id(scheduleId)
+                .name("Test Schedule")
+                .build();
+
+        when(repository.findById(scheduleId)).thenReturn(Optional.of(schedule));
+        when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
+                .thenReturn(Optional.empty());
+
+        // When/Then: Should throw exception
+        assertThatThrownBy(() -> service.getScheduleCalendar(scheduleId, yearMonth))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("no active version");
     }
 }

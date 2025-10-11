@@ -1,4 +1,8 @@
 spring:
   application:
     name: Holiday Guard
+  profiles:
+    active: h2  # Default to H2 SQL database. Use -Dspring.profiles.active=json for file-based storage.
 
+server:
+  port: 0  # Random port by default to avoid conflicts

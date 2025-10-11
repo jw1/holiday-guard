@@ -16,9 +16,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.test.context.ContextConfiguration;
 
 @WebMvcTest(DashboardController.class)
-class DashboardControllerTest {
+@ContextConfiguration(classes = ControllerTestConfiguration.class)
+class DashboardControllerTest extends ManagementControllerTestBase {
 
     @Autowired
     private MockMvc mockMvc;

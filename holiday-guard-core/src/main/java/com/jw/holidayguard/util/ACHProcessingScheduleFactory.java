@@ -162,7 +162,7 @@ public class ACHProcessingScheduleFactory {
                     .stream()
                     .map(holiday -> new CreateDeviationRequest(
                             holiday,
-                            Deviation.Action.SKIP,
+                            RunStatus.FORCE_SKIP,
                             "Federal Holiday: " + getHolidayName(holiday, year),
                             "system",
                             null // never expires

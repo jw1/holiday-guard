@@ -12,6 +12,9 @@ import java.time.LocalDate;
 /**
  * Alterations which modify schedule rules for specific dates.
  * Deviations are tied to specific schedule versions to maintain complete audit trail of what changed between versions.
+ *
+ * <p>Deviations always represent "forced" run statuses (FORCE_RUN or FORCE_SKIP) that override
+ * the base schedule rule for specific dates.
  */
 @Entity
 @Table(name = "deviation")
@@ -44,7 +47,7 @@ public class Deviation {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "action", nullable = false)
-    private Action action;
+    private RunStatus action;
 
     @Column(name = "reason", nullable = false)
     private String reason;
@@ -62,10 +65,24 @@ public class Deviation {
     protected void onCreate() {
         if (createdAt == null) createdAt = Instant.now();
         if (createdBy == null) createdBy = "system";
+        validateAction();
     }
 
-    public enum Action {
-        SKIP,     // Don't run on this date (answer "no")
-        FORCE_RUN // Run even if base schedule says don't run (answer "yes")
+    @PreUpdate
+    protected void onUpdate() {
+        validateAction();
+    }
+
+    /**
+     * Validates that the action is one of the valid deviation types (FORCE_RUN or FORCE_SKIP).
+     * Deviations cannot have RUN or SKIP status - those come from the base rule.
+     */
+    private void validateAction() {
+        if (action != null && action != RunStatus.FORCE_RUN && action != RunStatus.FORCE_SKIP) {
+            throw new IllegalStateException(
+                "Deviation action must be FORCE_RUN or FORCE_SKIP, but was: " + action +
+                ". Use FORCE_RUN to override rule and run, or FORCE_SKIP to override rule and skip."
+            );
+        }
     }
 }

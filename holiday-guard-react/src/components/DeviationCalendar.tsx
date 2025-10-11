@@ -1,10 +1,11 @@
 import React, {useState, useEffect} from 'react';
+import { RunStatus } from '../types/runStatus';
 
 // Define the types for the calendar props
 interface DeviationCalendarProps {
-    baseCalendar: { [date: string]: 'run' | 'no-run' };
-    initialDeviations: { [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } };
-    onDeviationsChange: (newDeviations: { [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } }) => void;
+    baseCalendar: { [date: string]: RunStatus };
+    initialDeviations: { [date: string]: { type: 'FORCE_RUN' | 'FORCE_SKIP', reason: string } };
+    onDeviationsChange: (newDeviations: { [date: string]: { type: 'FORCE_RUN' | 'FORCE_SKIP', reason: string } }) => void;
     onMonthChange: (newMonth: Date) => void;
 }
 
@@ -43,7 +44,7 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
         if (newDeviations[dateKey]) {
             delete newDeviations[dateKey];
         } else {
-            const deviationType = baseCalendar[dateKey] === 'run' ? 'SKIP' : 'FORCE_RUN';
+            const deviationType = baseCalendar[dateKey] === RunStatus.RUN ? 'FORCE_SKIP' : 'FORCE_RUN';
             newDeviations[dateKey] = { type: deviationType, reason: '' };
         }
 
@@ -78,13 +79,13 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
     const getDayClasses = (state: string) => {
         const baseClasses = 'w-10 h-10 flex items-center justify-center rounded cursor-pointer transition-all duration-200';
         switch (state) {
-            case 'run':
+            case RunStatus.RUN:
                 return `${baseClasses} bg-green-100 text-green-800`;
-            case 'no-run':
+            case RunStatus.SKIP:
                 return `${baseClasses} bg-red-100 text-red-800`;
             case 'FORCE_RUN':
                 return `${baseClasses} bg-green-600 text-white`;
-            case 'SKIP':
+            case 'FORCE_SKIP':
                 return `${baseClasses} bg-red-600 text-white`;
             default:
                 return `${baseClasses} bg-gray-100`;

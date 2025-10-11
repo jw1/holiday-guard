@@ -14,6 +14,20 @@
     <description>React-based admin UI for Holiday Guard</description>
     <packaging>jar</packaging>
 
+    <dependencies>
+        <!-- Repository interfaces for @ConditionalOnManagement -->
+        <dependency>
+            <groupId>com.jw</groupId>
+            <artifactId>holiday-guard-repository</artifactId>
+        </dependency>
+
+        <!-- Spring Web for @Controller -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

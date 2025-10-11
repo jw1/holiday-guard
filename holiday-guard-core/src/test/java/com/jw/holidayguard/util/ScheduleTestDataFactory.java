@@ -131,7 +131,7 @@ public class ScheduleTestDataFactory {
     public static CreateDeviationRequest createHolidaySkipOverride(LocalDate holidayDate, String holidayName) {
         return new CreateDeviationRequest(
                 holidayDate,
-                Deviation.Action.SKIP,
+                RunStatus.FORCE_SKIP,
                 "Holiday skip: " + holidayName,
                 "system",
                 null // No expiration - permanent holiday
@@ -144,7 +144,7 @@ public class ScheduleTestDataFactory {
     public static CreateDeviationRequest createTemporarySkipOverride(LocalDate skipDate, String reason, LocalDate expiresAt) {
         return new CreateDeviationRequest(
                 skipDate,
-                Deviation.Action.SKIP,
+                RunStatus.FORCE_SKIP,
                 "Temporary skip: " + reason,
                 "admin",
                 expiresAt
@@ -157,7 +157,7 @@ public class ScheduleTestDataFactory {
     public static CreateDeviationRequest createEmergencyRunOverride(LocalDate runDate, String reason) {
         return new CreateDeviationRequest(
                 runDate,
-                Deviation.Action.FORCE_RUN,
+                RunStatus.FORCE_RUN,
                 "Emergency run: " + reason,
                 "admin",
                 null

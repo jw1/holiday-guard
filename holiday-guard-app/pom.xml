@@ -45,6 +45,24 @@
 			<artifactId>holiday-guard-security-inmemory</artifactId>
 		</dependency>
 
+	<!-- Lombok -->
+	<dependency>
+		<groupId>org.projectlombok</groupId>
+		<artifactId>lombok</artifactId>
+		<optional>true</optional>
+	</dependency>
+
+	<!-- Pluggable repository implementation. Active repository is determined by Spring profile. -->
+	<!-- Use profile "h2" for SQL database (default) or "json" for file-based storage. -->
+	<dependency>
+		<groupId>com.jw</groupId>
+		<artifactId>holiday-guard-repository-h2</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.jw</groupId>
+		<artifactId>holiday-guard-repository-json</artifactId>
+	</dependency>
+
 		<!-- Database runtime dependency -->
 		<dependency>
 			<groupId>com.h2database</groupId>

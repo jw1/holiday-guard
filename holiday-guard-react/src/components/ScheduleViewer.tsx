@@ -5,6 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../styles/calendar.css';
 import { CalendarEvent, CalendarFilters, CalendarDay } from '../types/calendar-view';
 import { Schedule } from '../types/schedule';
+import { RunStatus } from '../types/runStatus';
 import ScheduleFilterPanel from './ScheduleFilterPanel';
 import { exportToCSV, exportToICS } from '../utils/exportUtils';
 import { parseISODateString } from '../utils/dateUtils';
@@ -72,10 +73,10 @@ const ScheduleViewer: React.FC = () => {
         return calendarDays
             .filter(day => {
                 // Apply status filters
-                if (day.status === 'run' && !filters.showRun) return false;
-                if (day.status === 'no-run' && !filters.showNoRun) return false;
-                if (day.status === 'FORCE_RUN' && !filters.showForceRun) return false;
-                if (day.status === 'SKIP' && !filters.showSkip) return false;
+                if (day.status === RunStatus.RUN && !filters.showRun) return false;
+                if (day.status === RunStatus.SKIP && !filters.showNoRun) return false;
+                if (day.status === RunStatus.FORCE_RUN && !filters.showForceRun) return false;
+                if (day.status === RunStatus.FORCE_SKIP && !filters.showSkip) return false;
                 return true;
             })
             .map(day => {
@@ -97,7 +98,7 @@ const ScheduleViewer: React.FC = () => {
 
     // Custom event styling based on status
     const eventStyleGetter = (event: CalendarEvent) => {
-        const status = event.resource?.status || 'run';
+        const status = event.resource?.status || RunStatus.RUN;
         let style: React.CSSProperties = {
             borderRadius: '4px',
             padding: '2px 4px',
@@ -106,19 +107,19 @@ const ScheduleViewer: React.FC = () => {
         };
 
         switch (status) {
-            case 'run':
+            case RunStatus.RUN:
                 style.backgroundColor = '#dcfce7'; // green-100
                 style.color = '#166534'; // green-800
                 break;
-            case 'no-run':
+            case RunStatus.SKIP:
                 style.backgroundColor = '#fee2e2'; // red-100
                 style.color = '#991b1b'; // red-800
                 break;
-            case 'FORCE_RUN':
+            case RunStatus.FORCE_RUN:
                 style.backgroundColor = '#16a34a'; // green-600 (darker green)
                 style.color = '#ffffff'; // white text
                 break;
-            case 'SKIP':
+            case RunStatus.FORCE_SKIP:
                 style.backgroundColor = '#dc2626'; // red-600 (darker red)
                 style.color = '#ffffff'; // white text
                 break;
@@ -133,9 +134,9 @@ const ScheduleViewer: React.FC = () => {
         const reason = event.resource?.reason;
 
         // Format status for display
-        const statusDisplay = status === 'FORCE_RUN' ? 'Force Run' :
-                            status === 'SKIP' ? 'Skip' :
-                            status === 'run' ? 'Run' : 'No-Run';
+        const statusDisplay = status === RunStatus.FORCE_RUN ? 'Force Run' :
+                            status === RunStatus.FORCE_SKIP ? 'Force Skip' :
+                            status === RunStatus.RUN ? 'Run' : 'Skip';
 
         // Create detailed tooltip
         const tooltipText = reason
@@ -332,24 +333,24 @@ const ScheduleViewer: React.FC = () => {
                             <div>
                                 <label className="text-sm font-semibold text-gray-600">Status</label>
                                 <div className="mt-1">
-                                    {selectedEvent.resource?.status === 'FORCE_RUN' && (
+                                    {selectedEvent.resource?.status === RunStatus.FORCE_RUN && (
                                         <span className="inline-flex items-center px-3 py-1 rounded text-sm font-medium bg-green-600 text-white">
                                             Force Run
                                         </span>
                                     )}
-                                    {selectedEvent.resource?.status === 'SKIP' && (
+                                    {selectedEvent.resource?.status === RunStatus.FORCE_SKIP && (
                                         <span className="inline-flex items-center px-3 py-1 rounded text-sm font-medium bg-red-600 text-white">
-                                            Skip
+                                            Force Skip
                                         </span>
                                     )}
-                                    {selectedEvent.resource?.status === 'run' && (
+                                    {selectedEvent.resource?.status === RunStatus.RUN && (
                                         <span className="inline-flex items-center px-3 py-1 rounded text-sm font-medium bg-green-100 text-green-800">
                                             Run
                                         </span>
                                     )}
-                                    {selectedEvent.resource?.status === 'no-run' && (
+                                    {selectedEvent.resource?.status === RunStatus.SKIP && (
                                         <span className="inline-flex items-center px-3 py-1 rounded text-sm font-medium bg-red-100 text-red-800">
-                                            No-Run
+                                            Skip
                                         </span>
                                     )}
                                 </div>

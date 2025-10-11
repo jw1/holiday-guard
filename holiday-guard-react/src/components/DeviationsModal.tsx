@@ -3,6 +3,7 @@ import {Schedule} from '@/types/schedule';
 import DeviationCalendar from './DeviationCalendar';
 import {VersionPayload} from '../services/backend';
 import {useScheduleDeviations, useScheduleCalendar} from '../hooks/queries';
+import {RunStatus} from '../types/runStatus';
 
 interface DeviationsModalProps {
     schedule: Schedule | null;
@@ -13,7 +14,7 @@ interface DeviationsModalProps {
 
 const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) => {
 
-    const [deviations, setDeviations] = useState<{ [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } }>({});
+    const [deviations, setDeviations] = useState<{ [date: string]: { type: 'FORCE_RUN' | 'FORCE_SKIP', reason: string } }>({});
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
     const yearMonth = currentMonth.toISOString().slice(0, 7);
@@ -47,7 +48,7 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
 
     if (!schedule) return null;
 
-    const handleDeviationsChange = (newDeviations: { [date: string]: { type: 'FORCE_RUN' | 'SKIP', reason: string } }) => {
+    const handleDeviationsChange = (newDeviations: { [date: string]: { type: 'FORCE_RUN' | 'FORCE_SKIP', reason: string } }) => {
         setDeviations(newDeviations);
     };
 
@@ -132,7 +133,7 @@ const DeviationsModal: FC<DeviationsModalProps> = ({schedule, onClose, onSave}) 
                                                         ? 'bg-green-600 text-white'
                                                         : 'bg-red-600 text-white'
                                                 }`}>
-                                                    {deviation.type === 'FORCE_RUN' ? 'Force Run' : 'Skip'}
+                                                    {deviation.type === 'FORCE_RUN' ? 'Force Run' : 'Force Skip'}
                                                 </span>
                                             </div>
                                             <textarea

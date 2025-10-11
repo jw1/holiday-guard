@@ -62,12 +62,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // SPA-friendly
 
                 .authorizeHttpRequests(auth -> auth
-                        // Publicly accessible frontend/static
-                        .requestMatchers("/", "/index.html", "/vite.svg", "/assets/**").permitAll()
+                        // Publicly accessible static assets (needed for login page)
+                        .requestMatchers("/vite.svg", "/assets/**").permitAll()
+                        .requestMatchers("/index.html").permitAll()  // Served to everyone, but routes require auth
+                        .requestMatchers("/login").permitAll()  // Login page route
 
                         // Health checks / public API
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/api/v1/schedules/*/should-run").permitAll()
+
+                        // Admin UI routes (only available with SQL backend via @ConditionalOnManagement)
+                        .requestMatchers("/", "/admin/**", "/schedules/**", "/dashboard/**").authenticated()
 
                         // Secure API endpoints
                         .requestMatchers(HttpMethod.GET, "/api/v1/schedules/**").hasAnyRole("USER", "ADMIN")

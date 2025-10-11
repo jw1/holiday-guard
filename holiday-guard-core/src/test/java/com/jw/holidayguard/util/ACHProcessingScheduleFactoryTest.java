@@ -1,6 +1,5 @@
 package com.jw.holidayguard.util;
 
-import com.jw.holidayguard.domain.Deviation;
 import com.jw.holidayguard.domain.Rule;
 import com.jw.holidayguard.dto.request.CreateDeviationRequest;
 import com.jw.holidayguard.dto.request.CreateRuleRequest;
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.jw.holidayguard.domain.RunStatus.FORCE_SKIP;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -101,7 +101,7 @@ class ACHProcessingScheduleFactoryTest {
 
         // Check that all are SKIP overrides
         overrides.forEach(override -> {
-            assertEquals(Deviation.Action.SKIP, override.getAction());
+            assertEquals(FORCE_SKIP, override.getAction());
             assertEquals("system", override.getCreatedBy());
             assertNull(override.getExpiresAt()); // Permanent holidays
             assertTrue(override.getReason().startsWith("Federal Holiday:"));
@@ -141,7 +141,7 @@ class ACHProcessingScheduleFactoryTest {
 
         // Verify deviation details
         updateRequest.getDeviations().forEach(deviation -> {
-            assertEquals(Deviation.Action.SKIP, deviation.getAction());
+            assertEquals(FORCE_SKIP, deviation.getAction());
             assertEquals("system", deviation.getCreatedBy());
             assertTrue(deviation.getReason().startsWith("Federal Holiday:"));
         });

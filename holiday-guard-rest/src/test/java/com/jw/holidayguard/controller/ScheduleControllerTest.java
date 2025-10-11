@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Import;
 @WebMvcTest(controllers = ScheduleController.class)
 @ContextConfiguration(classes = ControllerTestConfiguration.class)
 @Import(com.jw.holidayguard.exception.GlobalExceptionHandler.class)
-class ScheduleControllerTest {
+class ScheduleControllerTest extends ManagementControllerTestBase {
 
     @Autowired
     private MockMvc mockMvc;

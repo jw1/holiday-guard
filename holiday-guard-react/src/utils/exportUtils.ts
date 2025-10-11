@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { CalendarEvent } from '../types/calendar-view';
+import { RunStatus } from '../types/runStatus';
 
 /**
  * Export calendar events to CSV format
@@ -12,7 +13,7 @@ export const exportToCSV = (events: CalendarEvent[], filename: string = 'calenda
     const rows = events.map(event => {
         const date = moment(event.start).format('YYYY-MM-DD');
         const schedule = event.resource?.scheduleName || '';
-        const status = formatStatus(event.resource?.status || 'run');
+        const status = formatStatus(event.resource?.status || RunStatus.RUN);
         const reason = event.resource?.reason || '';
 
         // Escape CSV values (handle commas, quotes, newlines)
@@ -48,7 +49,7 @@ export const exportToICS = (events: CalendarEvent[], filename: string = 'calenda
     events.forEach(event => {
         const date = moment(event.start).format('YYYYMMDD');
         const scheduleName = event.resource?.scheduleName || 'Unknown';
-        const status = formatStatus(event.resource?.status || 'run');
+        const status = formatStatus(event.resource?.status || RunStatus.RUN);
         const reason = event.resource?.reason || '';
 
         // Create event summary and description
@@ -85,12 +86,12 @@ export const exportToICS = (events: CalendarEvent[], filename: string = 'calenda
 /**
  * Format status for display
  */
-const formatStatus = (status: string): string => {
+const formatStatus = (status: RunStatus): string => {
     switch (status) {
-        case 'FORCE_RUN': return 'Force Run';
-        case 'SKIP': return 'Skip';
-        case 'run': return 'Run';
-        case 'no-run': return 'No-Run';
+        case RunStatus.FORCE_RUN: return 'Force Run';
+        case RunStatus.FORCE_SKIP: return 'Force Skip';
+        case RunStatus.RUN: return 'Run';
+        case RunStatus.SKIP: return 'Skip';
         default: return status;
     }
 };

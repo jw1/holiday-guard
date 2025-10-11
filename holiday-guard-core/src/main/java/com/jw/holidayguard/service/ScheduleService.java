@@ -1,5 +1,8 @@
 package com.jw.holidayguard.service;
 
+import com.jw.holidayguard.domain.Calendar;
+import com.jw.holidayguard.domain.Deviation;
+import com.jw.holidayguard.domain.RunStatus;
 import com.jw.holidayguard.domain.Schedule;
 import com.jw.holidayguard.domain.Rule;
 import com.jw.holidayguard.domain.Version;
@@ -13,7 +16,7 @@ import com.jw.holidayguard.repository.VersionRepository;
 import com.jw.holidayguard.dto.ScheduleMonthDto;
 import com.jw.holidayguard.dto.DeviationDto;
 import com.jw.holidayguard.repository.DeviationRepository;
-import com.jw.holidayguard.service.materialization.RuleEngine;
+import com.jw.holidayguard.service.rule.RuleEngine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,80 +34,77 @@ import java.util.stream.Collectors;
 @Transactional
 public class ScheduleService {
 
-    private final ScheduleRepository repository;
-    private final RuleRepository ruleRepository;
-    private final VersionRepository versionRepository;
-    private final DeviationRepository deviationRepository;
+    private final ScheduleRepository scheduleRepo;
+    private final RuleRepository ruleRepo;
+    private final VersionRepository versionRepo;
+    private final DeviationRepository deviationRepo;
+
     private final RuleEngine ruleEngine;
     private final CurrentUserService currentUserService;
 
-    public ScheduleService(ScheduleRepository repository, RuleRepository ruleRepository, VersionRepository versionRepository, DeviationRepository deviationRepository, RuleEngine ruleEngine, CurrentUserService currentUserService) {
-        this.repository = repository;
-        this.ruleRepository = ruleRepository;
-        this.versionRepository = versionRepository;
-        this.deviationRepository = deviationRepository;
+    public ScheduleService(ScheduleRepository scheduleRepo, RuleRepository ruleRepo, VersionRepository versionRepo, DeviationRepository deviationRepo, RuleEngine ruleEngine, CurrentUserService currentUserService) {
+        this.scheduleRepo = scheduleRepo;
+        this.ruleRepo = ruleRepo;
+        this.versionRepo = versionRepo;
+        this.deviationRepo = deviationRepo;
         this.ruleEngine = ruleEngine;
         this.currentUserService = currentUserService;
     }
 
     public Schedule createSchedule(CreateScheduleRequest request) {
+
         // Check for duplicate name
-        if (repository.findByName(request.getName()).isPresent()) {
+        if (scheduleRepo.findByName(request.getName()).isPresent()) {
             throw new DuplicateScheduleException(request.getName());
         }
 
-        String currentUser = currentUserService.getCurrentUsername();
+        var username = currentUserService.getCurrentUsername();
 
-        Schedule schedule = Schedule.builder()
+        var unsavedSchedule = Schedule.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .country(request.getCountry())
                 .active(request.isActive())
-                .createdBy(currentUser)
-                .updatedBy(currentUser)
+                .createdBy(username)
+                .updatedBy(username)
                 .build();
 
-        Schedule savedSchedule = repository.save(schedule);
+        Schedule schedule = scheduleRepo.save(unsavedSchedule);
 
-        Version version = Version.builder()
-                .scheduleId(savedSchedule.getId())
+        Version version = versionRepo.save(Version
+                .builderFrom(schedule)
                 .active(true)
-                .build();
+                .build()); // Activate initial version
 
-        Version savedVersion = versionRepository.save(version);
+        // Associate rule with version and save
+        ruleRepo.save(Rule
+                .builderFrom(schedule, request)
+                .versionId(version.getId())
+                .build());
 
-        Rule rule = Rule.builder()
-                .scheduleId(savedSchedule.getId())
-                .versionId(savedVersion.getId())
-                .ruleType(Rule.RuleType.valueOf(request.getRuleType()))
-                .ruleConfig(request.getRuleConfig())
-                .build();
-
-        ruleRepository.save(rule);
-
-        return savedSchedule;
+        return schedule;
     }
 
     @Transactional(readOnly = true)
     public Schedule findScheduleById(Long id) {
-        return repository.findById(id)
+        return scheduleRepo.findById(id)
                 .orElseThrow(() -> new ScheduleNotFoundException(id));
     }
 
     @Transactional(readOnly = true)
     public Schedule findScheduleByName(String name) {
-        return repository.findByName(name)
+        return scheduleRepo.findByName(name)
                 .orElseThrow(() -> new ScheduleNotFoundException(name));
     }
 
     @Transactional(readOnly = true)
     public List<Schedule> getAllActiveSchedules() {
-        return repository.findByActiveTrue();
+        return scheduleRepo.findByActiveTrue();
     }
 
     @Transactional(readOnly = true)
     public List<Schedule> findAllSchedules() {
-        return repository.findAll();
+        return scheduleRepo.findAll();
     }
 
     public Schedule updateSchedule(Long id, UpdateScheduleRequest updateData) {
@@ -114,7 +114,7 @@ public class ScheduleService {
 
         // Check for name conflicts only if name is being changed
         if (updateData.getName() != null && !updateData.getName().equals(existing.getName())) {
-            if (repository.findByName(updateData.getName()).isPresent()) {
+            if (scheduleRepo.findByName(updateData.getName()).isPresent()) {
                 throw new DuplicateScheduleException(updateData.getName());
             }
         }
@@ -156,27 +156,31 @@ public class ScheduleService {
 
             if (ruleChanged) {
 
-                // Deactivate old version
-                versionRepository
-                        .findByScheduleIdAndActiveTrue(id)
-                        .ifPresent(v -> v.setActive(false));
+                // Get the current active version to use toNewVersion()
+                Optional<Version> currentVersionOpt = versionRepo.findByScheduleIdAndActiveTrue(id);
 
-                // create & save new version
-                Version version = Version.builder()
+                Rule newRule = Rule.builder()
                         .scheduleId(id)
-                        .active(true)
-                        .build();
-                Version savedVersion = versionRepository.save(version);
-
-                // create & save new rule (on this new version)
-                Rule rule = Rule.builder()
-                        .scheduleId(id)
-                        .versionId(savedVersion.getId())
                         .ruleType(Rule.RuleType.valueOf(updateData.getRuleType()))
                         .ruleConfig(updateData.getRuleConfig())
                         .build();
 
-                ruleRepository.save(rule);
+                // Use domain model factory method to create new version
+                Version newVersion;
+                if (currentVersionOpt.isPresent()) {
+                    Version currentVersion = currentVersionOpt.get();
+                    currentVersion.setActive(false); // Deactivate old version
+                    newVersion = Version.builderFrom(existing).build();
+                } else {
+                    newVersion = Version.builderFrom(existing).build();
+                }
+
+                newVersion.setActive(true);
+                Version savedVersion = versionRepo.save(newVersion);
+
+                // Associate rule with the persisted version
+                newRule.setVersionId(savedVersion.getId());
+                ruleRepo.save(newRule);
             }
         }
 
@@ -189,30 +193,51 @@ public class ScheduleService {
 
     @Transactional(readOnly = true)
     public Optional<Rule> findLatestRuleForSchedule(Long scheduleId) {
-        return ruleRepository.findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(scheduleId);
+        return ruleRepo.findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(scheduleId);
     }
 
     @Transactional(readOnly = true)
     public ScheduleMonthDto getScheduleCalendar(Long scheduleId, YearMonth yearMonth) {
         Schedule schedule = findScheduleById(scheduleId);
-        Rule rule = findLatestRuleForSchedule(scheduleId)
-                .orElseThrow(() -> new IllegalStateException("Schedule has no rules"));
+
+        // Get active version
+        Version activeVersion = versionRepo.findByScheduleIdAndActiveTrue(scheduleId)
+                .orElseThrow(() -> new IllegalStateException("Schedule has no active version: " + scheduleId));
+
+        // Fetch rule for active version
+        Rule rule = ruleRepo.findByVersionId(activeVersion.getId())
+                .orElseThrow(() -> new IllegalStateException("No rule found for version: " + activeVersion.getId()));
 
         LocalDate fromDate = yearMonth.atDay(1);
         LocalDate toDate = yearMonth.atEndOfMonth();
 
-        log.info("getting info for schedule rule " + rule.getRuleType());
-        log.info("getting info for schedule rule " + rule.getRuleConfig());
+        log.info("Getting calendar for schedule rule type: {}, config: {}", rule.getRuleType(), rule.getRuleConfig());
 
-        List<LocalDate> runDates = ruleEngine.generateDates(rule, fromDate, toDate);
-        Map<Integer, String> days = new HashMap<>();
-        for (int i = 1; i <= yearMonth.lengthOfMonth(); i++) {
-            LocalDate currentDate = yearMonth.atDay(i);
-            if (runDates.contains(currentDate)) {
-                days.put(i, "run");
-            } else {
-                days.put(i, "no-run");
-            }
+        // Fetch deviations for active version
+        List<Deviation> deviations = deviationRepo.findByScheduleIdAndVersionId(scheduleId, activeVersion.getId());
+
+        // Create Calendar abstraction - encapsulates shouldRun business logic
+        // RuleEngine implements Calendar.RuleEvaluator, so we can use it directly
+        Calendar calendar = new Calendar(schedule, rule, deviations, ruleEngine::shouldRun);
+
+        // Query date range using Calendar - guarantees algorithm consistency
+        Map<LocalDate, Boolean> shouldRunMap = calendar.shouldRun(fromDate, toDate);
+
+        // Convert to DTO format (Map<Integer, RunStatus>)
+        Map<Integer, RunStatus> days = new HashMap<>();
+        for (Map.Entry<LocalDate, Boolean> entry : shouldRunMap.entrySet()) {
+
+            LocalDate date = entry.getKey();
+            int dayOfMonth = date.getDayOfMonth();
+            boolean shouldRun = entry.getValue();
+
+            // Find deviation for this date to determine if it's a forced status
+            Optional<Deviation> deviationOpt = deviations.stream()
+                    .filter(d -> d.getOverrideDate().equals(date))
+                    .findFirst();
+
+            RunStatus status = RunStatus.fromCalendar(shouldRun, deviationOpt.orElse(null));
+            days.put(dayOfMonth, status);
         }
 
         return new ScheduleMonthDto(yearMonth, days);
@@ -221,21 +246,21 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public List<DeviationDto> getScheduleDeviations(Long scheduleId) {
         // Find the active version for this schedule
-        Optional<Version> activeVersion = versionRepository.findByScheduleIdAndActiveTrue(scheduleId);
+        Optional<Version> activeVersion = versionRepo.findByScheduleIdAndActiveTrue(scheduleId);
 
         if (activeVersion.isEmpty()) {
             // No active version means no deviations
             log.warn("no active version found");
             return List.of();
         } else {
-            log.info("active version found: " + activeVersion.get().getId() + ", schedule id: " + scheduleId);
+            log.info("active version found: {}, schedule id: {}", activeVersion.get().getId(), scheduleId);
         }
 
         // Query deviations for the active version only
-        var deviations = deviationRepository.findByScheduleIdAndVersionId(scheduleId, activeVersion.get().getId()).stream()
+        var deviations = deviationRepo.findByScheduleIdAndVersionId(scheduleId, activeVersion.get().getId()).stream()
                 .map(deviation -> new DeviationDto(deviation.getOverrideDate(), deviation.getAction().name(), deviation.getReason()))
                 .collect(Collectors.toList());
-        log.info("found " + deviations.size() + " deviations");
+        log.info("found {} deviations", deviations.size());
 
         return deviations;
     }

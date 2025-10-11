@@ -1,7 +1,9 @@
 package com.jw.holidayguard.service;
 
+import com.jw.holidayguard.domain.Calendar;
 import com.jw.holidayguard.domain.Deviation;
 import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.domain.RunStatus;
 import com.jw.holidayguard.domain.Schedule;
 import com.jw.holidayguard.domain.Version;
 import com.jw.holidayguard.dto.CalendarDayDto;
@@ -10,7 +12,7 @@ import com.jw.holidayguard.repository.DeviationRepository;
 import com.jw.holidayguard.repository.RuleRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
 import com.jw.holidayguard.repository.VersionRepository;
-import com.jw.holidayguard.service.materialization.RuleEngine;
+import com.jw.holidayguard.service.rule.RuleEngine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Service for generating multi-schedule calendar views.
@@ -38,6 +39,7 @@ public class CalendarViewService {
     private final RuleRepository ruleRepository;
     private final VersionRepository versionRepository;
     private final DeviationRepository deviationRepository;
+
     private final RuleEngine ruleEngine;
 
     /**
@@ -55,8 +57,11 @@ public class CalendarViewService {
             boolean includeDeviations) {
 
         List<CalendarDayDto> allDays = new ArrayList<>();
+        LocalDate fromDate = yearMonth.atDay(1);
+        LocalDate toDate = yearMonth.atEndOfMonth();
 
         for (Long scheduleId : scheduleIds) {
+            // Fetch schedule
             Optional<Schedule> scheduleOpt = scheduleRepository.findById(scheduleId);
             if (scheduleOpt.isEmpty()) {
                 log.warn("Schedule {} not found, skipping", scheduleId);
@@ -64,52 +69,55 @@ public class CalendarViewService {
             }
 
             Schedule schedule = scheduleOpt.get();
-            Optional<Rule> ruleOpt = ruleRepository.findFirstByScheduleIdAndActiveTrueOrderByCreatedAtDesc(scheduleId);
 
+            // Get active version
+            Optional<Version> versionOpt = versionRepository.findByScheduleIdAndActiveTrue(scheduleId);
+            if (versionOpt.isEmpty()) {
+                log.warn("No active version for schedule {}, skipping", scheduleId);
+                continue;
+            }
+
+            Version version = versionOpt.get();
+
+            // Fetch rule for active version
+            Optional<Rule> ruleOpt = ruleRepository.findByVersionId(version.getId());
             if (ruleOpt.isEmpty()) {
-                log.warn("No active rule found for schedule {}, skipping", scheduleId);
+                log.warn("No rule found for version {}, skipping", scheduleId);
                 continue;
             }
 
             Rule rule = ruleOpt.get();
-            LocalDate fromDate = yearMonth.atDay(1);
-            LocalDate toDate = yearMonth.atEndOfMonth();
 
-            // Generate base calendar run dates
-            List<LocalDate> runDates = ruleEngine.generateDates(rule, fromDate, toDate);
+            // Fetch deviations (if requested)
+            List<Deviation> deviations = includeDeviations
+                    ? deviationRepository.findByScheduleIdAndVersionId(scheduleId, version.getId())
+                    : List.of();
 
-            // Get deviations if requested
-            Map<LocalDate, Deviation> deviationMap = Map.of();
-            if (includeDeviations) {
-                Optional<Version> activeVersion = versionRepository.findByScheduleIdAndActiveTrue(scheduleId);
-                if (activeVersion.isPresent()) {
-                    deviationMap = deviationRepository
-                            .findByScheduleIdAndVersionId(scheduleId, activeVersion.get().getId())
-                            .stream()
-                            .collect(Collectors.toMap(Deviation::getOverrideDate, d -> d));
-                }
-            }
+            // Create Calendar abstraction - encapsulates shouldRun business logic
+            // RuleEngine implements Calendar.RuleEvaluator, so we can use it directly
+            Calendar calendar = new Calendar(schedule, rule, deviations, ruleEngine::shouldRun);
 
-            // Create calendar days for the entire month
-            for (int day = 1; day <= yearMonth.lengthOfMonth(); day++) {
-                LocalDate currentDate = yearMonth.atDay(day);
-                String status;
-                String reason = null;
+            // Query date range using Calendar - guarantees algorithm consistency
+            Map<LocalDate, Boolean> shouldRunMap = calendar.shouldRun(fromDate, toDate);
 
-                // Check for deviations first
-                if (deviationMap.containsKey(currentDate)) {
-                    Deviation deviation = deviationMap.get(currentDate);
-                    status = deviation.getAction().name(); // "FORCE_RUN" or "SKIP"
-                    reason = deviation.getReason();
-                } else {
-                    // Use base schedule
-                    status = runDates.contains(currentDate) ? "run" : "no-run";
-                }
+            // Convert to DTOs
+            for (Map.Entry<LocalDate, Boolean> entry : shouldRunMap.entrySet()) {
+                LocalDate date = entry.getKey();
+                boolean shouldRun = entry.getValue();
+
+                // Find deviation for this date (if applicable) to get reason
+                Optional<Deviation> deviationOpt = deviations.stream()
+                        .filter(d -> d.getOverrideDate().equals(date))
+                        .findFirst();
+
+                // calculate RunStatus and a reason
+                RunStatus status = RunStatus.fromCalendar(shouldRun, deviationOpt.orElse(null));
+                String reason = deviationOpt.map(Deviation::getReason).orElse(null);
 
                 CalendarDayDto dayDto = new CalendarDayDto(
                         scheduleId,
                         schedule.getName(),
-                        currentDate,
+                        date,
                         status,
                         reason
                 );

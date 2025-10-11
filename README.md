@@ -36,7 +36,7 @@ Response:
   "scheduleId": "uuid",
   "queryDate": "2024-03-15",
   "shouldRun": true,
-  "reason": "Scheduled to run - found in materialized calendar",
+  "reason": "Scheduled to run - rule matches",
   "overrideApplied": false,
   "versionId": "uuid"
 }
@@ -45,20 +45,20 @@ Response:
 ## 🏗️ Architecture
 
 - **Spring Boot 3.x** + **Java 21**
-- **PostgreSQL** with Flyway migrations  
+- **PostgreSQL** with Flyway migrations
 - **Schedule Versioning**: Complete audit trail of rule changes
-- **Materialized Calendar**: Pre-computed dates for performance
-- **Override System**: Skip or force-run specific dates
+- **Calendar Domain Object**: On-demand date computation with rule evaluation
+- **Override System**: Skip or force-run specific dates (deviations)
 - **Boundary Validation**: 5-year planning horizon
 
 ## 🔧 Configuration
 
 The service uses these core entities:
 - **Schedule**: Named calendar (e.g., "Payroll Schedule")
-- **ScheduleRule**: When to run (weekdays, cron, custom dates, monthly patterns)
-- **ScheduleOverride**: Exceptions (skip holidays, emergency runs)
-- **MaterializedCalendar**: Pre-computed "should run" dates
-- **QueryLog**: Complete audit trail
+- **Rule**: When to run (weekdays, cron, custom dates, monthly patterns)
+- **Deviation**: Exceptions (skip holidays, force emergency runs)
+- **Version**: Tracks rule changes over time for audit purposes
+- **QueryLog**: Complete audit trail of all shouldRun queries
 
 ## 📖 Full Documentation
 

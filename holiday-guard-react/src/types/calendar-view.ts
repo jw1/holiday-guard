@@ -1,4 +1,5 @@
 import { Event } from 'react-big-calendar';
+import { RunStatus } from './runStatus';
 
 /**
  * Represents a single calendar day for a specific schedule.
@@ -7,7 +8,7 @@ export interface CalendarDay {
     scheduleId: number;
     scheduleName: string;
     date: string; // ISO date string
-    status: 'run' | 'no-run' | 'FORCE_RUN' | 'SKIP';
+    status: RunStatus;
     reason?: string;
 }
 
@@ -25,7 +26,7 @@ export interface MultiScheduleCalendar {
 export interface CalendarEvent extends Event {
     scheduleId: number;
     scheduleName: string;
-    status: 'run' | 'no-run' | 'FORCE_RUN' | 'SKIP';
+    status: RunStatus;
     reason?: string;
 }
 

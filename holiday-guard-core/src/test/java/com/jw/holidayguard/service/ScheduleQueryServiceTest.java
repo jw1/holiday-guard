@@ -4,6 +4,7 @@ import com.jw.holidayguard.domain.Schedule;
 import com.jw.holidayguard.domain.QueryLog;
 import com.jw.holidayguard.domain.Deviation;
 import com.jw.holidayguard.domain.Rule;
+import com.jw.holidayguard.domain.RunStatus;
 import com.jw.holidayguard.domain.Version;
 import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
@@ -12,7 +13,7 @@ import com.jw.holidayguard.repository.QueryLogRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
 import com.jw.holidayguard.repository.VersionRepository;
 import com.jw.holidayguard.repository.RuleRepository;
-import com.jw.holidayguard.service.materialization.RuleEngine;
+import com.jw.holidayguard.service.rule.RuleEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -150,12 +151,12 @@ class ScheduleQueryServiceTest {
         // Given: A date exists in calendar but has a SKIP override
         LocalDate queryDate = LocalDate.now().plusDays(15); // Future date for holiday simulation
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
-            
+
         Deviation skipOverride = Deviation.builder()
             .scheduleId(scheduleId)
             .versionId(versionId)
             .overrideDate(queryDate)
-            .action(Deviation.Action.SKIP)
+            .action(RunStatus.FORCE_SKIP)
             .reason("Independence Day - holiday skip")
             .build();
 
@@ -163,8 +164,11 @@ class ScheduleQueryServiceTest {
             .thenReturn(Optional.of(testSchedule));
         when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
             .thenReturn(Optional.of(activeVersion));
+        when(ruleRepository.findByVersionId(versionId))
+            .thenReturn(Optional.of(new Rule())); // Need to mock rule for Calendar construction
         when(overrideRepository.findByScheduleId(scheduleId))
             .thenReturn(java.util.List.of(skipOverride));
+        // Note: No need to mock ruleEngine.shouldRun() - Calendar checks deviations first
         when(queryLogRepository.save(any(QueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -176,9 +180,9 @@ class ScheduleQueryServiceTest {
         assertFalse(response.isShouldRun());
         assertEquals("Override applied: Independence Day - holiday skip", response.getReason());
         assertTrue(response.isOverrideApplied());
-        
+
         // Should log the query with override flag
-        verify(queryLogRepository).save(argThat(log -> 
+        verify(queryLogRepository).save(argThat(log ->
             log.isDeviationApplied() && !log.isShouldRunResult()
         ));
     }

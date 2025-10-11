@@ -21,10 +21,12 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.context.ContextConfiguration;
 
 @WebMvcTest(controllers = ScheduleController.class)
+@ContextConfiguration(classes = ControllerTestConfiguration.class)
 @Import({com.jw.holidayguard.security.SecurityConfig.class, com.jw.holidayguard.exception.GlobalExceptionHandler.class})
-class ScheduleControllerSecurityTest {
+class ScheduleControllerSecurityTest extends ManagementControllerTestBase {
 
     @Autowired
     private MockMvc mockMvc;

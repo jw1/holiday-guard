@@ -1,5 +1,6 @@
 package com.jw.holidayguard.domain;
 
+import com.jw.holidayguard.dto.request.CreateScheduleRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,6 +61,20 @@ public class Rule {
     protected void onCreate() {
         if (createdAt == null) createdAt = Instant.now();
         if (effectiveFrom == null) effectiveFrom = LocalDate.now();
+    }
+
+    public static Rule.RuleBuilder builderFrom(Long scheduleId, Rule.RuleType ruleType, String ruleConfig) {
+        return Rule.builder()
+                .scheduleId(scheduleId)
+                .ruleType(ruleType)
+                .ruleConfig(ruleConfig);
+    }
+
+    public static Rule.RuleBuilder builderFrom(Schedule schedule, CreateScheduleRequest createScheduleRequest) {
+        return Rule.builder()
+                .scheduleId(schedule.getId())
+                .ruleType(RuleType.valueOf(createScheduleRequest.getRuleType()))
+                .ruleConfig(createScheduleRequest.getRuleConfig());
     }
 
     /**

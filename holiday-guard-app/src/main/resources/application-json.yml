@@ -1,0 +1,13 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+app:
+  repo:
+    json:
+      filename: ./data.json  # Path to JSON data file
+
+server:
+  port: 8080  # Fixed port for JSON profile

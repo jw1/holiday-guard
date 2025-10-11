@@ -1,6 +1,6 @@
 package com.jw.holidayguard.dto.response;
 
-import com.jw.holidayguard.domain.Deviation;
+import com.jw.holidayguard.domain.RunStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +17,7 @@ public class DeviationResponse {
     private Long scheduleId;
     private Long versionId;
     private LocalDate overrideDate;
-    private Deviation.Action action;
+    private RunStatus action;
     private String reason;
     private String createdBy;
     private Instant createdAt;

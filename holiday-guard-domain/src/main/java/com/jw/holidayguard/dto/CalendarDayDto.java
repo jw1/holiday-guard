@@ -1,5 +1,6 @@
 package com.jw.holidayguard.dto;
 
+import com.jw.holidayguard.domain.RunStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,6 @@ public class CalendarDayDto {
     private Long scheduleId;
     private String scheduleName;
     private LocalDate date;
-    private String status; // "run", "no-run", "FORCE_RUN", "SKIP"
+    private RunStatus status;
     private String reason; // Deviation reason, if applicable
 }

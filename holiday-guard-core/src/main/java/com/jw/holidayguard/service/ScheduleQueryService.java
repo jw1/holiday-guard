@@ -10,7 +10,7 @@ import com.jw.holidayguard.repository.QueryLogRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
 import com.jw.holidayguard.repository.VersionRepository;
 import com.jw.holidayguard.repository.RuleRepository;
-import com.jw.holidayguard.service.materialization.RuleEngine;
+import com.jw.holidayguard.service.rule.RuleEngine;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,61 +107,65 @@ public class ScheduleQueryService {
         // Validate schedule exists and is active
         Schedule schedule = scheduleRepository.findById(scheduleId)
             .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + scheduleId));
-        
+
         if (!schedule.isActive()) {
             throw new IllegalArgumentException("Schedule is not active: " + scheduleId);
         }
-        
+
         // Validate date bounds (reasonable planning horizon)
         LocalDate queryDate = request.getQueryDate(); // This defaults to today if null
         LocalDate today = LocalDate.now();
         LocalDate maxFutureDate = today.plusYears(5); // 5 year planning horizon
         LocalDate minPastDate = today.minusYears(1);  // 1 year historical data
-        
+
         if (queryDate.isAfter(maxFutureDate)) {
             throw new IllegalArgumentException("Query date too far in future: " + queryDate + " (max: " + maxFutureDate + ")");
         }
         if (queryDate.isBefore(minPastDate)) {
             throw new IllegalArgumentException("Query date too far in past: " + queryDate + " (min: " + minPastDate + ")");
         }
-        
+
         // Get active version
         Version activeVersion = versionRepository.findByScheduleIdAndActiveTrue(scheduleId)
             .orElseThrow(() -> new IllegalStateException("No active version found for schedule: " + scheduleId));
-        
-        // Check for overrides first (they take precedence)
-        Optional<Deviation> override = overrideRepository.findByScheduleId(scheduleId)
-            .stream()
-            .filter(o -> o.getVersionId().equals(activeVersion.getId()) && o.getOverrideDate().equals(queryDate))
-            .findFirst();
-        
-        boolean shouldRun;
-        String reason;
-        boolean overrideApplied = false;
-        
-        if (override.isPresent()) {
-            // Override exists - apply it
-            overrideApplied = true;
-            Deviation overrideRule = override.get();
-            shouldRun = overrideRule.getAction() == Deviation.Action.FORCE_RUN;
-            reason = "Override applied: " + overrideRule.getReason();
-        } else {
-            // No override - evaluate rules
-            Optional<Rule> rule = ruleRepository.findByVersionId(activeVersion.getId());
-            if (rule.isEmpty()) {
-                shouldRun = false;
-                reason = "Not scheduled to run - no rules found for version";
-            } else {
-                shouldRun = ruleEngine.shouldRun(rule.get(), queryDate);
-                
-                if (shouldRun) {
-                    reason = "Scheduled to run - rule matches";
-                } else {
-                    reason = "Not scheduled to run - rule does not match";
-                }
-            }
+
+        // Fetch rule for active version
+        Optional<Rule> ruleOpt = ruleRepository.findByVersionId(activeVersion.getId());
+        if (ruleOpt.isEmpty()) {
+            throw new IllegalStateException("No rule found for version: " + activeVersion.getId());
         }
-        
+
+        // Fetch deviations for active version
+        List<Deviation> deviations = overrideRepository.findByScheduleId(scheduleId)
+            .stream()
+            .filter(d -> d.getVersionId().equals(activeVersion.getId()))
+            .toList();
+
+        // Create Calendar abstraction - this encapsulates the shouldRun business logic
+        // RuleEngine implements Calendar.RuleEvaluator, so we can use it directly
+        Calendar calendar = new Calendar(schedule, ruleOpt.get(), deviations, ruleEngine::shouldRun);
+
+        // Delegate to Calendar for shouldRun decision (handles deviations + rule evaluation)
+        boolean shouldRun = calendar.shouldRun(queryDate);
+
+        // Determine if deviation was applied (check if any deviation exists for this date)
+        boolean deviationApplied = deviations.stream()
+                .anyMatch(d -> d.getOverrideDate().equals(queryDate));
+
+        // Build reason message
+        String reason;
+        if (deviationApplied) {
+            Deviation deviation = deviations.stream()
+                    .filter(d -> d.getOverrideDate().equals(queryDate))
+                    .findFirst()
+                    .orElseThrow();
+            reason = "Override applied: " + deviation.getReason();
+        } else {
+            reason = shouldRun
+                    ? "Scheduled to run - rule matches"
+                    : "Not scheduled to run - rule does not match";
+        }
+
         // Log the query for audit trail
         QueryLog queryLog = QueryLog.builder()
             .scheduleId(scheduleId)
@@ -169,19 +173,19 @@ public class ScheduleQueryService {
             .queryDate(queryDate)
             .shouldRunResult(shouldRun)
             .reason(reason)
-            .deviationApplied(overrideApplied)
+            .deviationApplied(deviationApplied)
             .clientIdentifier(request.getClientIdentifier())
             .build();
-        
+
         queryLogRepository.save(queryLog);
-        
+
         // Return response
         return new ShouldRunQueryResponse(
             scheduleId,
             queryDate,
             shouldRun,
             reason,
-            overrideApplied,
+            deviationApplied,
             activeVersion.getId()
         );
     }

@@ -7,6 +7,7 @@ import com.jw.holidayguard.dto.request.UpdateScheduleRequest;
 import com.jw.holidayguard.exception.DuplicateScheduleException;
 import com.jw.holidayguard.exception.MissingRuleException;
 import com.jw.holidayguard.exception.ScheduleNotFoundException;
+import com.jw.holidayguard.repository.ConditionalOnManagement;
 import com.jw.holidayguard.service.ScheduleService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
+/**
+ * REST controller for schedule management operations (CRUD).
+ *
+ * <p>This controller is only active when the repository implementation supports
+ * management operations. With read-only implementations (like JSON), this entire
+ * controller is disabled, and management endpoints return 404.
+ *
+ * @see com.jw.holidayguard.repository.DataProvider#supportsManagement()
+ */
 @RestController
 @RequestMapping("/api/v1/schedules")
+@ConditionalOnManagement
 public class ScheduleController {
 
     private final ScheduleService service;

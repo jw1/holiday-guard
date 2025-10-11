@@ -1,6 +1,7 @@
 package com.jw.holidayguard.controller;
 
 import com.jw.holidayguard.dto.DailyScheduleStatusDto;
+import com.jw.holidayguard.repository.ConditionalOnManagement;
 import com.jw.holidayguard.service.ScheduleQueryService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,8 +10,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST controller for dashboard analytics.
+ *
+ * <p>Dashboard metrics require database queries for statistics,
+ * only available with management-enabled implementations.
+ */
 @RestController
 @RequestMapping("/api/v1/dashboard")
+@ConditionalOnManagement
 public class DashboardController {
 
     private final ScheduleQueryService scheduleQueryService;

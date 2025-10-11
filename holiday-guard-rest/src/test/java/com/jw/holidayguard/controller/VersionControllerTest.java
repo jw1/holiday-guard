@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Import;
 @WebMvcTest(controllers = ScheduleVersionController.class)
 @ContextConfiguration(classes = ControllerTestConfiguration.class)
 @Import(GlobalExceptionHandler.class)
-class VersionControllerTest {
+class VersionControllerTest extends ManagementControllerTestBase {
 
     @Autowired
     private MockMvc mockMvc;

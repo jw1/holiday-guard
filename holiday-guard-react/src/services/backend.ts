@@ -6,6 +6,7 @@ import api from './api';
 import {ScheduleResponseDto, Schedule} from '../types/schedule';
 import {AuditLogDto} from '../types/audit';
 import {MultiScheduleCalendar} from '../types/calendar-view';
+import {RunStatus} from '../types/runStatus';
 
 // ============================================================================
 // Type Definitions
@@ -42,13 +43,13 @@ export interface ShouldRunResponse {
 
 export interface Deviation {
     date: string;
-    type: 'FORCE_RUN' | 'SKIP';
+    type: 'FORCE_RUN' | 'FORCE_SKIP';
     reason: string;
 }
 
 export interface CalendarResponse {
     yearMonth: string;
-    days: Record<string, 'run' | 'no-run'>;
+    days: Record<string, RunStatus>;
 }
 
 export interface VersionPayload {
