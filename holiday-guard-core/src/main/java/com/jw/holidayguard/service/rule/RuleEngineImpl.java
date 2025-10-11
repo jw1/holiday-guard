@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * REFACTOR: Improved implementation using handler pattern
  * Implementation of RuleEngine that delegates to specific rule handlers
  * and generates materialized calendar dates.
  */
@@ -29,26 +29,22 @@ public class RuleEngineImpl implements RuleEngine {
     }
 
     @Override
-    public List<LocalDate> generateDates(Rule rule, LocalDate fromDate, LocalDate toDate) {
+    public List<LocalDate> generateDates(Rule rule, LocalDate from, LocalDate to) {
 
         // empty list if not valid range
-        if (fromDate.isAfter(toDate)) return List.of();
+        if (from.isAfter(to)) return List.of();
 
-        RuleHandler handler = handlers.get(rule.getRuleType());
-        if (handler == null) {
-            throw new UnsupportedOperationException("No handler found for rule type: " + rule.getRuleType());
-        }
-
-        return handler.generateDates(rule, fromDate, toDate);
+        return getRuleHandler(rule).generateDates(rule, from, to);
     }
 
     @Override
     public boolean shouldRun(Rule rule, LocalDate date) {
-        RuleHandler handler = handlers.get(rule.getRuleType());
-        if (handler == null) {
-            throw new UnsupportedOperationException("No handler found for rule type: " + rule.getRuleType());
-        }
+        return getRuleHandler(rule).shouldRun(rule, date);
+    }
 
-        return handler.shouldRun(rule, date);
+    private RuleHandler getRuleHandler(Rule rule) {
+        return Optional
+                .ofNullable(handlers.get(rule.getRuleType()))
+                .orElseThrow(() -> new UnsupportedOperationException("No handler found for rule type: " + rule.getRuleType()));
     }
 }

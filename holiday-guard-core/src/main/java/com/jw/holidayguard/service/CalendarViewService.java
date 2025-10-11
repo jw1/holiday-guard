@@ -6,8 +6,9 @@ import com.jw.holidayguard.domain.Rule;
 import com.jw.holidayguard.domain.RunStatus;
 import com.jw.holidayguard.domain.Schedule;
 import com.jw.holidayguard.domain.Version;
-import com.jw.holidayguard.dto.CalendarDayDto;
-import com.jw.holidayguard.dto.MultiScheduleCalendarDto;
+import com.jw.holidayguard.dto.view.DayStatusView;
+import com.jw.holidayguard.dto.view.MultiScheduleCalendarView;
+import com.jw.holidayguard.dto.view.ScheduleMonthView;
 import com.jw.holidayguard.repository.DeviationRepository;
 import com.jw.holidayguard.repository.RuleRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
@@ -46,17 +47,20 @@ public class CalendarViewService {
      * Get calendar data for multiple schedules for a given month.
      * Includes deviation overlays if includeDeviations is true.
      *
+     * <p>Returns a normalized structure where each schedule appears once
+     * with all its days nested underneath, eliminating redundant schedule metadata.
+     *
      * @param scheduleIds List of schedule IDs to include
      * @param yearMonth The month to generate calendar for
      * @param includeDeviations Whether to apply deviations to the calendar
-     * @return MultiScheduleCalendarDto containing all calendar days
+     * @return MultiScheduleCalendarView with normalized structure
      */
-    public MultiScheduleCalendarDto getMultiScheduleCalendar(
+    public MultiScheduleCalendarView getMultiScheduleCalendar(
             List<Long> scheduleIds,
             YearMonth yearMonth,
             boolean includeDeviations) {
 
-        List<CalendarDayDto> allDays = new ArrayList<>();
+        List<ScheduleMonthView> schedules = new ArrayList<>();
         LocalDate fromDate = yearMonth.atDay(1);
         LocalDate toDate = yearMonth.atEndOfMonth();
 
@@ -100,7 +104,8 @@ public class CalendarViewService {
             // Query date range using Calendar - guarantees algorithm consistency
             Map<LocalDate, Boolean> shouldRunMap = calendar.shouldRun(fromDate, toDate);
 
-            // Convert to DTOs
+            // Convert to day status views for this schedule
+            List<DayStatusView> days = new ArrayList<>();
             for (Map.Entry<LocalDate, Boolean> entry : shouldRunMap.entrySet()) {
                 LocalDate date = entry.getKey();
                 boolean shouldRun = entry.getValue();
@@ -110,7 +115,7 @@ public class CalendarViewService {
                         .filter(d -> d.getDeviationDate().equals(date))
                         .findFirst();
 
-                // calculate RunStatus and a reason
+                // Calculate RunStatus and reason
                 RunStatus status = deviationOpt
                         .map(d -> RunStatus.fromCalendar(shouldRun, d))
                         .orElse(RunStatus.fromCalendar(shouldRun));
@@ -119,17 +124,18 @@ public class CalendarViewService {
                         .map(Deviation::getReason)
                         .orElse(null);
 
-                CalendarDayDto dayDto = new CalendarDayDto(
-                        scheduleId,
-                        schedule.getName(),
-                        date,
-                        status,
-                        reason);
-
-                allDays.add(dayDto);
+                days.add(new DayStatusView(date, status, reason));
             }
+
+            // Create schedule month view with all days for this schedule
+            schedules.add(new ScheduleMonthView(
+                    scheduleId,
+                    schedule.getName(),
+                    yearMonth,
+                    days
+            ));
         }
 
-        return new MultiScheduleCalendarDto(yearMonth, allDays);
+        return new MultiScheduleCalendarView(yearMonth, schedules);
     }
 }

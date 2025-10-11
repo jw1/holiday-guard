@@ -7,7 +7,7 @@
 🗓️  Business Calendar Management Service  🛡️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🏦  Federal Holidays  •  📅  Custom Schedules  •  ⚡  Override Support
+🏦  Federal Holidays  •  📅  Custom Schedules  •  ⚡  Override / Deviation Support
 Protecting your business operations from unexpected downtimes
 
 Spring Boot ${spring-boot.version} • Java ${java.version}

@@ -100,7 +100,7 @@ class ScheduleQueryServiceTest {
         assertNotNull(response);
         assertTrue(response.isShouldRun());
         assertEquals("Scheduled to run - rule matches", response.getReason());
-        assertFalse(response.isOverrideApplied());
+        assertFalse(response.isDeviationApplied());
         assertEquals(versionId, response.getVersionId());
         
         // Should log the query
@@ -136,7 +136,7 @@ class ScheduleQueryServiceTest {
         assertNotNull(response);
         assertFalse(response.isShouldRun());
         assertEquals("Not scheduled to run - rule does not match", response.getReason());
-        assertFalse(response.isOverrideApplied());
+        assertFalse(response.isDeviationApplied());
         
         // Should log the query
         verify(queryLogRepository).save(argThat(log -> 
@@ -178,8 +178,8 @@ class ScheduleQueryServiceTest {
         // Then: Should return false due to override
         assertNotNull(response);
         assertFalse(response.isShouldRun());
-        assertEquals("Override applied: Independence Day - holiday skip", response.getReason());
-        assertTrue(response.isOverrideApplied());
+        assertEquals("Deviation applied: Independence Day - holiday skip", response.getReason());
+        assertTrue(response.isDeviationApplied());
 
         // Should log the query with override flag
         verify(queryLogRepository).save(argThat(log ->

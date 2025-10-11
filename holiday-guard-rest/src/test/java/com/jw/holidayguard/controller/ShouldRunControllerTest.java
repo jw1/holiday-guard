@@ -3,6 +3,7 @@ package com.jw.holidayguard.controller;
 // TODO: Revisit tests in this file. They are failing due to complex interactions with the MockMvc security context.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jw.holidayguard.domain.RunStatus;
 import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
 import com.jw.holidayguard.service.ScheduleQueryService;
@@ -55,6 +56,7 @@ class ShouldRunControllerTest {
             scheduleId,
             today,
             true,
+            RunStatus.RUN,
             "Scheduled to run - found in materialized calendar",
             false,
             versionId
@@ -87,7 +89,8 @@ class ShouldRunControllerTest {
             scheduleId,
             today,
             false,
-            "Not scheduled to run - date not found in materialized calendar", 
+            RunStatus.SKIP,
+            "Not scheduled to run - date not found in materialized calendar",
             false,
             versionId
         );
@@ -115,6 +118,7 @@ class ShouldRunControllerTest {
             scheduleId,
             queryDate,
             true,
+            RunStatus.RUN,
             "Scheduled to run - found in materialized calendar",
             false,
             versionId
@@ -148,6 +152,7 @@ class ShouldRunControllerTest {
             scheduleId,
             today,
             true,
+            RunStatus.RUN,
             "Scheduled to run - found in materialized calendar",
             false,
             versionId

@@ -5,13 +5,26 @@
 import api from './api';
 import {ScheduleResponseDto, Schedule} from '../types/schedule';
 import {AuditLogDto} from '../types/audit';
-import {MultiScheduleCalendar} from '../types/calendar-view';
+import {MultiScheduleCalendarView, MultiScheduleCalendar} from '../types/calendar-view';
 import {RunStatus} from '../types/runStatus';
 
 // ============================================================================
 // Type Definitions
 // ============================================================================
 
+/**
+ * Dashboard status view for a single schedule (typically for "today").
+ * Includes both detailed RunStatus enum and convenience shouldRun boolean.
+ */
+export interface ScheduleDashboardView {
+    scheduleId: number;
+    scheduleName: string;
+    status: RunStatus;      // detailed status enum (RUN, SKIP, FORCE_RUN, FORCE_SKIP)
+    shouldRun: boolean;     // convenience: status.shouldRun()
+    reason: string;
+}
+
+/** @deprecated Use ScheduleDashboardView instead */
 export interface DailyScheduleStatus {
     scheduleId: number;
     scheduleName: string;
@@ -36,6 +49,7 @@ export interface ShouldRunResponse {
     scheduleId: number;
     queryDate: string;
     shouldRun: boolean;
+    runStatus: RunStatus;   // detailed status enum
     reason: string;
     deviationApplied: boolean;
     versionId: number;
@@ -74,8 +88,8 @@ export interface VersionPayload {
 /**
  * Fetches the daily run status for all active schedules.
  */
-export const getScheduleStatus = async (): Promise<DailyScheduleStatus[]> => {
-    const response = await api.get<DailyScheduleStatus[]>('/dashboard/schedule-status');
+export const getScheduleStatus = async (): Promise<ScheduleDashboardView[]> => {
+    const response = await api.get<ScheduleDashboardView[]>('/dashboard/schedule-status');
     return response.data;
 };
 
@@ -218,17 +232,18 @@ export const getHealthStatus = async (): Promise<HealthStatus> => {
 
 /**
  * Fetches calendar data for multiple schedules for a given month.
+ * Returns normalized structure where schedule metadata appears once per schedule.
  */
 export const getMultiScheduleCalendar = async (
     scheduleIds: number[],
     yearMonth: string,
     includeDeviations: boolean = true
-): Promise<MultiScheduleCalendar> => {
+): Promise<MultiScheduleCalendarView> => {
     const params = new URLSearchParams();
     scheduleIds.forEach(id => params.append('scheduleIds', id.toString()));
     params.append('yearMonth', yearMonth);
     params.append('includeDeviations', includeDeviations.toString());
 
-    const response = await api.get<MultiScheduleCalendar>(`/calendar-view?${params.toString()}`);
+    const response = await api.get<MultiScheduleCalendarView>(`/calendar-view?${params.toString()}`);
     return response.data;
 };

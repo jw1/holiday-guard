@@ -1,6 +1,6 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.dto.MultiScheduleCalendarDto;
+import com.jw.holidayguard.dto.view.MultiScheduleCalendarView;
 import com.jw.holidayguard.service.CalendarViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,10 +26,10 @@ public class CalendarViewController {
      * @param scheduleIds Comma-separated list of schedule IDs
      * @param yearMonth Year-month in format yyyy-MM
      * @param includeDeviations Whether to include deviations (default: true)
-     * @return MultiScheduleCalendarDto with all calendar days
+     * @return MultiScheduleCalendarView with normalized structure (schedule metadata appears once)
      */
     @GetMapping
-    public MultiScheduleCalendarDto getMultiScheduleCalendar(
+    public MultiScheduleCalendarView getMultiScheduleCalendar(
             @RequestParam("scheduleIds") List<Long> scheduleIds,
             @RequestParam("yearMonth") @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
             @RequestParam(value = "includeDeviations", defaultValue = "true") boolean includeDeviations) {

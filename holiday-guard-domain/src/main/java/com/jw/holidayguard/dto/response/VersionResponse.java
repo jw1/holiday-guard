@@ -18,5 +18,5 @@ public class VersionResponse {
     private Instant createdAt;
     private boolean active;
     private List<RuleResponse> rules;
-    private List<DeviationResponse> overrides;
+    private List<DeviationResponse> deviations;
 }

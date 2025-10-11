@@ -34,7 +34,7 @@ public class JsonQueryLogRepository implements QueryLogRepository {
     @Override public List<QueryLog> findByVersionId(Long versionId) { return EMPTY_LIST; }
     @Override public List<QueryLog> findByScheduleIdAndQueriedAtBetween(Long scheduleId, Instant startTime, Instant endTime) { return EMPTY_LIST; }
     @Override public long countPositiveResponsesInDateRange(Long scheduleId, LocalDate startDate, LocalDate endDate) { return 0; }
-    @Override public long countOverrideApplicationsInDateRange(Long scheduleId, LocalDate startDate, LocalDate endDate) { return 0; }
+    @Override public long countDeviationApplicationsInDateRange(Long scheduleId, LocalDate startDate, LocalDate endDate) { return 0; }
     @Override public List<String> findDistinctClientIdentifiersByScheduleId(Long scheduleId) { return Collections.emptyList(); }
     @Override public QueryLog findLatestQueryForScheduleAndDate(Long scheduleId, LocalDate queryDate) { return null; }
 

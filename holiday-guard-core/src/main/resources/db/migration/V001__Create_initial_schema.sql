@@ -43,7 +43,7 @@ CREATE TABLE "deviation" (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     schedule_id UUID NOT NULL,
     version_id UUID NOT NULL,
-    override_date DATE NOT NULL,
+    deviation_date DATE NOT NULL,
     action VARCHAR(20) NOT NULL,
     reason VARCHAR(500) NOT NULL,
     created_by VARCHAR(100),

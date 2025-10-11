@@ -42,7 +42,7 @@ public class Deviation {
     @JoinColumn(name = "version_id", insertable = false, updatable = false)
     private Version version;
 
-    @Column(name = "override_date", nullable = false)
+    @Column(name = "deviation_date", nullable = false)
     private LocalDate deviationDate;
 
     @Enumerated(EnumType.STRING)

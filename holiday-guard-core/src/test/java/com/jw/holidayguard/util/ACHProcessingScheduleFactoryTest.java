@@ -19,45 +19,30 @@ class ACHProcessingScheduleFactoryTest {
 
     @Test
     void shouldCreateACHScheduleDefinition() {
-        ACHProcessingScheduleFactory.ACHScheduleDefinition definition =
-                ACHProcessingScheduleFactory.createACHSchedule(2025);
+        USFederalReserveScheduleFactory.FederalReserveScheduleDefinition definition =
+                USFederalReserveScheduleFactory.createScheduleDefinition(2025);
 
         assertNotNull(definition);
-        assertNotNull(definition.getSchedule());
-        assertEquals("ACH Processing", definition.getSchedule().getName());
+        assertNotNull(definition.schedule());
+        assertEquals("ACH Processing", definition.schedule().getName());
         assertEquals("ACH file processing on Federal Reserve business days (weekdays excluding federal holidays)",
-                definition.getSchedule().getDescription());
-        assertEquals("US", definition.getSchedule().getCountry());
-        assertTrue(definition.getSchedule().isActive());
+                definition.schedule().getDescription());
+        assertEquals("US", definition.schedule().getCountry());
+        assertTrue(definition.schedule().isActive());
 
-        assertNotNull(definition.getRule());
-        assertEquals(Rule.RuleType.WEEKDAYS_ONLY, definition.getRule().getRuleType());
-        assertNull(definition.getRule().getRuleConfig());
-        assertEquals(LocalDate.of(2025, 1, 1), definition.getRule().getEffectiveFrom());
-        assertTrue(definition.getRule().isActive());
+        assertNotNull(definition.rule());
+        assertEquals(Rule.RuleType.WEEKDAYS_ONLY, definition.rule().getRuleType());
+        assertNull(definition.rule().getRuleConfig());
+        assertEquals(LocalDate.of(2025, 1, 1), definition.rule().getEffectiveFrom());
+        assertTrue(definition.rule().isActive());
 
-        assertNotNull(definition.getHolidayOverrides());
-        assertEquals(11, definition.getHolidayOverrides().size()); // All 2025 federal holidays
-    }
-
-    @Test
-    void shouldCreateSameDayACHScheduleDefinition() {
-        ACHProcessingScheduleFactory.ACHScheduleDefinition definition =
-                ACHProcessingScheduleFactory.createSameDayACHSchedule(2025);
-
-        assertNotNull(definition);
-        assertEquals("Same-Day ACH Processing", definition.getSchedule().getName());
-        assertEquals("Same-day ACH processing on Federal Reserve business days",
-                definition.getSchedule().getDescription());
-        assertTrue(definition.getSchedule().isActive());
-
-        assertEquals(Rule.RuleType.WEEKDAYS_ONLY, definition.getRule().getRuleType());
-        assertEquals(11, definition.getHolidayOverrides().size());
+        assertNotNull(definition.deviations());
+        assertEquals(11, definition.deviations().size()); // All 2025 federal holidays
     }
 
     @Test
     void shouldGenerateFederalHolidaysFor2025() {
-        List<LocalDate> holidays = ACHProcessingScheduleFactory.USFederalHolidays.getHolidays(2025);
+        List<LocalDate> holidays = USFederalReserveScheduleFactory.USFederalHolidays.getHolidays(2025);
 
         // Should have all 11 federal holidays (including Juneteenth since 2021)
         assertEquals(11, holidays.size());
@@ -80,8 +65,8 @@ class ACHProcessingScheduleFactoryTest {
 
     @Test
     void shouldIncludeJuneteenthStarting2021() {
-        List<LocalDate> holidays2020 = ACHProcessingScheduleFactory.USFederalHolidays.getHolidays(2020);
-        List<LocalDate> holidays2021 = ACHProcessingScheduleFactory.USFederalHolidays.getHolidays(2021);
+        List<LocalDate> holidays2020 = USFederalReserveScheduleFactory.USFederalHolidays.getHolidays(2020);
+        List<LocalDate> holidays2021 = USFederalReserveScheduleFactory.USFederalHolidays.getHolidays(2021);
 
         // 2020 should have 10 holidays (no Juneteenth)
         assertEquals(10, holidays2020.size());
@@ -95,7 +80,7 @@ class ACHProcessingScheduleFactoryTest {
     @Test
     void shouldCreateFederalHolidaySkipOverrides() {
         List<CreateDeviationRequest> overrides =
-                ACHProcessingScheduleFactory.USFederalHolidays.createSkipOverrides(2025);
+                USFederalReserveScheduleFactory.USFederalHolidays.createSkipDeviations(2025);
 
         assertEquals(11, overrides.size());
 
@@ -111,7 +96,7 @@ class ACHProcessingScheduleFactoryTest {
     @Test
     void shouldIncludeActualHolidayDates() {
         // Test that we get the actual holiday dates, even if they fall on weekends
-        List<LocalDate> holidays2024 = ACHProcessingScheduleFactory.USFederalHolidays.getHolidays(2024);
+        List<LocalDate> holidays2024 = USFederalReserveScheduleFactory.USFederalHolidays.getHolidays(2024);
 
         // Should include actual dates - Christmas 2024 is Wednesday, New Year's 2024 is Monday
         assertTrue(holidays2024.contains(LocalDate.of(2024, 1, 1)));  // New Year's Day 2024
@@ -123,8 +108,8 @@ class ACHProcessingScheduleFactoryTest {
 
     @Test
     void shouldCreateUpdateRequestForRestAPI() {
-        ACHProcessingScheduleFactory.ACHScheduleDefinition definition =
-                ACHProcessingScheduleFactory.createACHSchedule(2025);
+        USFederalReserveScheduleFactory.FederalReserveScheduleDefinition definition =
+                USFederalReserveScheduleFactory.createScheduleDefinition(2025);
 
         UpdateRuleRequest updateRequest = definition.toUpdateRequest();
 
@@ -151,7 +136,7 @@ class ACHProcessingScheduleFactoryTest {
     void shouldBeConsistentAcrossYears() {
         // Test that holiday calculation is consistent and correct for different years
         for (int year = 2020; year <= 2030; year++) {
-            List<LocalDate> holidays = ACHProcessingScheduleFactory.USFederalHolidays.getHolidays(year);
+            List<LocalDate> holidays = USFederalReserveScheduleFactory.USFederalHolidays.getHolidays(year);
 
             // Should have correct number of holidays
             int expectedCount = (year >= 2021) ? 11 : 10; // Juneteenth added in 2021

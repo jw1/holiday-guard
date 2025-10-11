@@ -1,6 +1,6 @@
 # 🗓️ Holiday Guard
 
-A Spring Boot service for managing business calendars with holiday rules, overrides, and schedule queries.
+A Spring Boot service for managing business calendars with holiday rules, overrides (deviations), and schedule queries.
 
 The majority of code was created using Anthropic Claude and Google Gemini as an evaluation of coding CLI tools.  
 

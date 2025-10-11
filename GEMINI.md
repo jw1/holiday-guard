@@ -1,7 +1,7 @@
 # 🗓️ Holiday Guard
 
 **Group/Package**: com.jw.holidayguard  
-**Purpose**: Service for managing business calendars with holiday/weekend rules, overrides, and business day forecasting.
+**Purpose**: Service for managing business calendars with holiday/weekend rules, deviations, and business day forecasting.
 
 A company could use this to manage backend scheduling (e.g. ACH file builder runs on fed days, payroll on alternate Fridays with holiday adjustments).
 
@@ -9,7 +9,7 @@ A company could use this to manage backend scheduling (e.g. ACH file builder run
 Service for managing multiple business calendars with rules for:
 - Weekends and US Federal/Bank holidays  
 - ACH/payday/internal settlement days
-- Custom overrides (per-calendar and global)
+- Custom deviations (per-calendar and global)
 - Business day calculations and forecasting
 
 
@@ -57,7 +57,7 @@ APIs use a `/api/v1/` base path and follow standard REST conventions. A consiste
 - **Daily Operations**: `GET /api/v1/schedules/{id}/should-run` (primary use case)
 - **Schedule Management**: `POST /api/v1/schedules` and `POST /api/v1/schedules/{id}/versions`
 - **Rule Types**: WEEKDAYS_ONLY, CRON_EXPRESSION, CUSTOM_DATES, MONTHLY_PATTERN
-- **Override Actions**: SKIP, FORCE_RUN
+- **Deviation Actions**: FORCE_SKIP, FORCE_RUN
 
 
 ## 🖥️ Frontend UI
@@ -89,7 +89,7 @@ The project uses a standard testing pyramid with unit, integration, and web laye
 ### **Current Implementation Status**
 
 #### ✅ **Completed Core Architecture**
-- **Domain Layer**: 6-entity model (Schedule, ScheduleVersion, ScheduleRule, ScheduleOverride, ScheduleMaterializedCalendar, ScheduleQueryLog)
+- **Domain Layer**: 6-entity model (Schedule, Version, Rule, Deviation, Calendar, QueryLog)
 - **Service Layer**: ScheduleVersionService, ScheduleQueryService, ScheduleMaterializationService
 - **REST API Layer**: ShouldRunController, ScheduleVersionController, ScheduleController
 - **Materialization Engine**: RuleEngine with pluggable handlers, OverrideApplicator
@@ -98,7 +98,7 @@ The project uses a standard testing pyramid with unit, integration, and web laye
 
 #### ✅ **Key Design Patterns Established**
 - **Materialized Calendar Strategy**: Store only "YES" dates, empty result = "NO" (performance optimization)
-- **Override Precedence**: Overrides take priority over base calendar rules
+- **Override Precedence**: Deviations take priority over base calendar rules
 - **Automatic Versioning**: Client rule updates trigger new versions automatically (no explicit version creation)
 - **Complete Audit Trail**: Every query logged with version, reasoning, and client identifier
 - **Date Boundary Validation**: 5-year future horizon, 1-year historical access

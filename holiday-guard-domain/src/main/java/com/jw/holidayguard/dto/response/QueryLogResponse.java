@@ -18,7 +18,7 @@ public class QueryLogResponse {
     private LocalDate queryDate;
     private boolean shouldRunResult;
     private String reason;
-    private boolean overrideApplied;
+    private boolean deviationApplied;
     private Instant queriedAt;
     private String clientIdentifier;
 }

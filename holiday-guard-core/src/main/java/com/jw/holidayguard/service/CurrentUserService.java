@@ -19,9 +19,11 @@ public class CurrentUserService {
      */
     public String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication == null || !authentication.isAuthenticated()) {
             return "anonymous";
         }
+
         return authentication.getName();
     }
 }

@@ -1,5 +1,6 @@
 package com.jw.holidayguard.dto.response;
 
+import com.jw.holidayguard.domain.RunStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,8 @@ public class ShouldRunQueryResponse {
     private Long scheduleId;
     private LocalDate queryDate;
     private boolean shouldRun;
+    private RunStatus runStatus;
     private String reason;
-    private boolean overrideApplied;
+    private boolean deviationApplied;
     private Long versionId;
 }

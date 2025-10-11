@@ -1,7 +1,7 @@
 package com.jw.holidayguard.service.rule.handler;
 
 import com.jw.holidayguard.domain.Rule;
-import com.jw.holidayguard.util.ACHProcessingScheduleFactory.USFederalHolidays;
+import com.jw.holidayguard.util.USFederalReserveScheduleFactory.USFederalHolidays;
 import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;

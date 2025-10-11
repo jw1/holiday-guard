@@ -22,13 +22,13 @@ import static org.mockito.Mockito.*;
  * Testing SKIP and FORCE_RUN override logic
  */
 @ExtendWith(MockitoExtension.class)
-class OverrideApplicatorTest {
+class DeviationApplicatorTest {
 
     @Mock
     private DeviationRepository deviationRepository;
 
     @InjectMocks
-    private OverrideApplicatorImpl overrideApplicator;
+    private DeviationApplicatorImpl overrideApplicator;
     
     private Long scheduleId;
     private Long versionId;
@@ -55,7 +55,7 @@ class OverrideApplicatorTest {
         when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of());
         
-        List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
+        List<LocalDate> result = overrideApplicator.applyDeviations(scheduleId, versionId, ruleDates, fromDate, toDate);
         
         assertEquals(3, result.size());
         assertEquals(ruleDates, result);
@@ -80,7 +80,7 @@ class OverrideApplicatorTest {
         when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride));
         
-        List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
+        List<LocalDate> result = overrideApplicator.applyDeviations(scheduleId, versionId, ruleDates, fromDate, toDate);
         
         assertEquals(2, result.size());
         assertTrue(result.contains(LocalDate.of(2025, 1, 1)));
@@ -107,7 +107,7 @@ class OverrideApplicatorTest {
         when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(forceRunOverride));
         
-        List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
+        List<LocalDate> result = overrideApplicator.applyDeviations(scheduleId, versionId, ruleDates, fromDate, toDate);
         
         assertEquals(3, result.size());
         assertTrue(result.contains(LocalDate.of(2025, 1, 1)));
@@ -147,7 +147,7 @@ class OverrideApplicatorTest {
         when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride, forceRunOverride));
         
-        List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
+        List<LocalDate> result = overrideApplicator.applyDeviations(scheduleId, versionId, ruleDates, fromDate, toDate);
         
         assertEquals(3, result.size());
         assertTrue(result.contains(LocalDate.of(2025, 1, 1)));
@@ -175,7 +175,7 @@ class OverrideApplicatorTest {
         when(deviationRepository.findByScheduleId(scheduleId))
             .thenReturn(List.of(skipOverride));
         
-        List<LocalDate> result = overrideApplicator.applyOverrides(scheduleId, versionId, ruleDates, fromDate, toDate);
+        List<LocalDate> result = overrideApplicator.applyDeviations(scheduleId, versionId, ruleDates, fromDate, toDate);
         
         assertEquals(2, result.size());
         assertEquals(ruleDates, result); // Should be unchanged

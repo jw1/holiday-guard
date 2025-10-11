@@ -8,18 +8,13 @@ import org.springframework.context.annotation.Configuration;
 import jakarta.annotation.PostConstruct;
 
 /**
- * Validation configuration to ensure exactly one repository implementation is active.
- *
- * <p>This configuration requires a {@link DataProvider} bean to be present in the
- * application context. If no repository implementation is configured (missing profile),
- * or if multiple implementations are accidentally active, Spring will fail to start
- * with a clear error message.
- *
- * <p>The DataProvider bean is provided by repository implementation modules:
- * <ul>
- *   <li>holiday-guard-repository-h2 (H2DataProvider with @Profile("h2"))</li>
- *   <li>holiday-guard-repository-json (JsonDataProvider with @Profile("json"))</li>
- * </ul>
+ * Regardless of how the project is run, there should only exactly (1)
+ * repository implementation active of {@link DataProvider}
+ * <p>
+ * The DataProvider bean is provided by repository implementation modules:
+ * <p>
+ * holiday-guard-repository-h2 (H2DataProvider with @Profile("h2"))
+ * holiday-guard-repository-json (JsonDataProvider with @Profile("json"))
  */
 @Slf4j
 @Configuration

@@ -1,8 +1,8 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.*;
-import com.jw.holidayguard.dto.DailyScheduleStatusDto;
 import com.jw.holidayguard.dto.QueryLogDto;
+import com.jw.holidayguard.dto.view.ScheduleDashboardView;
 import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
 import com.jw.holidayguard.dto.response.ShouldRunQueryResponse;
 import com.jw.holidayguard.repository.DeviationRepository;
@@ -28,7 +28,7 @@ public class ScheduleQueryService {
 
     private final ScheduleRepository scheduleRepository;
     private final VersionRepository versionRepository;
-    private final DeviationRepository overrideRepository;
+    private final DeviationRepository deviationRepository;
     private final QueryLogRepository queryLogRepository;
     private final RuleEngine ruleEngine;
     private final RuleRepository ruleRepository;
@@ -36,13 +36,13 @@ public class ScheduleQueryService {
     public ScheduleQueryService(
             ScheduleRepository scheduleRepository,
             VersionRepository versionRepository,
-            DeviationRepository overrideRepository,
+            DeviationRepository deviationRepository,
             QueryLogRepository queryLogRepository,
             RuleEngine ruleEngine,
             RuleRepository ruleRepository) {
         this.scheduleRepository = scheduleRepository;
         this.versionRepository = versionRepository;
-        this.overrideRepository = overrideRepository;
+        this.deviationRepository = deviationRepository;
         this.queryLogRepository = queryLogRepository;
         this.ruleEngine = ruleEngine;
         this.ruleRepository = ruleRepository;
@@ -86,16 +86,18 @@ public class ScheduleQueryService {
         return scheduleRepository.countByActive(true);
     }
 
-    public List<DailyScheduleStatusDto> getDailyRunStatusForAllActiveSchedules() {
+    public List<ScheduleDashboardView> getDailyRunStatusForAllActiveSchedules() {
         List<Schedule> activeSchedules = scheduleRepository.findByActiveTrue();
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(LocalDate.now(), "internal-dashboard");
 
         return activeSchedules.stream()
                 .map(schedule -> {
                     var response = shouldRunToday(schedule.getId(), request);
-                    return new DailyScheduleStatusDto(
+
+                    return new ScheduleDashboardView(
                             schedule.getId(),
                             schedule.getName(),
+                            response.getRunStatus(),
                             response.isShouldRun(),
                             response.getReason()
                     );
@@ -136,7 +138,7 @@ public class ScheduleQueryService {
         }
 
         // Fetch deviations for active version
-        List<Deviation> deviations = overrideRepository.findByScheduleId(scheduleId)
+        List<Deviation> deviations = deviationRepository.findByScheduleId(scheduleId)
             .stream()
             .filter(d -> d.getVersionId().equals(activeVersion.getId()))
             .toList();
@@ -148,18 +150,21 @@ public class ScheduleQueryService {
         // Delegate to Calendar for shouldRun decision (handles deviations + rule evaluation)
         boolean shouldRun = calendar.shouldRun(queryDate);
 
-        // Determine if deviation was applied (check if any deviation exists for this date)
-        boolean deviationApplied = deviations.stream()
-                .anyMatch(d -> d.getDeviationDate().equals(queryDate));
+        // Find deviation for this date (if it exists)
+        Optional<Deviation> deviationOpt = deviations.stream()
+                .filter(d -> d.getDeviationDate().equals(queryDate))
+                .findFirst();
+
+        boolean deviationApplied = deviationOpt.isPresent();
+
+        // Determine RunStatus directly from source data (not from boolean + string parsing!)
+        RunStatus runStatus = RunStatus.fromCalendar(shouldRun, deviationOpt.orElse(null));
 
         // Build reason message
         String reason;
         if (deviationApplied) {
-            Deviation deviation = deviations.stream()
-                    .filter(d -> d.getDeviationDate().equals(queryDate))
-                    .findFirst()
-                    .orElseThrow();
-            reason = "Override applied: " + deviation.getReason();
+            Deviation deviation = deviationOpt.get();
+            reason = "Deviation applied: " + deviation.getReason();
         } else {
             reason = shouldRun
                     ? "Scheduled to run - rule matches"
@@ -179,11 +184,12 @@ public class ScheduleQueryService {
 
         queryLogRepository.save(queryLog);
 
-        // Return response
+        // Return response with both RunStatus (detailed) and shouldRun (convenience boolean)
         return new ShouldRunQueryResponse(
             scheduleId,
             queryDate,
             shouldRun,
+            runStatus,
             reason,
             deviationApplied,
             activeVersion.getId()

@@ -1,6 +1,6 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.dto.DailyScheduleStatusDto;
+import com.jw.holidayguard.dto.view.ScheduleDashboardView;
 import com.jw.holidayguard.repository.ConditionalOnManagement;
 import com.jw.holidayguard.service.ScheduleQueryService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +28,7 @@ public class DashboardController {
     }
 
     @GetMapping("/schedule-status")
-    public List<DailyScheduleStatusDto> getStatusToday() {
+    public List<ScheduleDashboardView> getStatusToday() {
         return scheduleQueryService.getDailyRunStatusForAllActiveSchedules();
     }
 

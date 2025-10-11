@@ -25,8 +25,8 @@ public interface RuleEngine {
     /**
      * Checks if a schedule should run on a specific date based on the given rule.
      * <p>
-     * NOTE: This method does NOT evaluate any overrides. Override evaluation is handled
-     * in the {@link com.jw.holidayguard.service.ScheduleQueryService}.
+     * NOTE: This method does NOT evaluate any deviations. That's done
+     * in {@link com.jw.holidayguard.service.ScheduleQueryService}.
      *
      * @param rule The schedule rule to evaluate
      * @param date The date to check

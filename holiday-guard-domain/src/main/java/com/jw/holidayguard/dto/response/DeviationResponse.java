@@ -16,7 +16,7 @@ public class DeviationResponse {
     private Long id;
     private Long scheduleId;
     private Long versionId;
-    private LocalDate overrideDate;
+    private LocalDate deviationDate;
     private RunStatus action;
     private String reason;
     private String createdBy;

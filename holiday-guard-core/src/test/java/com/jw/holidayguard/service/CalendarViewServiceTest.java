@@ -1,8 +1,9 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.*;
-import com.jw.holidayguard.dto.CalendarDayDto;
-import com.jw.holidayguard.dto.MultiScheduleCalendarDto;
+import com.jw.holidayguard.dto.view.DayStatusView;
+import com.jw.holidayguard.dto.view.MultiScheduleCalendarView;
+import com.jw.holidayguard.dto.view.ScheduleMonthView;
 import com.jw.holidayguard.repository.DeviationRepository;
 import com.jw.holidayguard.repository.RuleRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
@@ -104,23 +105,26 @@ class CalendarViewServiceTest {
                 });
 
         // When: Generating calendar for January 2025
-        MultiScheduleCalendarDto result = service.getMultiScheduleCalendar(
+        MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
-        // Then: Should return 31 days (full month)
+        // Then: Should return 1 schedule with 31 days
         assertNotNull(result);
-        assertEquals(yearMonth, result.getYearMonth());
-        assertThat(result.getDays()).hasSize(31);
+        assertEquals(yearMonth, result.yearMonth());
+        assertThat(result.schedules()).hasSize(1);
+
+        ScheduleMonthView scheduleView = result.schedules().get(0);
+        assertEquals(scheduleId, scheduleView.scheduleId());
+        assertEquals("Payroll Schedule", scheduleView.scheduleName());
+        assertThat(scheduleView.days()).hasSize(31);
 
         // Verify specific days
-        CalendarDayDto firstDay = result.getDays().stream()
-                .filter(d -> d.getDate().equals(LocalDate.of(2025, 1, 1)))
+        DayStatusView firstDay = scheduleView.days().stream()
+                .filter(d -> d.date().equals(LocalDate.of(2025, 1, 1)))
                 .findFirst()
                 .orElseThrow();
-        assertEquals("Payroll Schedule", firstDay.getScheduleName());
-        assertEquals(scheduleId, firstDay.getScheduleId());
         // Jan 1, 2025 is Wednesday (weekday) - should run
-        assertEquals(RUN, firstDay.getStatus());
+        assertEquals(RUN, firstDay.status());
     }
 
     @Test
@@ -179,23 +183,25 @@ class CalendarViewServiceTest {
                 });
 
         // When: Generating calendar for both schedules
-        MultiScheduleCalendarDto result = service.getMultiScheduleCalendar(
+        MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId, schedule2Id), yearMonth, true);
 
-        // Then: Should return 62 days (31 days × 2 schedules)
+        // Then: Should return 2 schedules, each with 31 days
         assertNotNull(result);
-        assertThat(result.getDays()).hasSize(62);
+        assertThat(result.schedules()).hasSize(2);
 
-        // Verify we have entries for both schedules
-        long schedule1Count = result.getDays().stream()
-                .filter(d -> d.getScheduleId().equals(scheduleId))
-                .count();
-        long schedule2Count = result.getDays().stream()
-                .filter(d -> d.getScheduleId().equals(schedule2Id))
-                .count();
+        // Verify we have entries for both schedules with correct day counts
+        ScheduleMonthView schedule1View = result.schedules().stream()
+                .filter(s -> s.scheduleId().equals(scheduleId))
+                .findFirst()
+                .orElseThrow();
+        ScheduleMonthView schedule2View = result.schedules().stream()
+                .filter(s -> s.scheduleId().equals(schedule2Id))
+                .findFirst()
+                .orElseThrow();
 
-        assertEquals(31, schedule1Count);
-        assertEquals(31, schedule2Count);
+        assertEquals(31, schedule1View.days().size());
+        assertEquals(31, schedule2View.days().size());
     }
 
     @Test
@@ -228,17 +234,18 @@ class CalendarViewServiceTest {
                 });
 
         // When: Generating calendar
-        MultiScheduleCalendarDto result = service.getMultiScheduleCalendar(
+        MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
         // Then: Jan 6 should be SKIP (deviation overrides rule)
-        CalendarDayDto skipDay = result.getDays().stream()
-                .filter(d -> d.getDate().equals(skipDate))
+        ScheduleMonthView scheduleView = result.schedules().get(0);
+        DayStatusView skipDay = scheduleView.days().stream()
+                .filter(d -> d.date().equals(skipDate))
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(FORCE_SKIP, skipDay.getStatus());
-        assertEquals("Holiday - MLK Day", skipDay.getReason());
+        assertEquals(FORCE_SKIP, skipDay.status());
+        assertEquals("Holiday - MLK Day", skipDay.reason());
     }
 
     @Test
@@ -271,17 +278,18 @@ class CalendarViewServiceTest {
                 });
 
         // When: Generating calendar
-        MultiScheduleCalendarDto result = service.getMultiScheduleCalendar(
+        MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
         // Then: Jan 4 (Saturday) should be FORCE_RUN (deviation overrides rule)
-        CalendarDayDto forceRunDay = result.getDays().stream()
-                .filter(d -> d.getDate().equals(forceRunDate))
+        ScheduleMonthView scheduleView = result.schedules().get(0);
+        DayStatusView forceRunDay = scheduleView.days().stream()
+                .filter(d -> d.date().equals(forceRunDate))
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(FORCE_RUN, forceRunDay.getStatus());
-        assertEquals("Emergency processing", forceRunDay.getReason());
+        assertEquals(FORCE_RUN, forceRunDay.status());
+        assertEquals("Emergency processing", forceRunDay.reason());
     }
 
     @Test
@@ -295,12 +303,12 @@ class CalendarViewServiceTest {
         when(ruleRepository.findByVersionId(versionId)).thenReturn(Optional.empty());
 
         // When: Generating calendar
-        MultiScheduleCalendarDto result = service.getMultiScheduleCalendar(
+        MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
         // Then: Should return empty calendar (schedule skipped)
         assertNotNull(result);
-        assertThat(result.getDays()).isEmpty();
+        assertThat(result.schedules()).isEmpty();
     }
 
     @Test
@@ -313,12 +321,12 @@ class CalendarViewServiceTest {
                 .thenReturn(Optional.empty());
 
         // When: Generating calendar
-        MultiScheduleCalendarDto result = service.getMultiScheduleCalendar(
+        MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
         // Then: Should return empty calendar (schedule skipped)
         assertNotNull(result);
-        assertThat(result.getDays()).isEmpty();
+        assertThat(result.schedules()).isEmpty();
     }
 
     @Test
@@ -352,18 +360,19 @@ class CalendarViewServiceTest {
                 });
 
         // when generating calendar with includeDeviations=false
-        MultiScheduleCalendarDto result = service.getMultiScheduleCalendar(
+        MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, false);
 
         // then Monday, Jan 6 should follow base rule (run on Monday), not SKIP
-        CalendarDayDto jan6 = result.getDays()
+        ScheduleMonthView scheduleView = result.schedules().get(0);
+        DayStatusView jan6 = scheduleView.days()
                 .stream()
-                .filter(d -> d.getDate().equals(skipDate))
+                .filter(d -> d.date().equals(skipDate))
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(RUN, jan6.getStatus());
-        assertNull(jan6.getReason()); // No deviation reason
+        assertEquals(RUN, jan6.status());
+        assertNull(jan6.reason()); // No deviation reason
     }
 
     @Test
@@ -382,16 +391,17 @@ class CalendarViewServiceTest {
                 .thenReturn(true); // All days run
 
         // When: Generating calendar
-        MultiScheduleCalendarDto result = service.getMultiScheduleCalendar(
+        MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
         // Then: Should have exactly 28 days
         assertNotNull(result);
-        assertThat(result.getDays()).hasSize(28);
+        ScheduleMonthView scheduleView = result.schedules().get(0);
+        assertThat(scheduleView.days()).hasSize(28);
 
         // Verify all dates are present
-        List<LocalDate> dates = result.getDays().stream()
-                .map(CalendarDayDto::getDate)
+        List<LocalDate> dates = scheduleView.days().stream()
+                .map(DayStatusView::date)
                 .toList();
 
         for (int day = 1; day <= 28; day++) {

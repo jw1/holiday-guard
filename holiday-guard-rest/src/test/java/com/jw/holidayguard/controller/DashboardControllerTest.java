@@ -1,6 +1,7 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.dto.DailyScheduleStatusDto;
+import com.jw.holidayguard.domain.RunStatus;
+import com.jw.holidayguard.dto.view.ScheduleDashboardView;
 import com.jw.holidayguard.service.ScheduleQueryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +34,9 @@ class DashboardControllerTest extends ManagementControllerTestBase {
         // given
         Long scheduleId1 = 1L;
         Long scheduleId2 = 2L;
-        List<DailyScheduleStatusDto> statuses = List.of(
-                new DailyScheduleStatusDto(scheduleId1, "ACH File Generation", true, "Scheduled to run"),
-                new DailyScheduleStatusDto(scheduleId2, "Daily Reporting", false, "Not scheduled to run")
+        List<ScheduleDashboardView> statuses = List.of(
+                new ScheduleDashboardView(scheduleId1, "ACH File Generation", RunStatus.RUN, true, "Scheduled to run"),
+                new ScheduleDashboardView(scheduleId2, "Daily Reporting", RunStatus.SKIP, false, "Not scheduled to run")
         );
 
         when(scheduleQueryService.getDailyRunStatusForAllActiveSchedules()).thenReturn(statuses);
@@ -46,10 +47,12 @@ class DashboardControllerTest extends ManagementControllerTestBase {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].scheduleId").value(scheduleId1.toString()))
                 .andExpect(jsonPath("$[0].scheduleName").value("ACH File Generation"))
+                .andExpect(jsonPath("$[0].status").value("RUN"))
                 .andExpect(jsonPath("$[0].shouldRun").value(true))
                 .andExpect(jsonPath("$[0].reason").value("Scheduled to run"))
                 .andExpect(jsonPath("$[1].scheduleId").value(scheduleId2.toString()))
                 .andExpect(jsonPath("$[1].scheduleName").value("Daily Reporting"))
+                .andExpect(jsonPath("$[1].status").value("SKIP"))
                 .andExpect(jsonPath("$[1].shouldRun").value(false))
                 .andExpect(jsonPath("$[1].reason").value("Not scheduled to run"));
     }

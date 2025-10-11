@@ -32,7 +32,7 @@ public interface QueryLogRepository extends JpaRepository<QueryLog, Long> {
     long countPositiveResponsesInDateRange(@Param("scheduleId") Long scheduleId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
     @Query("SELECT COUNT(sql) FROM QueryLog sql WHERE sql.scheduleId = :scheduleId AND sql.deviationApplied = true AND sql.queryDate BETWEEN :startDate AND :endDate")
-    long countOverrideApplicationsInDateRange(@Param("scheduleId") Long scheduleId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    long countDeviationApplicationsInDateRange(@Param("scheduleId") Long scheduleId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
     @Query("SELECT DISTINCT sql.clientIdentifier FROM QueryLog sql WHERE sql.scheduleId = :scheduleId AND sql.clientIdentifier IS NOT NULL")
     List<String> findDistinctClientIdentifiersByScheduleId(@Param("scheduleId") Long scheduleId);
