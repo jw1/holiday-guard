@@ -42,9 +42,13 @@ const DeviationCalendar: React.FC<DeviationCalendarProps> = ({
 
         const newDeviations = {...deviations};
         if (newDeviations[dateKey]) {
+            // Deviation exists - remove it (revert to base rule)
             delete newDeviations[dateKey];
         } else {
-            const deviationType = baseCalendar[dateKey] === RunStatus.RUN ? 'FORCE_SKIP' : 'FORCE_RUN';
+            // No deviation - add one that's opposite of the base rule
+            // Use the base calendar (which should be WITHOUT deviations)
+            const baseState = baseCalendar[dateKey];
+            const deviationType = baseState === RunStatus.RUN ? 'FORCE_SKIP' : 'FORCE_RUN';
             newDeviations[dateKey] = { type: deviationType, reason: '' };
         }
 

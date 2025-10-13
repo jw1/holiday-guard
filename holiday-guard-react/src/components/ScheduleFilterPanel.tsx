@@ -17,9 +17,14 @@ const ScheduleFilterPanel: React.FC<ScheduleFilterPanelProps> = ({
                                                                      isOpen
                                                                  }) => {
     const handleScheduleToggle = (scheduleId: number) => {
+        console.log('[ScheduleFilterPanel] Toggling schedule:', scheduleId);
+        console.log('[ScheduleFilterPanel] Current selectedScheduleIds:', filters.selectedScheduleIds);
+
         const newSelected = filters.selectedScheduleIds.includes(scheduleId)
             ? filters.selectedScheduleIds.filter(id => id !== scheduleId)
             : [...filters.selectedScheduleIds, scheduleId];
+
+        console.log('[ScheduleFilterPanel] New selectedScheduleIds:', newSelected);
 
         onFiltersChange({
             ...filters,
@@ -42,6 +47,7 @@ const ScheduleFilterPanel: React.FC<ScheduleFilterPanelProps> = ({
     };
 
     const handleStatusToggle = (status: keyof Omit<CalendarFilters, 'selectedScheduleIds'>) => {
+        console.log('[ScheduleFilterPanel] Toggling status:', status, 'from', filters[status], 'to', !filters[status]);
         onFiltersChange({
             ...filters,
             [status]: !filters[status]

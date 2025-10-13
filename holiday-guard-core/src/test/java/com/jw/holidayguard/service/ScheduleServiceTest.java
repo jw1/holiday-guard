@@ -246,8 +246,7 @@ class ScheduleServiceTest {
         when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
                 .thenReturn(Optional.of(version));
         when(ruleRepository.findByVersionId(versionId)).thenReturn(Optional.of(rule));
-        when(deviationRepository.findByScheduleIdAndVersionId(scheduleId, versionId))
-                .thenReturn(List.of());
+        // Note: getScheduleCalendar no longer queries deviations - it returns base calendar only
 
         // Mock RuleEngine to return true for weekdays (Mon-Fri)
         when(ruleEngine.shouldRun(any(Rule.class), any(LocalDate.class)))
@@ -276,12 +275,13 @@ class ScheduleServiceTest {
     }
 
     @Test
-    void getScheduleCalendar_shouldApplyDeviations() {
+    void getScheduleCalendar_shouldReturnBaseCalendarWithoutDeviations() {
         // Given: Schedule with SKIP deviation on a weekday
+        // NOTE: getScheduleCalendar now returns BASE calendar only (no deviations applied)
+        // This is intentional for the deviation editor to show the underlying rule state
         Long scheduleId = 1L;
         Long versionId = 10L;
         YearMonth yearMonth = YearMonth.of(2025, 1);
-        LocalDate skipDate = LocalDate.of(2025, 1, 6); // Monday
 
         Schedule schedule = Schedule.builder()
                 .id(scheduleId)
@@ -301,20 +301,11 @@ class ScheduleServiceTest {
                 .ruleType(Rule.RuleType.WEEKDAYS_ONLY)
                 .build();
 
-        Deviation skipDeviation = Deviation.builder()
-                .scheduleId(scheduleId)
-                .versionId(versionId)
-                .deviationDate(skipDate)
-                .action(RunStatus.FORCE_SKIP)
-                .reason("Holiday")
-                .build();
-
         when(repository.findById(scheduleId)).thenReturn(Optional.of(schedule));
         when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
                 .thenReturn(Optional.of(version));
         when(ruleRepository.findByVersionId(versionId)).thenReturn(Optional.of(rule));
-        when(deviationRepository.findByScheduleIdAndVersionId(scheduleId, versionId))
-                .thenReturn(List.of(skipDeviation));
+        // Note: getScheduleCalendar no longer queries deviations - returns base calendar only
 
         // Mock RuleEngine to return true for weekdays
         when(ruleEngine.shouldRun(any(Rule.class), any(LocalDate.class)))
@@ -327,11 +318,14 @@ class ScheduleServiceTest {
         // When: Getting calendar
         ScheduleMonthDto result = service.getScheduleCalendar(scheduleId, yearMonth);
 
-        // Then: Jan 6 (Monday) should be FORCE_SKIP due to SKIP deviation
-        assertThat(result.getDays().get(6)).isEqualTo(com.jw.holidayguard.domain.RunStatus.FORCE_SKIP);
+        // Then: Jan 6 (Monday) should be RUN based on base rule (ignoring any deviations)
+        assertThat(result.getDays().get(6)).isEqualTo(com.jw.holidayguard.domain.RunStatus.RUN);
 
-        // Jan 7 (Tuesday) should still be RUN (no deviation)
+        // Jan 7 (Tuesday) should also be RUN (base rule)
         assertThat(result.getDays().get(7)).isEqualTo(com.jw.holidayguard.domain.RunStatus.RUN);
+
+        // Jan 4 (Saturday) should be SKIP (base rule)
+        assertThat(result.getDays().get(4)).isEqualTo(com.jw.holidayguard.domain.RunStatus.SKIP);
     }
 
     @Test

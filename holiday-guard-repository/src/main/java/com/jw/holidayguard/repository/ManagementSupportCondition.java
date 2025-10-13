@@ -30,25 +30,34 @@ public class ManagementSupportCondition implements Condition {
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
         // Strategy 1: Check for test system property (set by test configurations)
         String testProperty = System.getProperty("holiday-guard.test.management-enabled");
-        System.out.println("[ManagementSupport] Test property value: " + testProperty);
-
         if ("true".equals(testProperty)) {
             System.out.println("[ManagementSupport] Management operations ENABLED - Test mode");
             return true;
         }
 
+        // Strategy 2: Check active Spring profiles
+        // H2 profile supports management, JSON profile does not
+        String[] activeProfiles = context.getEnvironment().getActiveProfiles();
+        for (String profile : activeProfiles) {
+            if ("h2".equals(profile)) {
+                System.out.println("[ManagementSupport] Management operations ENABLED - H2 profile active");
+                return true;
+            }
+            if ("json".equals(profile)) {
+                System.out.println("[ManagementSupport] Management operations DISABLED - JSON profile active (read-only)");
+                return false;
+            }
+        }
+
+        // Strategy 3: Try to get the actual DataProvider bean (fallback if profiles not set)
         try {
-            // Strategy 2: Try to get bean names for DataProvider type
             String[] beanNames = context.getBeanFactory().getBeanNamesForType(DataProvider.class);
             if (beanNames.length == 0) {
-                System.out.println("[ManagementSupport] DataProvider not available, defaulting to DISABLED");
+                System.out.println("[ManagementSupport] No profile detected and DataProvider not available yet, defaulting to DISABLED");
                 return false;
             }
 
-            // Strategy 3: Try to get the actual DataProvider bean
             DataProvider dataProvider = context.getBeanFactory().getBean(DataProvider.class);
-
-            // Check if it supports management operations
             boolean supportsManagement = dataProvider.supportsManagement();
 
             if (supportsManagement) {
@@ -60,9 +69,8 @@ public class ManagementSupportCondition implements Condition {
             return supportsManagement;
 
         } catch (Exception e) {
-            // DataProvider bean not available yet (or multiple found) - default to false
-            // This is a safe default: management endpoints won't be accidentally exposed
-            System.out.println("[ManagementSupport] Exception while checking DataProvider: " + e.getMessage());
+            // DataProvider bean not available yet - default to false
+            System.out.println("[ManagementSupport] Exception while checking DataProvider: " + e.getMessage() + ", defaulting to DISABLED");
             return false;
         }
     }

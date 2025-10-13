@@ -35,6 +35,9 @@ const ScheduleViewer: React.FC = () => {
         showSkip: true,
     });
 
+    // Track if we've done the initial auto-select
+    const [hasAutoSelected, setHasAutoSelected] = useState(false);
+
     // Fetch all active schedules
     const {data: allSchedules = []} = useActiveSchedules();
 
@@ -46,7 +49,32 @@ const ScheduleViewer: React.FC = () => {
         true
     );
 
-    const calendarDays = calendarData?.days || [];
+    console.log('[ScheduleViewer] calendarData:', calendarData);
+    console.log('[ScheduleViewer] filters.selectedScheduleIds:', filters.selectedScheduleIds);
+
+    // Convert normalized structure to flat array of CalendarDay objects
+    const calendarDays: CalendarDay[] = useMemo(() => {
+        if (!calendarData?.schedules) {
+            console.log('[ScheduleViewer] No schedules in calendarData');
+            return [];
+        }
+
+        const flatDays: CalendarDay[] = [];
+        calendarData.schedules.forEach(schedule => {
+            schedule.days.forEach(day => {
+                flatDays.push({
+                    scheduleId: schedule.scheduleId,
+                    scheduleName: schedule.scheduleName,
+                    date: day.date,
+                    status: day.status,
+                    reason: day.reason
+                });
+            });
+        });
+
+        console.log('[ScheduleViewer] Converted to flat days:', flatDays.length, 'entries');
+        return flatDays;
+    }, [calendarData]);
 
     // Auto-switch to agenda view on narrow screens
     useEffect(() => {
@@ -58,15 +86,17 @@ const ScheduleViewer: React.FC = () => {
         // to respect user's choice if they manually selected agenda on desktop
     }, [isMobile, view]);
 
-    // Select all schedules by default when they load
+    // Select all schedules by default when they load (only on initial load)
     useEffect(() => {
-        if (allSchedules.length > 0 && filters.selectedScheduleIds.length === 0) {
+        if (allSchedules.length > 0 && !hasAutoSelected) {
+            console.log('[ScheduleViewer] Auto-selecting all schedules on initial load');
             setFilters(prev => ({
                 ...prev,
                 selectedScheduleIds: allSchedules.map(s => s.id)
             }));
+            setHasAutoSelected(true);
         }
-    }, [allSchedules, filters.selectedScheduleIds.length]);
+    }, [allSchedules, hasAutoSelected]);
 
     // Convert calendar days to react-big-calendar events
     const events = useMemo(() => {

@@ -6,10 +6,11 @@ import {
     type CalendarResponse,
     type Deviation
 } from '../../services/backend';
-import type {MultiScheduleCalendar} from '../../types/calendar-view';
+import type {MultiScheduleCalendarView} from '../../types/calendar-view';
 
 /**
  * Hook to fetch calendar data for multiple schedules.
+ * Returns the NEW normalized structure (MultiScheduleCalendarView).
  */
 export const useMultiScheduleCalendar = (
     scheduleIds: number[],
@@ -18,8 +19,11 @@ export const useMultiScheduleCalendar = (
 ) => {
     return useQuery({
         queryKey: ['multiScheduleCalendar', scheduleIds, yearMonth, includeDeviations],
-        queryFn: async (): Promise<MultiScheduleCalendar> => {
-            return await getMultiScheduleCalendar(scheduleIds, yearMonth, includeDeviations);
+        queryFn: async (): Promise<MultiScheduleCalendarView> => {
+            console.log('[useMultiScheduleCalendar] Fetching calendar for schedules:', scheduleIds, 'yearMonth:', yearMonth);
+            const result = await getMultiScheduleCalendar(scheduleIds, yearMonth, includeDeviations);
+            console.log('[useMultiScheduleCalendar] Received data:', result);
+            return result;
         },
         enabled: scheduleIds.length > 0, // Only fetch if we have schedule IDs
     });

@@ -213,10 +213,12 @@ public class ScheduleService {
 
         log.info("Getting calendar for schedule rule type: {}, config: {}", rule.getRuleType(), rule.getRuleConfig());
 
-        // Fetch deviations for active version
-        List<Deviation> deviations = deviationRepo.findByScheduleIdAndVersionId(scheduleId, activeVersion.getId());
+        // For the deviation editor, we need the BASE calendar without deviations applied
+        // This allows users to see what the base rule says before adding/removing deviations
+        // The frontend deviation editor requires knowing the underlying rule state to toggle correctly
+        List<Deviation> deviations = List.of(); // Empty list - no deviations for base calendar
 
-        // Create Calendar abstraction - encapsulates shouldRun business logic
+        // Create Calendar abstraction with base rule only (no deviations)
         // RuleEngine implements Calendar.RuleEvaluator, so we can use it directly
         Calendar calendar = new Calendar(schedule, rule, deviations, ruleEngine::shouldRun);
 
@@ -224,6 +226,7 @@ public class ScheduleService {
         Map<LocalDate, Boolean> shouldRunMap = calendar.shouldRun(fromDate, toDate);
 
         // Convert to DTO format (Map<Integer, RunStatus>)
+        // Since this is base calendar (no deviations), all statuses are RUN or SKIP only
         Map<Integer, RunStatus> days = new HashMap<>();
         for (Map.Entry<LocalDate, Boolean> entry : shouldRunMap.entrySet()) {
 
@@ -231,14 +234,8 @@ public class ScheduleService {
             int dayOfMonth = date.getDayOfMonth();
             boolean shouldRun = entry.getValue();
 
-            // Find deviation for this date to determine if it's a forced status
-            Optional<Deviation> deviationOpt = deviations.stream()
-                    .filter(d -> d.getDeviationDate().equals(date))
-                    .findFirst();
-
-            RunStatus status = deviationOpt.map
-                    (d -> RunStatus.fromCalendar(shouldRun, d))
-                    .orElse(RunStatus.fromCalendar(shouldRun));
+            // Base calendar has no deviations - status is simply RUN or SKIP
+            RunStatus status = RunStatus.fromCalendar(shouldRun);
 
             days.put(dayOfMonth, status);
         }
