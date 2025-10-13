@@ -1,0 +1,68 @@
+{
+  "schedules": [
+    {
+      "name": "Payroll Schedule",
+      "description": "US payroll processing calendar - runs on weekdays except holidays",
+      "rule": {
+        "ruleType": "WEEKDAYS_ONLY"
+      },
+      "deviations": [
+        {
+          "date": "2025-12-25",
+          "action": "FORCE_SKIP",
+          "reason": "Christmas Day"
+        },
+        {
+          "date": "2025-12-26",
+          "action": "FORCE_SKIP",
+          "reason": "Day after Christmas - company holiday"
+        },
+        {
+          "date": "2025-12-27",
+          "action": "FORCE_RUN",
+          "reason": "Emergency payroll run"
+        }
+      ]
+    },
+    {
+      "name": "ACH Processing",
+      "description": "Automated Clearing House processing - follows Federal Reserve schedule",
+      "rule": {
+        "ruleType": "US_FEDERAL_RESERVE_BUSINESS_DAYS"
+      },
+      "deviations": []
+    },
+    {
+      "name": "Nightly Backup",
+      "description": "Daily backup job using cron expression",
+      "rule": {
+        "ruleType": "CRON_EXPRESSION",
+        "ruleConfig": "0 0 0 * * *"
+      },
+      "deviations": [
+        {
+          "date": "2025-12-31",
+          "action": "FORCE_SKIP",
+          "reason": "Maintenance window"
+        }
+      ]
+    },
+    {
+      "name": "Monthly Reports",
+      "description": "First business day of each month",
+      "rule": {
+        "ruleType": "FIRST_BUSINESS_DAY_OF_MONTH"
+      },
+      "deviations": []
+    },
+    {
+      "name": "Specific Dates",
+      "description": "Run only on configured dates",
+      "rule": {
+        "ruleType": "SPECIFIC_DATES",
+        "ruleConfig": "2025-01-15,2025-02-15,2025-03-15"
+      },
+      "deviations": []
+    }
+  ]
+}

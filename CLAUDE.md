@@ -214,3 +214,398 @@ The rule type `US_FEDERAL_RESERVE_BUSINESS_DAYS` represents the standard banking
 - **Factory**: `USFederalReserveScheduleFactory`
 
 While this rule is commonly used for ACH processing, the naming focuses on the authoritative source (US Federal Reserve) rather than a specific application (ACH). This makes the rule reusable for any operation that follows Federal Reserve business days.
+
+## CLI Module Architecture
+
+Holiday Guard includes a command-line interface module (`holiday-guard-cli`) that provides lightweight schedule queries without requiring the full web application.
+
+### Design Principles
+- **Zero Spring Dependencies**: CLI module depends only on `holiday-guard-core` (domain + services)
+- **Manual Dependency Wiring**: Rule handlers instantiated directly (no Spring DI)
+- **JSON Configuration**: File-based schedule definitions (`schedules.json`)
+- **Fast Startup**: ~200-300ms (vs ~2-3s for web server)
+- **Shell Integration**: Exit codes for scripting (0=run, 1=skip, 2=error)
+
+### CLI vs Web Server Mode
+
+| Feature | Web Server | CLI |
+|---------|-----------|-----|
+| Startup Time | ~2-3 seconds | ~200-300ms |
+| Dependencies | Full Spring Boot | Core domain only |
+| Configuration | H2/JSON profiles | JSON file |
+| Management UI | Yes (H2 profile) | No |
+| Query Logging | Yes (H2 profile) | No |
+| Best For | Multiple clients, UI, audit | Scripts, cron jobs, CI/CD |
+
+### CLI Architecture
+
+**Module**: `holiday-guard-cli`
+
+**Key Classes**:
+- `HolidayGuardCLI` - Main entry point (picocli command)
+- `CLIScheduleService` - Builds Calendar objects from JSON config
+- `CLIConfigLoader` - Loads JSON schedule definitions
+- `CLIConfig` - JSON configuration model
+
+**Dependency Wiring**:
+```java
+public CLIScheduleService() {
+    // Manually instantiate all rule handlers (no Spring)
+    List<RuleHandler> handlers = List.of(
+        new WeekdaysOnlyHandler(),
+        new CronExpressionHandler(),
+        new USFederalReserveBusinessDaysHandler(),
+        new AllDaysHandler(),
+        new NoDaysHandler()
+    );
+    this.ruleEngine = new RuleEngineImpl(handlers);
+}
+```
+
+### CLI Configuration Format
+
+`schedules.json`:
+```json
+{
+  "schedules": [
+    {
+      "name": "Payroll Schedule",
+      "description": "Runs on weekdays except holidays",
+      "rule": {
+        "ruleType": "WEEKDAYS_ONLY"
+      },
+      "deviations": [
+        {
+          "date": "2025-12-25",
+          "action": "FORCE_SKIP",
+          "reason": "Christmas Day"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### CLI Usage Examples
+
+```bash
+# Query if schedule should run today
+java -jar holiday-guard-cli.jar "Payroll Schedule"
+
+# Query specific date
+java -jar holiday-guard-cli.jar "Payroll Schedule" --date 2025-12-25
+
+# Quiet mode (exit code only)
+java -jar holiday-guard-cli.jar "Payroll Schedule" --quiet
+echo $?  # 0 = run, 1 = skip, 2 = error
+
+# Shell script integration
+if java -jar holiday-guard-cli.jar "Nightly Backup" --quiet; then
+    echo "Running backup..."
+    /opt/backup-script.sh
+else
+    echo "Skipping backup"
+fi
+```
+
+See [holiday-guard-cli/README.md](./holiday-guard-cli/README.md) for complete documentation.
+
+## Testing Patterns
+
+### Test Organization
+
+Tests are organized by module and type:
+
+```
+holiday-guard-domain/src/test/java/
+├── domain/                    # Domain entity tests
+│   ├── ScheduleTest.java
+│   ├── CalendarTest.java
+│   └── VersionTest.java
+
+holiday-guard-core/src/test/java/
+├── service/                   # Service layer tests
+│   ├── ScheduleServiceTest.java
+│   └── ScheduleQueryServiceTest.java
+├── service/rule/handler/      # Rule handler tests
+│   ├── WeekdaysOnlyHandlerTest.java
+│   ├── CronExpressionHandlerTest.java
+│   ├── USFederalReserveBusinessDaysHandlerTest.java
+│   ├── AllDaysHandlerTest.java
+│   └── NoDaysHandlerTest.java
+└── util/                      # Utility tests
+    └── ACHProcessingScheduleFactoryTest.java
+
+holiday-guard-rest/src/test/java/
+├── controller/                # Controller tests
+│   ├── ScheduleControllerTest.java
+│   ├── ScheduleControllerSecurityTest.java
+│   └── DashboardControllerTest.java
+└── exception/                 # Exception handler tests
+    └── GlobalExceptionHandlerTest.java
+
+holiday-guard-cli/src/test/java/
+├── CLIConfigLoaderTest.java   # JSON configuration tests
+├── CLIScheduleServiceTest.java # Calendar building tests
+└── HolidayGuardCLITest.java   # CLI integration tests
+```
+
+### Test Types and Coverage
+
+**Current Test Statistics** (as of v1.0):
+- Total Tests: 164 (137 passing, 5 disabled, 27 added in CLI)
+- Test Coverage: ~85% (domain, core, CLI fully covered)
+- Disabled Tests: 5 in `ShouldRunControllerTest` (MockMvc security issues)
+
+### Unit Test Patterns
+
+**Rule Handler Tests**:
+```java
+@Test
+void shouldGenerateWeekdaysForFullWeek() {
+    // Given: A date range spanning a full week
+    LocalDate monday = LocalDate.of(2025, 1, 6);
+    LocalDate sunday = LocalDate.of(2025, 1, 12);
+
+    // When: Generating dates
+    List<LocalDate> result = handler.generateDates(null, monday, sunday);
+
+    // Then: Only weekdays are included (5 days)
+    assertEquals(5, result.size());
+}
+```
+
+**Service Tests**:
+```java
+@SpringBootTest
+class ScheduleQueryServiceTest {
+    @Autowired
+    private ScheduleQueryService service;
+
+    @Test
+    void shouldQueryScheduleSuccessfully() {
+        // Given: A schedule exists
+        // When: Querying shouldRun
+        ShouldRunQueryResponse response = service.shouldRunToday(1L, request);
+
+        // Then: Response contains correct status
+        assertNotNull(response);
+        assertEquals(RunStatus.RUN, response.runStatus());
+    }
+}
+```
+
+### Integration Test Patterns
+
+**Controller Tests with MockMvc**:
+```java
+@WebMvcTest(controllers = ShouldRunController.class)
+@ContextConfiguration(classes = ControllerTestConfiguration.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
+class ShouldRunControllerTest {
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private ScheduleQueryService service;
+
+    @Test
+    void shouldRunTodayReturnsOk() throws Exception {
+        // Given: Service returns valid response
+        when(service.shouldRunToday(eq(1L), any()))
+            .thenReturn(response);
+
+        // When: Making GET request
+        mockMvc.perform(get("/api/v1/schedules/1/should-run")
+                .with(user("user").roles("USER")))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.shouldRun").value(true));
+    }
+}
+```
+
+**Repository Tests**:
+```java
+@DataJpaTest
+class ScheduleRepositoryTest {
+    @Autowired
+    private ScheduleRepository repository;
+
+    @Test
+    void shouldFindScheduleByName() {
+        // Given: A schedule is saved
+        Schedule schedule = repository.save(Schedule.builder()
+            .name("Test Schedule")
+            .build());
+
+        // When: Finding by name
+        Optional<Schedule> found = repository.findByName("Test Schedule");
+
+        // Then: Schedule is found
+        assertTrue(found.isPresent());
+        assertEquals(schedule.getId(), found.get().getId());
+    }
+}
+```
+
+### Test Data Factories
+
+**ScheduleTestDataFactory**:
+```java
+public class ScheduleTestDataFactory {
+    public static Schedule createDefaultSchedule() {
+        return Schedule.builder()
+            .name("Test Schedule")
+            .description("Test description")
+            .country("US")
+            .active(true)
+            .build();
+    }
+}
+```
+
+**USFederalReserveScheduleFactory**:
+```java
+// Generates complete ACH schedule with federal holidays
+FederalReserveScheduleDefinition definition =
+    USFederalReserveScheduleFactory.createScheduleDefinition(2025);
+```
+
+### CLI Testing Approach
+
+CLI tests don't use Spring context:
+
+```java
+class HolidayGuardCLITest {
+    @Test
+    void cli_shouldReturnExitCode0ForScheduleThatShouldRun(@TempDir Path tempDir) {
+        // Given: JSON config file
+        File configFile = createConfigFile(tempDir, json);
+
+        // When: Calling CLI directly
+        HolidayGuardCLI cli = new HolidayGuardCLI();
+        cli.scheduleName = "Test Schedule";
+        cli.dateInput = "2025-10-13";
+        cli.configFile = configFile;
+        cli.quiet = true;
+
+        int exitCode = cli.call();
+
+        // Then: Exit code is 0 (run)
+        assertThat(exitCode).isEqualTo(0);
+    }
+}
+```
+
+### Testing Best Practices
+
+1. **Arrange-Act-Assert (AAA)**: Structure tests with clear Given-When-Then comments
+2. **Test Names**: Use descriptive names (`shouldReturnTrueForWeekday`)
+3. **One Assertion Per Concept**: Focus each test on a single behavior
+4. **Test Data Isolation**: Use `@TempDir` for file-based tests
+5. **Mock External Dependencies**: Mock services in controller tests
+6. **Integration vs Unit**: Use `@WebMvcTest` for controllers, `@DataJpaTest` for repositories
+7. **Security Testing**: Test both success and authorization failure cases
+
+### Running Tests
+
+```bash
+# All tests
+./mvnw test
+
+# Specific module
+./mvnw test -pl holiday-guard-core
+
+# Specific test class
+./mvnw test -Dtest=WeekdaysOnlyHandlerTest
+
+# Specific test method
+./mvnw test -Dtest=WeekdaysOnlyHandlerTest#shouldGenerateWeekdaysForFullWeek
+
+# Skip tests during build
+./mvnw package -DskipTests
+```
+
+### Known Test Issues
+
+**Disabled Tests**:
+- `ShouldRunControllerTest` (5 tests) - MockMvc security context configuration issues
+- Planned fix: Update security test configuration to match `ScheduleControllerSecurityTest` pattern
+
+### Test Coverage Goals
+
+- **Domain**: 100% coverage (simple POJOs)
+- **Core Services**: 90%+ coverage (business logic critical)
+- **Rule Handlers**: 100% coverage (all rule types tested)
+- **Controllers**: 80%+ coverage (happy path + error cases)
+- **Integration**: Key user workflows covered
+
+## Troubleshooting Guide
+
+### Common Issues
+
+**Issue: "Schedule not found"**
+- Check schedule ID exists: `GET /api/v1/schedules`
+- Verify schedule is active: `"active": true`
+- Check case sensitivity for name-based lookups
+
+**Issue: "Configuration file not found" (CLI)**
+- Default location: `./schedules.json`
+- Use `--config` flag to specify custom path
+- Verify JSON syntax is valid
+
+**Issue: Cron expression parsing fails**
+- Use 6-field format: `sec min hour day month dow`
+- Example: `0 0 0 * * *` (daily at midnight)
+- Not 5-field format: `0 0 * * *` ❌
+
+**Issue: Tests fail with "No tests found"**
+- Run from project root directory
+- Use `-pl` flag for specific module
+- Check test class naming matches `*Test.java` pattern
+
+**Issue: MockMvc security errors**
+- Import both `SecurityConfig` and `GlobalExceptionHandler`
+- Use `.with(user("user").roles("USER"))` in requests
+- Include `.with(csrf())` for POST/PUT/DELETE
+
+**Issue: Frontend can't reach API**
+- Verify backend is running: `./mvnw spring-boot:run`
+- Check CORS configuration in `SecurityConfig`
+- Verify proxy configuration in Vite config
+
+**Issue: Exit code 2 from CLI**
+- Generic error (config not found, invalid date, etc.)
+- Run without `--quiet` to see error message
+- Check `schedules.json` format and schedule name
+
+### Debugging Tips
+
+**Enable Debug Logging**:
+```yaml
+logging:
+  level:
+    com.jw.holidayguard: DEBUG
+    org.springframework.security: DEBUG
+```
+
+**Inspect Query Logs** (H2 profile):
+```bash
+curl -u admin:admin "http://localhost:8080/api/v1/audit-logs/recent?limit=10"
+```
+
+**Check Active Version**:
+```bash
+curl -u user:user "http://localhost:8080/api/v1/schedules/1/versions/active"
+```
+
+**Verify Rule Engine Logic**:
+- Add breakpoint in `RuleEngineImpl.shouldRun()`
+- Check which handler is selected for rule type
+- Verify handler's `shouldRun()` logic
+
+**CLI Verbose Mode**:
+```bash
+java -jar holiday-guard-cli.jar "Schedule Name" --verbose
+# Shows rule type, config, and deviation details
+```

@@ -49,6 +49,7 @@
 		<module>holiday-guard-rest</module>
 		<module>holiday-guard-react</module>
 		<module>holiday-guard-security-inmemory</module>
+		<module>holiday-guard-cli</module>
 		<module>holiday-guard-app</module>
 	</modules>
 

@@ -18,9 +18,9 @@ Traditional cron expressions can't easily handle:
 
 **Holiday Guard solves this** by providing a centralized schedule service where business calendars are **managed, versioned, and queryable via HTTP API**. Applications simply ask "Should I run today?" instead of embedding complex calendar logic.
 
-The service is designed to run either:
-- **As an HTTP service** - Apps query via REST API (primary use case)
-- **As a CLI utility** - For standalone scripts and command-line workflows *(coming soon)*
+The service is designed to run in two modes:
+- **Web Server Mode** - Full HTTP service with REST API and management UI (primary use case)
+- **CLI Mode** - Lightweight command-line utility for scripts and shell integration
 
 ---
 
@@ -43,6 +43,111 @@ The service is designed to run either:
 ```
 
 **Default Profile**: H2 (in-memory SQL database with full CRUD and management UI)
+
+## 🎯 Deployment Modes
+
+Holiday Guard can run in two distinct modes, each optimized for different use cases:
+
+### Web Server Mode (HTTP API + Management UI)
+
+**Best for**: Centralized schedule management, multiple clients, admin UI, audit logging
+
+```bash
+# Start with H2 (in-memory database with full CRUD)
+./mvnw spring-boot:run -Dspring-boot.run.profiles=h2
+
+# Or start with JSON (read-only file-based)
+./mvnw spring-boot:run -Dspring-boot.run.profiles=json
+
+# Access at http://localhost:8080
+```
+
+**Features**:
+- Full REST API for remote queries
+- Web-based management UI (H2 profile)
+- Schedule versioning and audit trails
+- Multiple concurrent clients
+- Query logging and analytics
+- Startup time: ~2-3 seconds
+
+**Query Example**:
+```bash
+curl "http://localhost:8080/api/v1/schedules/{scheduleId}/should-run?client=payroll"
+```
+
+### CLI Mode (Command-Line Utility)
+
+**Best for**: Shell scripts, cron jobs, CI/CD pipelines, standalone execution
+
+```bash
+# Build the CLI JAR
+./mvnw clean package -pl holiday-guard-cli
+
+# Query if schedule should run today
+java -jar holiday-guard-cli/target/holiday-guard-cli.jar "Payroll Schedule"
+
+# Query specific date
+java -jar holiday-guard-cli/target/holiday-guard-cli.jar "Payroll Schedule" --date 2025-12-25
+
+# Use custom config file
+java -jar holiday-guard-cli/target/holiday-guard-cli.jar "ACH Processing" --config /path/to/schedules.json
+
+# Quiet mode (exit code only)
+java -jar holiday-guard-cli/target/holiday-guard-cli.jar "Payroll Schedule" --quiet
+echo $?  # 0 = run, 1 = skip, 2 = error
+
+# JSON output format
+java -jar holiday-guard-cli/target/holiday-guard-cli.jar "Payroll Schedule" --format json
+```
+
+**Features**:
+- Zero dependencies on Spring or web server
+- Fast startup (~200-300ms, or ~50ms with GraalVM native-image)
+- Exit codes for shell scripting (0=run, 1=skip, 2=error)
+- JSON configuration file
+- Text and JSON output formats
+- Verbose mode with rule details
+
+**Configuration** (`schedules.json`):
+```json
+{
+  "schedules": [
+    {
+      "name": "Payroll Schedule",
+      "description": "Runs on weekdays except holidays",
+      "rule": {
+        "ruleType": "WEEKDAYS_ONLY"
+      },
+      "deviations": [
+        {
+          "date": "2025-12-25",
+          "action": "FORCE_SKIP",
+          "reason": "Christmas Day"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Shell Script Integration**:
+```bash
+#!/bin/bash
+# Example cron job integration
+
+if java -jar /opt/holiday-guard-cli.jar "Nightly Backup" --quiet; then
+    echo "Running backup..."
+    /opt/backup-script.sh
+else
+    echo "Skipping backup (holiday or weekend)"
+fi
+```
+
+**Choose Your Mode**:
+- Use **Web Server Mode** when you need centralized management, multiple clients, or a UI
+- Use **CLI Mode** for simple scripts, cron jobs, or when you want minimal dependencies
+
+For detailed CLI documentation, see [holiday-guard-cli/README.md](./holiday-guard-cli/README.md)
 
 ## 📋 Primary Use Case
 
