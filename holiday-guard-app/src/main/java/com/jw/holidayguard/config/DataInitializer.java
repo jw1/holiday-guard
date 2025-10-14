@@ -25,10 +25,10 @@ import static java.time.DayOfWeek.MONDAY;
 
 /**
  * Preloads data into a new database when the application is started up under the
- * h2 profile
+ * demo profile
  */
 @Component
-@Profile("h2")
+@Profile("demo")
 public class DataInitializer implements ApplicationRunner {
 
     private final ScheduleRepository scheduleRepository;

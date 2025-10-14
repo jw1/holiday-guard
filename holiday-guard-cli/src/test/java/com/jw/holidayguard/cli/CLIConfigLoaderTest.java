@@ -166,7 +166,8 @@ class CLIConfigLoaderTest {
 
     @Test
     void findSchedule_shouldBeCaseInsensitive(@TempDir Path tempDir) throws IOException {
-        // given - Schedule with specific casing
+
+        // given - schedule with specific casing
         String json = """
             {
               "schedules": [
@@ -179,12 +180,12 @@ class CLIConfigLoaderTest {
         Files.writeString(configFile.toPath(), json);
         CLIConfig config = loader.loadConfig(configFile);
 
-        // when - Searching with different case
+        // when - searching with different case
         CLIConfig.ScheduleConfig found1 = config.findSchedule("payroll schedule");
         CLIConfig.ScheduleConfig found2 = config.findSchedule("PAYROLL SCHEDULE");
         CLIConfig.ScheduleConfig found3 = config.findSchedule("Payroll Schedule");
 
-        // then - All variations find the schedule
+        // then - all are found
         assertThat(found1).isNotNull();
         assertThat(found2).isNotNull();
         assertThat(found3).isNotNull();
@@ -192,7 +193,8 @@ class CLIConfigLoaderTest {
 
     @Test
     void findSchedule_shouldReturnNullForNonExistent(@TempDir Path tempDir) throws IOException {
-        // given - Config without target schedule
+
+        // given - config without target schedule
         String json = """
             {
               "schedules": [
@@ -205,10 +207,10 @@ class CLIConfigLoaderTest {
         Files.writeString(configFile.toPath(), json);
         CLIConfig config = loader.loadConfig(configFile);
 
-        // when - Searching for non-existent schedule
+        // when - searching for non-existent schedule
         CLIConfig.ScheduleConfig notFound = config.findSchedule("Does Not Exist");
 
-        // then - Returns null
+        // then - nothing is found
         assertThat(notFound).isNull();
     }
 }

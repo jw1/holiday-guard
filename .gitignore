@@ -62,4 +62,4 @@ node_modules/
 frontend.sh
 backend.sh
 start.sh
-data.json
+holiday-guard-app/src/test/resources/data.json

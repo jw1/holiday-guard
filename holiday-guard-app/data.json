@@ -1,0 +1,190 @@
+{
+  "schedules": [
+    {
+      "id": 1,
+      "name": "US Federal Holidays",
+      "description": "Standard US federal holidays",
+      "country": "US",
+      "active": true,
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "updatedAt": "2025-01-01T00:00:00Z",
+      "updatedBy": "system"
+    },
+    {
+      "id": 2,
+      "name": "UK Bank Holidays",
+      "description": "Official bank holidays in the United Kingdom",
+      "country": "UK",
+      "active": true,
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "updatedAt": "2025-01-01T00:00:00Z",
+      "updatedBy": "system"
+    },
+    {
+      "id": 3,
+      "name": "Canadian Public Holidays",
+      "description": "Statutory holidays for Canada",
+      "country": "CA",
+      "active": false,
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "updatedAt": "2025-01-01T00:00:00Z",
+      "updatedBy": "system"
+    },
+    {
+      "id": 4,
+      "name": "Australian Public Holidays",
+      "description": "Public holidays across Australia",
+      "country": "AU",
+      "active": true,
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "updatedAt": "2025-01-01T00:00:00Z",
+      "updatedBy": "system"
+    }
+  ],
+  "versions": [
+    {
+      "id": 1,
+      "scheduleId": 1,
+      "effectiveFrom": "2025-01-01T00:00:00Z",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "active": true
+    },
+    {
+      "id": 2,
+      "scheduleId": 2,
+      "effectiveFrom": "2025-01-01T00:00:00Z",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "active": true
+    },
+    {
+      "id": 3,
+      "scheduleId": 3,
+      "effectiveFrom": "2025-01-01T00:00:00Z",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "active": true
+    },
+    {
+      "id": 4,
+      "scheduleId": 4,
+      "effectiveFrom": "2025-01-01T00:00:00Z",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "active": true
+    }
+  ],
+  "rules": [
+    {
+      "id": 1,
+      "scheduleId": 1,
+      "versionId": 1,
+      "ruleType": "US_FEDERAL_RESERVE_BUSINESS_DAYS",
+      "ruleConfig": null,
+      "effectiveFrom": "2025-01-01",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "active": true
+    },
+    {
+      "id": 2,
+      "scheduleId": 2,
+      "versionId": 2,
+      "ruleType": "WEEKDAYS_ONLY",
+      "ruleConfig": null,
+      "effectiveFrom": "2025-01-01",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "active": true
+    },
+    {
+      "id": 3,
+      "scheduleId": 3,
+      "versionId": 3,
+      "ruleType": "WEEKDAYS_ONLY",
+      "ruleConfig": null,
+      "effectiveFrom": "2025-01-01",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "active": true
+    },
+    {
+      "id": 4,
+      "scheduleId": 4,
+      "versionId": 4,
+      "ruleType": "WEEKDAYS_ONLY",
+      "ruleConfig": null,
+      "effectiveFrom": "2025-01-01",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system",
+      "active": true
+    }
+  ],
+  "deviations": [
+    {
+      "id": 1,
+      "scheduleId": 1,
+      "versionId": 1,
+      "overrideDate": "2025-09-15",
+      "action": "FORCE_SKIP",
+      "reason": "Team Offsite",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system"
+    },
+    {
+      "id": 2,
+      "scheduleId": 1,
+      "versionId": 1,
+      "overrideDate": "2025-10-31",
+      "action": "FORCE_RUN",
+      "reason": "Halloween Payroll Run",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system"
+    },
+    {
+      "id": 3,
+      "scheduleId": 2,
+      "versionId": 2,
+      "overrideDate": "2025-09-22",
+      "action": "FORCE_SKIP",
+      "reason": "UK Team Event",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system"
+    },
+    {
+      "id": 4,
+      "scheduleId": 2,
+      "versionId": 2,
+      "overrideDate": "2025-10-27",
+      "action": "FORCE_RUN",
+      "reason": "End of Month Processing",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system"
+    },
+    {
+      "id": 5,
+      "scheduleId": 3,
+      "versionId": 3,
+      "overrideDate": "2025-09-01",
+      "action": "FORCE_SKIP",
+      "reason": "Labour Day",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system"
+    },
+    {
+      "id": 6,
+      "scheduleId": 3,
+      "versionId": 3,
+      "overrideDate": "2025-10-13",
+      "action": "FORCE_RUN",
+      "reason": "Thanksgiving",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "createdBy": "system"
+    }
+  ]
+}

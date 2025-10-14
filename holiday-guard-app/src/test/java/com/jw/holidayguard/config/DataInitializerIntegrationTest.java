@@ -18,7 +18,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = {DataInitializer.class})
-@ActiveProfiles("h2")
+@ActiveProfiles({"h2", "demo"})
 @EnableAutoConfiguration
 @EnableJpaRepositories(basePackageClasses = ScheduleRepository.class)
 @EntityScan(basePackageClasses = Schedule.class)
@@ -33,21 +33,17 @@ public class DataInitializerIntegrationTest {
 
     @Test
     void shouldInitializeData() {
-        // given
-        long scheduleCount = scheduleRepository.count();
-        long ruleCount = ruleRepository.count();
-
-        // then
-        assertThat(scheduleCount).isEqualTo(4);
-        assertThat(ruleCount).isEqualTo(4);
+        assertThat(scheduleRepository.count()).isEqualTo(4);
+        assertThat(ruleRepository.count()).isEqualTo(4);
     }
 
     @Test
     void shouldSetCorrectRuleForUsFederalHolidays() {
-        // given
+
+        // given - demo data with this schedule
         Optional<Schedule> usScheduleOpt = scheduleRepository.findByName("US Federal Holidays");
 
-        // then
+        // then - it should be found and have the correct rule type
         assertThat(usScheduleOpt).isPresent();
         Schedule usSchedule = usScheduleOpt.get();
 

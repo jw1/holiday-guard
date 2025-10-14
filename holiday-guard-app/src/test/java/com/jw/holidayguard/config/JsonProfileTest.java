@@ -4,8 +4,6 @@ import com.jw.holidayguard.repository.DataProvider;
 import com.jw.holidayguard.repository.ScheduleRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -20,28 +18,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JsonProfileTest {
 
     @Autowired
-    private DataProvider dataProvider;
+    private DataProvider provider;
 
     @Autowired
-    private ScheduleRepository scheduleRepository;
+    private ScheduleRepository repo;
 
     @Test
     void shouldLoadJsonDataProvider() {
-        assertThat(dataProvider).isNotNull();
-        assertThat(dataProvider.getProviderName()).isEqualTo("JSON");
-        assertThat(dataProvider.supportsManagement()).isFalse();
+        assertThat(provider).isNotNull();
+        assertThat(provider.getProviderName()).isEqualTo("JSON");
+        assertThat(provider.supportsManagement()).isFalse();
     }
 
     @Test
     void shouldLoadSchedulesFromJson() {
-        var schedules = scheduleRepository.findAll();
+        var schedules = repo.findAll();
         assertThat(schedules).isNotEmpty();
         assertThat(schedules).hasSize(4); // From data.json
     }
 
     @Test
     void shouldFindScheduleByName() {
-        var schedule = scheduleRepository.findByName("US Federal Holidays");
+        var schedule = repo.findByName("US Federal Holidays");
         assertThat(schedule).isPresent();
         assertThat(schedule.get().getCountry()).isEqualTo("US");
         assertThat(schedule.get().isActive()).isTrue();
@@ -49,13 +47,13 @@ class JsonProfileTest {
 
     @Test
     void shouldThrowExceptionWhenSaving() {
-        var schedule = scheduleRepository.findById(1L).get();
+        var schedule = repo.findById(1L).get();
         assertThat(schedule).isNotNull();
 
         // Attempting to save should throw UnsupportedOperationException
         org.junit.jupiter.api.Assertions.assertThrows(
                 UnsupportedOperationException.class,
-                () -> scheduleRepository.save(schedule),
+                () -> repo.save(schedule),
                 "JSON repository is read-only. Use H2 profile for CRUD operations."
         );
     }

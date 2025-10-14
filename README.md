@@ -32,8 +32,11 @@ The service is designed to run in two modes:
 # Run tests
 ./mvnw clean test
 
-# Start application with H2 database (management UI enabled)
+# Start application with H2 database (empty, management UI enabled)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=h2
+
+# Or start with demo data (4 sample schedules)
+./mvnw spring-boot:run -Dspring-boot.run.profiles=h2,demo
 
 # Or start with JSON file backend (read-only)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=json
@@ -42,7 +45,8 @@ The service is designed to run in two modes:
 # Admin UI available at http://localhost:8080
 ```
 
-**Default Profile**: H2 (in-memory SQL database with full CRUD and management UI)
+**Default Profile**: H2 (in-memory SQL database with full CRUD and management UI, starts empty)
+**Demo Profile**: Add `demo` to profiles to load 4 sample schedules (US/UK/Canada/Australia holidays)
 
 ## 🎯 Deployment Modes
 
@@ -53,8 +57,11 @@ Holiday Guard can run in two distinct modes, each optimized for different use ca
 **Best for**: Centralized schedule management, multiple clients, admin UI, audit logging
 
 ```bash
-# Start with H2 (in-memory database with full CRUD)
+# Start with H2 (empty database, full CRUD)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=h2
+
+# Start with H2 + demo data (4 sample schedules)
+./mvnw spring-boot:run -Dspring-boot.run.profiles=h2,demo
 
 # Or start with JSON (read-only file-based)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=json
@@ -222,6 +229,7 @@ Response:
 - Full CRUD operations
 - Management UI enabled
 - Query logging and audit trails
+- Starts with empty database (add `demo` profile to load sample data)
 - Best for: Development, testing, production deployments
 
 **JSON Profile**
@@ -230,6 +238,12 @@ Response:
 - Management UI disabled (404 responses)
 - No audit logging
 - Best for: Simple deployments, embedded use cases, CI/CD environments
+
+**Demo Profile** (optional modifier)
+- Can be combined with H2: `-Dspring-boot.run.profiles=h2,demo`
+- Loads 4 sample schedules on startup via `DataInitializer`
+- Without `demo` profile, H2 starts empty
+- Not applicable to JSON profile (always loads from file)
 
 ## 📖 Developer Documentation
 
@@ -249,11 +263,20 @@ Response:
 ./mvnw test -Dtest=*RepositoryTest
 ```
 
-**Test Data**: The application includes 4 demo schedules:
+**Demo Data**: The application can optionally load demo schedules on startup using the `demo` profile:
+
+```bash
+# Start with demo data (4 sample schedules)
+./mvnw spring-boot:run -Dspring-boot.run.profiles=h2,demo
+```
+
+Demo schedules included:
 - US Federal Reserve Business Days (used for ACH processing, payroll, etc.)
 - UK Bank Holidays
 - Canadian Public Holidays
 - Australian Public Holidays
+
+**Note**: Demo data requires the `demo` profile to be active. Without it, the database starts empty (H2) or uses existing JSON files.
 
 Test utilities available in `ScheduleTestDataFactory` and `USFederalReserveScheduleFactory` for common patterns.
 

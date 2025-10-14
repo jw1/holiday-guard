@@ -22,14 +22,15 @@ public class CLIScheduleService {
     private final RuleEngine ruleEngine;
 
     public CLIScheduleService() {
-        // Manually instantiate all rule handlers (no Spring DI in CLI)
-        List<RuleHandler> handlers = List.of(
+
+        // manually instantiate rule handlers (no Spring DI in CLI)
+        var handlers = List.of(
             new WeekdaysOnlyHandler(),
             new CronExpressionHandler(),
             new USFederalReserveBusinessDaysHandler(),
             new AllDaysHandler(),
-            new NoDaysHandler()
-        );
+            new NoDaysHandler());
+
         this.ruleEngine = new RuleEngineImpl(handlers);
     }
 
@@ -40,6 +41,7 @@ public class CLIScheduleService {
      * @return Calendar ready for shouldRun queries
      */
     public Calendar buildCalendar(CLIConfig.ScheduleConfig scheduleConfig) {
+
         // Create Schedule domain object
         Schedule schedule = Schedule.builder()
             .name(scheduleConfig.getName())
@@ -78,9 +80,10 @@ public class CLIScheduleService {
      * @return detailed RunStatus (RUN, SKIP, FORCE_RUN, FORCE_SKIP)
      */
     public RunStatus determineRunStatus(Calendar calendar, CLIConfig.ScheduleConfig scheduleConfig, LocalDate date) {
+
         boolean shouldRun = calendar.shouldRun(date);
 
-        // Check if there's a deviation for this date
+        // use deviation if one is found
         if (scheduleConfig.getDeviations() != null) {
             for (CLIConfig.DeviationConfig deviation : scheduleConfig.getDeviations()) {
                 if (deviation.getDate().equals(date)) {

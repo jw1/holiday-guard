@@ -1,17 +1,20 @@
 package com.jw.holidayguard.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 /**
  * Test to verify that the H2 profile uses port 8080 as configured.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@ActiveProfiles("h2")
+@SpringBootTest(webEnvironment = DEFINED_PORT)
+@ActiveProfiles({"h2", "demo"})
+@Slf4j
 class LocalProfilePortTest {
 
     @LocalServerPort
@@ -19,11 +22,7 @@ class LocalProfilePortTest {
 
     @Test
     void shouldStartOnPort8080WithH2Profile() {
-        // given - Application started with H2 profile
-
-        // then - Port should be 8080 as configured in application-h2.yml
         assertThat(port).isEqualTo(8080);
-
-        System.out.println("Application started on configured port (H2 profile): " + port);
+        log.info("Application started on configured port (H2 profile): {}", port);
     }
 }

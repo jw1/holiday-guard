@@ -160,11 +160,15 @@ The application supports two repository implementations, selected via Spring pro
 6. **Version History**: Never update existing versions - create new ones for audit trail
 7. **Profile-Based Features**: Management operations automatically disabled for read-only repositories
 
-## Test Data
+## Demo Data
 
-- **H2 Profile**: Uses `DataInitializer` to populate database on startup
+- **Demo Profile**: Optionally loads sample schedules via `DataInitializer` when `demo` profile is active
+  - Activated with: `./mvnw spring-boot:run -Dspring-boot.run.profiles=h2,demo`
+  - Without `demo` profile: H2 starts with empty database
+  - Contains 4 demo schedules: US Federal Holidays, UK Bank Holidays, Canadian Public Holidays, Australian Public Holidays
 - **JSON Profile**: Loads from `data.json` (or test-specific `test-data.json` in tests)
-- Both contain 4 demo schedules: US Federal Holidays, UK Bank Holidays, Canadian Public Holidays, Australian Public Holidays
+  - Always loads from file regardless of demo profile
+- **Tests**: `DataInitializerIntegrationTest` uses both `h2` and `demo` profiles to verify data loading
 
 ## Frontend TypeScript Types
 

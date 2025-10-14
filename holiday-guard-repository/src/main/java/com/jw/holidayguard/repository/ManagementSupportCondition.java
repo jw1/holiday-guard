@@ -28,6 +28,7 @@ public class ManagementSupportCondition implements Condition {
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+
         // Strategy 1: Check for test system property (set by test configurations)
         String testProperty = System.getProperty("holiday-guard.test.management-enabled");
         if ("true".equals(testProperty)) {
