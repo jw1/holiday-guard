@@ -22,7 +22,7 @@ cd holiday-guard
 
 This creates an executable JAR at:
 ```
-holiday-guard-cli/target/holiday-guard-cli-0.0.1-SNAPSHOT.jar
+holiday-guard-cli/target/holiday-guard-cli-1.0.0.jar
 ```
 
 ### 2. Create a configuration file
