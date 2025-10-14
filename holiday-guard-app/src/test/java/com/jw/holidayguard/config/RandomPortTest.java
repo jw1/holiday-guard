@@ -25,9 +25,9 @@ class RandomPortTest {
 
     @Test
     void shouldStartOnRandomPort() {
-        // Given: Application started without local profile
+        // given - Application started without local profile
 
-        // Then: Port should be assigned (not 0 or 8080)
+        // then - Port should be assigned (not 0 or 8080)
         assertThat(port).isGreaterThan(0);
         assertThat(port).isNotEqualTo(8080); // Should not be the local profile port
 

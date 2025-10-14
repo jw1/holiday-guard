@@ -17,7 +17,7 @@ class VersionTest {
 
     @Test
     void toNewVersion_createsInactiveVersion() {
-        // Given: An existing active version
+        // given - An existing active version
         Version currentVersion = Version.builder()
                 .id(1L)
                 .scheduleId(100L)
@@ -39,10 +39,10 @@ class VersionTest {
                         .build()
         );
 
-        // When: Creating a new version from current
+        // when - Creating a new version from current
         Version newVersion = Version.builderFrom(100L).build();
 
-        // Then: New version should be inactive (database layer will activate it)
+        // then - New version should be inactive (database layer will activate it)
         assertFalse(newVersion.isActive(), "New version should start inactive");
         assertThat(newVersion.getScheduleId()).isEqualTo(100L);
         assertThat(newVersion.getId()).isNull(); // Not yet persisted
@@ -51,7 +51,7 @@ class VersionTest {
 
     @Test
     void toNewVersion_preservesScheduleId() {
-        // Given: Version for schedule 42
+        // given - Version for schedule 42
         Version currentVersion = Version.builder()
                 .scheduleId(42L)
                 .active(true)
@@ -62,29 +62,29 @@ class VersionTest {
                 .ruleType(Rule.RuleType.ALL_DAYS)
                 .build();
 
-        // When: Creating new version
+        // when - Creating new version
         Version newVersion = Version
                 .builderFrom(42L)
                 .build();
 
-        // Then: Should preserve scheduleId
+        // then - Should preserve scheduleId
         assertThat(newVersion.getScheduleId()).isEqualTo(42L);
     }
 
     @Test
     void createInitialVersion_createsVersionOne() {
-        // Given: A new schedule with no versions yet
+        // given - A new schedule with no versions yet
         Schedule schedule = Schedule.builder()
                 .id(100L)
                 .name("New Schedule")
                 .build();
 
-        // When: Creating the initial version
+        // when - Creating the initial version
         Version initialVersion = Version
                 .builderFrom(schedule)
                 .build();
 
-        // Then: Should be version 1, inactive (until persisted)
+        // then - Should be version 1, inactive (until persisted)
         assertThat(initialVersion.getScheduleId()).isEqualTo(100L);
         assertFalse(initialVersion.isActive());
         assertThat(initialVersion.getId()).isNull(); // Not yet persisted
@@ -93,7 +93,7 @@ class VersionTest {
 
     @Test
     void createInitialVersion_withDeviations() {
-        // Given: A new schedule with initial deviations
+        // given - A new schedule with initial deviations
         Schedule schedule = Schedule.builder()
                 .id(100L)
                 .name("Payroll Schedule")
@@ -111,59 +111,59 @@ class VersionTest {
                 .reason("Christmas")
                 .build();
 
-        // When: Creating initial version with deviations
+        // when - Creating initial version with deviations
         Version initialVersion = Version
                 .builderFrom(schedule)
                 .build();
 
-        // Then: version should be created properly
+        // then - version should be created properly
         assertThat(initialVersion.getScheduleId()).isEqualTo(100L);
         assertFalse(initialVersion.isActive());
     }
 
     @Test
     void defaultsToInactive_untilDatabaseActivates() {
-        // Given: Any new version created
+        // given - Any new version created
         Version version = Version.builder()
                 .scheduleId(1L)
                 .build();
 
-        // When: Checking active status
+        // when - Checking active status
         boolean isActive = version.isActive();
 
-        // Then: Should default to false (inactive)
+        // then - Should default to false (inactive)
         assertFalse(isActive, "Versions should default to inactive until database layer activates them");
     }
 
     @Test
     void versionLifecycle_fromCreationToActivation() {
-        // Given: Creating a new version for an existing schedule
+        // given - Creating a new version for an existing schedule
         Schedule schedule = Schedule.builder()
                 .id(100L)
                 .name("Payroll Schedule")
                 .build();
 
-        // When: Creating initial version (mimics what service layer would do)
+        // when - Creating initial version (mimics what service layer would do)
         Version newVersion = Version
                 .builderFrom(schedule)
                 .build();
 
-        // Then: Starts inactive
+        // then - Starts inactive
         assertFalse(newVersion.isActive());
         assertThat(newVersion.getScheduleId()).isEqualTo(100L);
 
-        // When: Database layer activates it (mimics VersionRepository.save)
+        // when - Database layer activates it (mimics VersionRepository.save)
         newVersion.setActive(true);
         newVersion.setId(1L); // Database assigns ID
 
-        // Then: Version is now active and persisted
+        // then - Version is now active and persisted
         assertTrue(newVersion.isActive());
         assertThat(newVersion.getId()).isEqualTo(1L);
     }
 
     @Test
     void effectiveFrom_defaultsToNow() {
-        // Given: Creating version without specifying effectiveFrom
+        // given - Creating version without specifying effectiveFrom
         Version version = Version.builder()
                 .scheduleId(1L)
                 .build();
@@ -171,7 +171,7 @@ class VersionTest {
         // Trigger @PrePersist
         version.onCreate();
 
-        // Then: effectiveFrom should be set to current time
+        // then - effectiveFrom should be set to current time
         assertThat(version.getEffectiveFrom()).isNotNull();
         // Check it's within 1 second of now
         Instant now = Instant.now();

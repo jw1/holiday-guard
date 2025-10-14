@@ -363,14 +363,14 @@ holiday-guard-cli/src/test/java/
 ```java
 @Test
 void shouldGenerateWeekdaysForFullWeek() {
-    // Given: A date range spanning a full week
+    // given - A date range spanning a full week
     LocalDate monday = LocalDate.of(2025, 1, 6);
     LocalDate sunday = LocalDate.of(2025, 1, 12);
 
-    // When: Generating dates
+    // when - Generating dates
     List<LocalDate> result = handler.generateDates(null, monday, sunday);
 
-    // Then: Only weekdays are included (5 days)
+    // then - Only weekdays are included (5 days)
     assertEquals(5, result.size());
 }
 ```
@@ -384,11 +384,11 @@ class ScheduleQueryServiceTest {
 
     @Test
     void shouldQueryScheduleSuccessfully() {
-        // Given: A schedule exists
-        // When: Querying shouldRun
+        // given - A schedule exists
+        // when - Querying shouldRun
         ShouldRunQueryResponse response = service.shouldRunToday(1L, request);
 
-        // Then: Response contains correct status
+        // then - Response contains correct status
         assertNotNull(response);
         assertEquals(RunStatus.RUN, response.runStatus());
     }
@@ -411,11 +411,11 @@ class ShouldRunControllerTest {
 
     @Test
     void shouldRunTodayReturnsOk() throws Exception {
-        // Given: Service returns valid response
+        // given - Service returns valid response
         when(service.shouldRunToday(eq(1L), any()))
             .thenReturn(response);
 
-        // When: Making GET request
+        // when - Making GET request
         mockMvc.perform(get("/api/v1/schedules/1/should-run")
                 .with(user("user").roles("USER")))
             .andExpect(status().isOk())
@@ -433,15 +433,15 @@ class ScheduleRepositoryTest {
 
     @Test
     void shouldFindScheduleByName() {
-        // Given: A schedule is saved
+        // given - A schedule is saved
         Schedule schedule = repository.save(Schedule.builder()
             .name("Test Schedule")
             .build());
 
-        // When: Finding by name
+        // when - Finding by name
         Optional<Schedule> found = repository.findByName("Test Schedule");
 
-        // Then: Schedule is found
+        // then - Schedule is found
         assertTrue(found.isPresent());
         assertEquals(schedule.getId(), found.get().getId());
     }
@@ -479,10 +479,10 @@ CLI tests don't use Spring context:
 class HolidayGuardCLITest {
     @Test
     void cli_shouldReturnExitCode0ForScheduleThatShouldRun(@TempDir Path tempDir) {
-        // Given: JSON config file
+        // given - JSON config file
         File configFile = createConfigFile(tempDir, json);
 
-        // When: Calling CLI directly
+        // when - Calling CLI directly
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "Test Schedule";
         cli.dateInput = "2025-10-13";
@@ -491,7 +491,7 @@ class HolidayGuardCLITest {
 
         int exitCode = cli.call();
 
-        // Then: Exit code is 0 (run)
+        // then - Exit code is 0 (run)
         assertThat(exitCode).isEqualTo(0);
     }
 }

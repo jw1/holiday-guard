@@ -1,0 +1,8 @@
+
+
+read through all the files, do cleanups
+
+reduce boilerplate, make sure there are good run configurations
+* demo endpoint that will work for a demo
+* local for me, but that may be encapsulated in backend.sh (it loads the demo)
+* demo needs to let me set the passwords with inmemory repo

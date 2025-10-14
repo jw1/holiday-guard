@@ -86,7 +86,7 @@ class CalendarViewServiceTest {
 
     @Test
     void shouldGenerateCalendarForSingleSchedule() {
-        // Given: A single schedule with weekdays-only rule for January 2025
+        // given - A single schedule with weekdays-only rule for January 2025
         YearMonth yearMonth = YearMonth.of(2025, 1);
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
@@ -104,11 +104,11 @@ class CalendarViewServiceTest {
                     return dayOfWeek >= 1 && dayOfWeek <= 5; // Mon-Fri
                 });
 
-        // When: Generating calendar for January 2025
+        // when - Generating calendar for January 2025
         MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
-        // Then: Should return 1 schedule with 31 days
+        // then - Should return 1 schedule with 31 days
         assertNotNull(result);
         assertEquals(yearMonth, result.yearMonth());
         assertThat(result.schedules()).hasSize(1);
@@ -129,7 +129,7 @@ class CalendarViewServiceTest {
 
     @Test
     void shouldGenerateCalendarForMultipleSchedules() {
-        // Given: Two different schedules
+        // given - Two different schedules
         Long schedule2Id = 2L;
         Long version2Id = 20L;
 
@@ -182,11 +182,11 @@ class CalendarViewServiceTest {
                     }
                 });
 
-        // When: Generating calendar for both schedules
+        // when - Generating calendar for both schedules
         MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId, schedule2Id), yearMonth, true);
 
-        // Then: Should return 2 schedules, each with 31 days
+        // then - Should return 2 schedules, each with 31 days
         assertNotNull(result);
         assertThat(result.schedules()).hasSize(2);
 
@@ -207,7 +207,7 @@ class CalendarViewServiceTest {
     @Test
     void shouldApplySkipDeviation() {
 
-        // Given: Schedule with SKIP deviation on Jan 6 (Monday)
+        // given - Schedule with SKIP deviation on Jan 6 (Monday)
         LocalDate skipDate = LocalDate.of(2025, 1, 6);
         YearMonth yearMonth = YearMonth.of(2025, 1);
 
@@ -233,11 +233,11 @@ class CalendarViewServiceTest {
                     return dayOfWeek >= 1 && dayOfWeek <= 5; // Weekdays
                 });
 
-        // When: Generating calendar
+        // when - Generating calendar
         MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
-        // Then: Jan 6 should be SKIP (deviation overrides rule)
+        // then - Jan 6 should be SKIP (deviation overrides rule)
         ScheduleMonthView scheduleView = result.schedules().get(0);
         DayStatusView skipDay = scheduleView.days().stream()
                 .filter(d -> d.date().equals(skipDate))
@@ -251,7 +251,7 @@ class CalendarViewServiceTest {
     @Test
     void shouldApplyForceRunDeviation() {
 
-        // Given: Schedule with FORCE_RUN deviation on Jan 4 (Saturday)
+        // given - Schedule with FORCE_RUN deviation on Jan 4 (Saturday)
         LocalDate forceRunDate = LocalDate.of(2025, 1, 4);
         YearMonth yearMonth = YearMonth.of(2025, 1);
 
@@ -277,11 +277,11 @@ class CalendarViewServiceTest {
                     return dayOfWeek >= 1 && dayOfWeek <= 5; // Weekdays only
                 });
 
-        // When: Generating calendar
+        // when - Generating calendar
         MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
-        // Then: Jan 4 (Saturday) should be FORCE_RUN (deviation overrides rule)
+        // then - Jan 4 (Saturday) should be FORCE_RUN (deviation overrides rule)
         ScheduleMonthView scheduleView = result.schedules().get(0);
         DayStatusView forceRunDay = scheduleView.days().stream()
                 .filter(d -> d.date().equals(forceRunDate))
@@ -294,7 +294,7 @@ class CalendarViewServiceTest {
 
     @Test
     void shouldSkipScheduleWithNoRule() {
-        // Given: Schedule exists but has no rule
+        // given - Schedule exists but has no rule
         YearMonth yearMonth = YearMonth.of(2025, 1);
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
@@ -302,29 +302,29 @@ class CalendarViewServiceTest {
                 .thenReturn(Optional.of(testVersion));
         when(ruleRepository.findByVersionId(versionId)).thenReturn(Optional.empty());
 
-        // When: Generating calendar
+        // when - Generating calendar
         MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
-        // Then: Should return empty calendar (schedule skipped)
+        // then - Should return empty calendar (schedule skipped)
         assertNotNull(result);
         assertThat(result.schedules()).isEmpty();
     }
 
     @Test
     void shouldSkipScheduleWithNoVersion() {
-        // Given: Schedule exists but has no active version
+        // given - Schedule exists but has no active version
         YearMonth yearMonth = YearMonth.of(2025, 1);
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
         when(versionRepository.findByScheduleIdAndActiveTrue(scheduleId))
                 .thenReturn(Optional.empty());
 
-        // When: Generating calendar
+        // when - Generating calendar
         MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
-        // Then: Should return empty calendar (schedule skipped)
+        // then - Should return empty calendar (schedule skipped)
         assertNotNull(result);
         assertThat(result.schedules()).isEmpty();
     }
@@ -377,7 +377,7 @@ class CalendarViewServiceTest {
 
     @Test
     void shouldGenerateFullMonthOfDays() {
-        // Given: A schedule for February 2025 (28 days)
+        // given - A schedule for February 2025 (28 days)
         YearMonth yearMonth = YearMonth.of(2025, 2);
 
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(testSchedule));
@@ -390,11 +390,11 @@ class CalendarViewServiceTest {
         when(ruleEngine.shouldRun(any(Rule.class), any(LocalDate.class)))
                 .thenReturn(true); // All days run
 
-        // When: Generating calendar
+        // when - Generating calendar
         MultiScheduleCalendarView result = service.getMultiScheduleCalendar(
                 List.of(scheduleId), yearMonth, true);
 
-        // Then: Should have exactly 28 days
+        // then - Should have exactly 28 days
         assertNotNull(result);
         ScheduleMonthView scheduleView = result.schedules().get(0);
         assertThat(scheduleView.days()).hasSize(28);

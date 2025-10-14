@@ -19,9 +19,9 @@ class LocalProfilePortTest {
 
     @Test
     void shouldStartOnPort8080WithH2Profile() {
-        // Given: Application started with H2 profile
+        // given - Application started with H2 profile
 
-        // Then: Port should be 8080 as configured in application-h2.yml
+        // then - Port should be 8080 as configured in application-h2.yml
         assertThat(port).isEqualTo(8080);
 
         System.out.println("Application started on configured port (H2 profile): " + port);

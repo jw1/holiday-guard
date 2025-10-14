@@ -48,37 +48,37 @@ class CalendarTest {
     @Test
     void shouldRunOnSingleDate_whenRuleMatches() {
 
-        // Given: calendar with weekdays-only rule
+        // given - calendar with weekdays-only rule
         Calendar calendar = new Calendar(schedule, weekdaysRule, emptyDeviations, mockRuleEvaluator);
         LocalDate monday = LocalDate.of(2025, 1, 6); // known "Monday"
         mockRuleEvaluator.setResult(true);
 
-        // When: Checking if should run on Monday
+        // when - Checking if should run on Monday
         boolean result = calendar.shouldRun(monday);
 
-        // Then: Should return true
+        // then - Should return true
         assertTrue(result);
         assertThat(mockRuleEvaluator.getLastQueriedDate()).isEqualTo(monday);
     }
 
     @Test
     void shouldNotRunOnSingleDate_whenRuleDoesNotMatch() {
-        // Given: A calendar with weekdays-only rule
+        // given - A calendar with weekdays-only rule
         Calendar calendar = new Calendar(schedule, weekdaysRule, emptyDeviations, mockRuleEvaluator);
         LocalDate saturday = LocalDate.of(2025, 1, 4); // Saturday
         mockRuleEvaluator.setResult(false);
 
-        // When: Checking if should run on Saturday
+        // when - Checking if should run on Saturday
         boolean result = calendar.shouldRun(saturday);
 
-        // Then: Should return false
+        // then - Should return false
         assertFalse(result);
         assertThat(mockRuleEvaluator.getLastQueriedDate()).isEqualTo(saturday);
     }
 
     @Test
     void shouldApplySkipDeviation_overridingRule() {
-        // Given: A calendar with a SKIP deviation on Monday
+        // given - A calendar with a SKIP deviation on Monday
         LocalDate monday = LocalDate.of(2025, 1, 6);
         Deviation skipDeviation = Deviation.builder()
                 .deviationDate(monday)
@@ -89,16 +89,16 @@ class CalendarTest {
         Calendar calendar = new Calendar(schedule, weekdaysRule, List.of(skipDeviation), mockRuleEvaluator);
         mockRuleEvaluator.setResult(true); // Rule says run
 
-        // When: Checking if should run on Monday (with skip deviation)
+        // when - Checking if should run on Monday (with skip deviation)
         boolean result = calendar.shouldRun(monday);
 
-        // Then: Deviation overrides rule, should NOT run
+        // then - Deviation overrides rule, should NOT run
         assertFalse(result);
     }
 
     @Test
     void shouldApplyForceRunDeviation_overridingRule() {
-        // Given: A calendar with a FORCE_RUN deviation on Saturday
+        // given - A calendar with a FORCE_RUN deviation on Saturday
         LocalDate saturday = LocalDate.of(2025, 1, 4);
         Deviation forceRunDeviation = Deviation.builder()
                 .scheduleId(1L)
@@ -111,16 +111,16 @@ class CalendarTest {
         Calendar calendar = new Calendar(schedule, weekdaysRule, List.of(forceRunDeviation), mockRuleEvaluator);
         mockRuleEvaluator.setResult(false); // Rule says don't run
 
-        // When: Checking if should run on Saturday (with force run deviation)
+        // when - Checking if should run on Saturday (with force run deviation)
         boolean result = calendar.shouldRun(saturday);
 
-        // Then: Deviation overrides rule, SHOULD run
+        // then - Deviation overrides rule, SHOULD run
         assertTrue(result);
     }
 
     @Test
     void shouldRunOnDateRange_returnsCorrectMap() {
-        // Given: A calendar and a date range
+        // given - A calendar and a date range
         Calendar calendar = new Calendar(schedule, weekdaysRule, emptyDeviations, mockRuleEvaluator);
         LocalDate start = LocalDate.of(2025, 1, 6); // Monday
         LocalDate end = LocalDate.of(2025, 1, 10);   // Friday
@@ -131,10 +131,10 @@ class CalendarTest {
             return dayOfWeek >= 1 && dayOfWeek <= 5; // Mon-Fri
         });
 
-        // When: Checking should run for date range
+        // when - Checking should run for date range
         Map<LocalDate, Boolean> results = calendar.shouldRun(start, end);
 
-        // Then: Should return correct results for each day
+        // then - Should return correct results for each day
         assertThat(results).hasSize(5);
         assertTrue(results.get(LocalDate.of(2025, 1, 6)));  // Mon
         assertTrue(results.get(LocalDate.of(2025, 1, 7)));  // Tue
@@ -145,7 +145,7 @@ class CalendarTest {
 
     @Test
     void dateRangeShouldRespectDeviations() {
-        // Given: A calendar with deviation on Wednesday
+        // given - A calendar with deviation on Wednesday
         LocalDate wednesday = LocalDate.of(2025, 1, 8);
         Deviation skipWednesday = Deviation.builder()
                 .scheduleId(1L)
@@ -164,10 +164,10 @@ class CalendarTest {
             return dayOfWeek >= 1 && dayOfWeek <= 5; // All weekdays
         });
 
-        // When: Checking range
+        // when - Checking range
         Map<LocalDate, Boolean> results = calendar.shouldRun(start, end);
 
-        // Then: Wednesday should be false due to deviation
+        // then - Wednesday should be false due to deviation
         assertTrue(results.get(LocalDate.of(2025, 1, 6)));  // Mon - true
         assertTrue(results.get(LocalDate.of(2025, 1, 7)));  // Tue - true
         assertFalse(results.get(LocalDate.of(2025, 1, 8))); // Wed - false (deviation)
@@ -177,16 +177,16 @@ class CalendarTest {
 
     @Test
     void bothMethodsUseConsistentAlgorithm() {
-        // Given: Same calendar and date
+        // given - Same calendar and date
         Calendar calendar = new Calendar(schedule, weekdaysRule, emptyDeviations, mockRuleEvaluator);
         LocalDate testDate = LocalDate.of(2025, 1, 6); // Monday
         mockRuleEvaluator.setResult(true);
 
-        // When: Querying single date and also querying as range
+        // when - Querying single date and also querying as range
         boolean singleResult = calendar.shouldRun(testDate);
         Map<LocalDate, Boolean> rangeResult = calendar.shouldRun(testDate, testDate);
 
-        // Then: Both should return same result
+        // then - Both should return same result
         assertThat(singleResult).isEqualTo(rangeResult.get(testDate));
 
         // Try with multiple dates to ensure consistency
@@ -209,21 +209,21 @@ class CalendarTest {
 
     @Test
     void emptyDateRange_returnsEmptyMap() {
-        // Given: Calendar and invalid date range (end before start)
+        // given - Calendar and invalid date range (end before start)
         Calendar calendar = new Calendar(schedule, weekdaysRule, emptyDeviations, mockRuleEvaluator);
         LocalDate start = LocalDate.of(2025, 1, 10);
         LocalDate end = LocalDate.of(2025, 1, 5);
 
-        // When: Querying invalid range
+        // when - Querying invalid range
         Map<LocalDate, Boolean> results = calendar.shouldRun(start, end);
 
-        // Then: Should return empty map
+        // then - Should return empty map
         assertThat(results).isEmpty();
     }
 
     @Test
     void toJsonSerializesCompleteState() throws Exception {
-        // Given: A calendar with complete state (schedule, rule, deviations)
+        // given - A calendar with complete state (schedule, rule, deviations)
         LocalDate monday = LocalDate.of(2025, 1, 6);
         Deviation skipDeviation = Deviation.builder()
                 .id(5L)
@@ -236,10 +236,10 @@ class CalendarTest {
 
         Calendar calendar = new Calendar(schedule, weekdaysRule, List.of(skipDeviation), mockRuleEvaluator);
 
-        // When: Converting to JSON
+        // when - Converting to JSON
         String json = calendar.toJson();
 
-        // Then: JSON should contain all essential fields
+        // then - JSON should contain all essential fields
         assertThat(json).isNotNull();
         assertThat(json).contains("\"name\":\"Payroll Schedule\"");
         assertThat(json).contains("\"ruleType\":\"WEEKDAYS_ONLY\"");
@@ -249,7 +249,7 @@ class CalendarTest {
 
     @Test
     void fromJsonReconstructsCalendar() throws Exception {
-        // Given: A calendar and its JSON representation
+        // given - A calendar and its JSON representation
         LocalDate monday = LocalDate.of(2025, 1, 6);
         Deviation skipDeviation = Deviation.builder()
                 .id(5L)
@@ -263,10 +263,10 @@ class CalendarTest {
         Calendar originalCalendar = new Calendar(schedule, weekdaysRule, List.of(skipDeviation), mockRuleEvaluator);
         String json = originalCalendar.toJson();
 
-        // When: Reconstructing calendar from JSON
+        // when - Reconstructing calendar from JSON
         Calendar reconstructedCalendar = Calendar.fromJson(json, mockRuleEvaluator);
 
-        // Then: Reconstructed calendar should have same state
+        // then - Reconstructed calendar should have same state
         assertThat(reconstructedCalendar.getSchedule().getName()).isEqualTo(schedule.getName());
         assertThat(reconstructedCalendar.getSchedule().getDescription()).isEqualTo(schedule.getDescription());
         assertThat(reconstructedCalendar.getRule().getRuleType()).isEqualTo(weekdaysRule.getRuleType());
@@ -277,7 +277,7 @@ class CalendarTest {
 
     @Test
     void roundTripJsonPreservesCalendarBehavior() throws Exception {
-        // Given: A calendar with specific behavior
+        // given - A calendar with specific behavior
         LocalDate wednesday = LocalDate.of(2025, 1, 8);
         Deviation skipWednesday = Deviation.builder()
                 .scheduleId(1L)
@@ -292,11 +292,11 @@ class CalendarTest {
         // Set up mock to return consistent results
         mockRuleEvaluator.setResultByDay(day -> day.getDayOfWeek().getValue() <= 5);
 
-        // When: Round-tripping through JSON
+        // when - Round-tripping through JSON
         String json = originalCalendar.toJson();
         Calendar reconstructedCalendar = Calendar.fromJson(json, mockRuleEvaluator);
 
-        // Then: Reconstructed calendar should behave identically
+        // then - Reconstructed calendar should behave identically
         LocalDate monday = LocalDate.of(2025, 1, 6);
         LocalDate tuesday = LocalDate.of(2025, 1, 7);
 

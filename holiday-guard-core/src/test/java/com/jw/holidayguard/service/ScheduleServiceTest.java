@@ -219,7 +219,7 @@ class ScheduleServiceTest {
 
     @Test
     void getScheduleCalendar_shouldReturnMonthWithRunDays() {
-        // Given: Schedule with weekdays-only rule for January 2025
+        // given - Schedule with weekdays-only rule for January 2025
         Long scheduleId = 1L;
         Long versionId = 10L;
         YearMonth yearMonth = YearMonth.of(2025, 1);
@@ -256,10 +256,10 @@ class ScheduleServiceTest {
                     return dayOfWeek >= 1 && dayOfWeek <= 5; // Mon-Fri
                 });
 
-        // When: Getting calendar for January 2025
+        // when - Getting calendar for January 2025
         ScheduleMonthDto result = service.getScheduleCalendar(scheduleId, yearMonth);
 
-        // Then: Should return 31 days with correct run/no-run status
+        // then - Should return 31 days with correct run/no-run status
         assertThat(result).isNotNull();
         assertThat(result.getYearMonth()).isEqualTo(yearMonth);
         assertThat(result.getDays()).hasSize(31);
@@ -276,7 +276,7 @@ class ScheduleServiceTest {
 
     @Test
     void getScheduleCalendar_shouldReturnBaseCalendarWithoutDeviations() {
-        // Given: Schedule with SKIP deviation on a weekday
+        // given - Schedule with SKIP deviation on a weekday
         // NOTE: getScheduleCalendar now returns BASE calendar only (no deviations applied)
         // This is intentional for the deviation editor to show the underlying rule state
         Long scheduleId = 1L;
@@ -315,10 +315,10 @@ class ScheduleServiceTest {
                     return dayOfWeek >= 1 && dayOfWeek <= 5;
                 });
 
-        // When: Getting calendar
+        // when - Getting calendar
         ScheduleMonthDto result = service.getScheduleCalendar(scheduleId, yearMonth);
 
-        // Then: Jan 6 (Monday) should be RUN based on base rule (ignoring any deviations)
+        // then - Jan 6 (Monday) should be RUN based on base rule (ignoring any deviations)
         assertThat(result.getDays().get(6)).isEqualTo(com.jw.holidayguard.domain.RunStatus.RUN);
 
         // Jan 7 (Tuesday) should also be RUN (base rule)
@@ -330,7 +330,7 @@ class ScheduleServiceTest {
 
     @Test
     void getScheduleCalendar_shouldThrowExceptionWhenNoActiveVersion() {
-        // Given: Schedule with no active version
+        // given - Schedule with no active version
         Long scheduleId = 1L;
         YearMonth yearMonth = YearMonth.of(2025, 1);
 

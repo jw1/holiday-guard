@@ -22,17 +22,17 @@ class HolidayGuardCLITest {
 
     @Test
     void cli_shouldShowHelpWhenRequested() {
-        // Given: CLI with --help flag
+        // given - CLI with --help flag
         HolidayGuardCLI cli = new HolidayGuardCLI();
         CommandLine cmd = new CommandLine(cli);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         cmd.setOut(new PrintWriter(out, true));
 
-        // When: Executing with --help
+        // when - Executing with --help
         int exitCode = cmd.execute("--help");
 
-        // Then: Shows help and exits successfully
+        // then - Shows help and exits successfully
         assertThat(exitCode).isEqualTo(0);
         String output = out.toString();
         assertThat(output).contains("Usage:");
@@ -42,7 +42,7 @@ class HolidayGuardCLITest {
 
     @Test
     void cli_shouldReturnExitCode0ForScheduleThatShouldRun(@TempDir Path tempDir) throws IOException {
-        // Given: Config with weekdays-only schedule on a Monday
+        // given - Config with weekdays-only schedule on a Monday
         String json = """
             {
               "schedules": [
@@ -57,7 +57,7 @@ class HolidayGuardCLITest {
 
         File configFile = createConfigFile(tempDir, json);
 
-        // When: Querying Monday (should run)
+        // when - Querying Monday (should run)
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "Test Schedule";
         cli.dateInput = "2025-10-13"; // Monday
@@ -66,13 +66,13 @@ class HolidayGuardCLITest {
 
         int exitCode = cli.call();
 
-        // Then: Exit code is 0 (run)
+        // then - Exit code is 0 (run)
         assertThat(exitCode).isEqualTo(0);
     }
 
     @Test
     void cli_shouldReturnExitCode1ForScheduleThatShouldSkip(@TempDir Path tempDir) throws IOException {
-        // Given: Config with weekdays-only schedule on a Saturday
+        // given - Config with weekdays-only schedule on a Saturday
         String json = """
             {
               "schedules": [
@@ -87,7 +87,7 @@ class HolidayGuardCLITest {
 
         File configFile = createConfigFile(tempDir, json);
 
-        // When: Querying Saturday (should skip)
+        // when - Querying Saturday (should skip)
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "Test Schedule";
         cli.dateInput = "2025-10-18"; // Saturday
@@ -96,28 +96,28 @@ class HolidayGuardCLITest {
 
         int exitCode = cli.call();
 
-        // Then: Exit code is 1 (skip)
+        // then - Exit code is 1 (skip)
         assertThat(exitCode).isEqualTo(1);
     }
 
     @Test
     void cli_shouldReturnExitCode2ForMissingConfigFile() {
-        // Given: Non-existent config file
+        // given - Non-existent config file
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "Test Schedule";
         cli.configFile = new File("/does/not/exist.json");
         cli.quiet = true;
 
-        // When: Executing
+        // when - Executing
         int exitCode = cli.call();
 
-        // Then: Exit code is 2 (error)
+        // then - Exit code is 2 (error)
         assertThat(exitCode).isEqualTo(2);
     }
 
     @Test
     void cli_shouldReturnExitCode2ForNonExistentSchedule(@TempDir Path tempDir) throws IOException {
-        // Given: Config without target schedule
+        // given - Config without target schedule
         String json = """
             {
               "schedules": [
@@ -132,7 +132,7 @@ class HolidayGuardCLITest {
 
         File configFile = createConfigFile(tempDir, json);
 
-        // When: Querying non-existent schedule
+        // when - Querying non-existent schedule
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "Does Not Exist";
         cli.configFile = configFile;
@@ -140,13 +140,13 @@ class HolidayGuardCLITest {
 
         int exitCode = cli.call();
 
-        // Then: Exit code is 2 (error)
+        // then - Exit code is 2 (error)
         assertThat(exitCode).isEqualTo(2);
     }
 
     @Test
     void cli_shouldOutputTextFormatByDefault(@TempDir Path tempDir) throws IOException {
-        // Given: Valid config
+        // given - Valid config
         String json = """
             {
               "schedules": [
@@ -167,7 +167,7 @@ class HolidayGuardCLITest {
         System.setOut(new PrintStream(out));
 
         try {
-            // When: Executing with text format (default)
+            // when - Executing with text format (default)
             HolidayGuardCLI cli = new HolidayGuardCLI();
             cli.scheduleName = "Test Schedule";
             cli.dateInput = "2025-10-13";
@@ -176,7 +176,7 @@ class HolidayGuardCLITest {
 
             cli.call();
 
-            // Then: Output is human-readable text
+            // then - Output is human-readable text
             String output = out.toString();
             assertThat(output).contains("Schedule:");
             assertThat(output).contains("Date:");
@@ -189,7 +189,7 @@ class HolidayGuardCLITest {
 
     @Test
     void cli_shouldOutputJsonFormat(@TempDir Path tempDir) throws IOException {
-        // Given: Valid config
+        // given - Valid config
         String json = """
             {
               "schedules": [
@@ -210,7 +210,7 @@ class HolidayGuardCLITest {
         System.setOut(new PrintStream(out));
 
         try {
-            // When: Executing with JSON format
+            // when - Executing with JSON format
             HolidayGuardCLI cli = new HolidayGuardCLI();
             cli.scheduleName = "Test Schedule";
             cli.dateInput = "2025-10-13";
@@ -219,7 +219,7 @@ class HolidayGuardCLITest {
 
             cli.call();
 
-            // Then: Output is valid JSON
+            // then - Output is valid JSON
             String output = out.toString().trim();
             assertThat(output).startsWith("{");
             assertThat(output).endsWith("}");
@@ -234,7 +234,7 @@ class HolidayGuardCLITest {
 
     @Test
     void cli_shouldHandleDeviations(@TempDir Path tempDir) throws IOException {
-        // Given: Schedule with FORCE_SKIP deviation on Christmas
+        // given - Schedule with FORCE_SKIP deviation on Christmas
         String json = """
             {
               "schedules": [
@@ -255,7 +255,7 @@ class HolidayGuardCLITest {
 
         File configFile = createConfigFile(tempDir, json);
 
-        // When: Querying Christmas (Thursday, but has FORCE_SKIP)
+        // when - Querying Christmas (Thursday, but has FORCE_SKIP)
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "Payroll";
         cli.dateInput = "2025-12-25";
@@ -264,13 +264,13 @@ class HolidayGuardCLITest {
 
         int exitCode = cli.call();
 
-        // Then: Exit code is 1 (skip due to deviation)
+        // then - Exit code is 1 (skip due to deviation)
         assertThat(exitCode).isEqualTo(1);
     }
 
     @Test
     void cli_shouldHandleForceRunDeviation(@TempDir Path tempDir) throws IOException {
-        // Given: Schedule with FORCE_RUN on weekend
+        // given - Schedule with FORCE_RUN on weekend
         String json = """
             {
               "schedules": [
@@ -291,7 +291,7 @@ class HolidayGuardCLITest {
 
         File configFile = createConfigFile(tempDir, json);
 
-        // When: Querying Saturday (weekend, but has FORCE_RUN)
+        // when - Querying Saturday (weekend, but has FORCE_RUN)
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "Emergency";
         cli.dateInput = "2025-10-18";
@@ -300,13 +300,13 @@ class HolidayGuardCLITest {
 
         int exitCode = cli.call();
 
-        // Then: Exit code is 0 (run due to deviation)
+        // then - Exit code is 0 (run due to deviation)
         assertThat(exitCode).isEqualTo(0);
     }
 
     @Test
     void cli_shouldDefaultToToday(@TempDir Path tempDir) throws IOException {
-        // Given: Config without date specified
+        // given - Config without date specified
         String json = """
             {
               "schedules": [
@@ -321,7 +321,7 @@ class HolidayGuardCLITest {
 
         File configFile = createConfigFile(tempDir, json);
 
-        // When: Not specifying date (defaults to "today")
+        // when - Not specifying date (defaults to "today")
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "Test";
         cli.dateInput = "today"; // Explicit default
@@ -330,13 +330,13 @@ class HolidayGuardCLITest {
 
         int exitCode = cli.call();
 
-        // Then: Executes successfully
+        // then - Executes successfully
         assertThat(exitCode).isIn(0, 1); // Depends on today's date
     }
 
     @Test
     void cli_shouldBeScheduleNameCaseInsensitive(@TempDir Path tempDir) throws IOException {
-        // Given: Schedule with specific casing
+        // given - Schedule with specific casing
         String json = """
             {
               "schedules": [
@@ -351,7 +351,7 @@ class HolidayGuardCLITest {
 
         File configFile = createConfigFile(tempDir, json);
 
-        // When: Querying with different casing
+        // when - Querying with different casing
         HolidayGuardCLI cli = new HolidayGuardCLI();
         cli.scheduleName = "payroll schedule"; // lowercase
         cli.dateInput = "2025-10-13";
@@ -360,7 +360,7 @@ class HolidayGuardCLITest {
 
         int exitCode = cli.call();
 
-        // Then: Finds schedule successfully
+        // then - Finds schedule successfully
         assertThat(exitCode).isEqualTo(0);
     }
 

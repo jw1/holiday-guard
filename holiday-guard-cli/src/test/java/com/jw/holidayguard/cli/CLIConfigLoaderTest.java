@@ -18,7 +18,7 @@ class CLIConfigLoaderTest {
 
     @Test
     void loadConfig_shouldParseValidJsonFile(@TempDir Path tempDir) throws IOException {
-        // Given: Valid JSON config file
+        // given - Valid JSON config file
         String json = """
             {
               "schedules": [
@@ -43,10 +43,10 @@ class CLIConfigLoaderTest {
         File configFile = tempDir.resolve("test-config.json").toFile();
         Files.writeString(configFile.toPath(), json);
 
-        // When: Loading config
+        // when - Loading config
         CLIConfig config = loader.loadConfig(configFile);
 
-        // Then: Config is parsed correctly
+        // then - Config is parsed correctly
         assertThat(config.getSchedules()).hasSize(1);
 
         CLIConfig.ScheduleConfig schedule = config.getSchedules().get(0);
@@ -63,7 +63,7 @@ class CLIConfigLoaderTest {
 
     @Test
     void loadConfig_shouldParseMultipleSchedules(@TempDir Path tempDir) throws IOException {
-        // Given: Config with multiple schedules
+        // given - Config with multiple schedules
         String json = """
             {
               "schedules": [
@@ -84,17 +84,17 @@ class CLIConfigLoaderTest {
         File configFile = tempDir.resolve("multi-config.json").toFile();
         Files.writeString(configFile.toPath(), json);
 
-        // When: Loading config
+        // when - Loading config
         CLIConfig config = loader.loadConfig(configFile);
 
-        // Then: Both schedules are loaded
+        // then - Both schedules are loaded
         assertThat(config.getSchedules()).hasSize(2);
         assertThat(config.getScheduleNames()).containsExactly("Schedule 1", "Schedule 2");
     }
 
     @Test
     void loadConfig_shouldHandleEmptyDeviations(@TempDir Path tempDir) throws IOException {
-        // Given: Schedule without deviations
+        // given - Schedule without deviations
         String json = """
             {
               "schedules": [
@@ -109,16 +109,16 @@ class CLIConfigLoaderTest {
         File configFile = tempDir.resolve("no-deviations.json").toFile();
         Files.writeString(configFile.toPath(), json);
 
-        // When: Loading config
+        // when - Loading config
         CLIConfig config = loader.loadConfig(configFile);
 
-        // Then: Schedule has empty deviations list
+        // then - Schedule has empty deviations list
         assertThat(config.getSchedules().get(0).getDeviations()).isEmpty();
     }
 
     @Test
     void loadConfig_shouldThrowExceptionForInvalidJson(@TempDir Path tempDir) throws IOException {
-        // Given: Invalid JSON
+        // given - Invalid JSON
         String invalidJson = "{ invalid json }";
         File configFile = tempDir.resolve("invalid.json").toFile();
         Files.writeString(configFile.toPath(), invalidJson);
@@ -131,7 +131,7 @@ class CLIConfigLoaderTest {
 
     @Test
     void loadConfig_shouldThrowExceptionForNonExistentFile() {
-        // Given: Non-existent file
+        // given - Non-existent file
         File nonExistent = new File("/does/not/exist.json");
 
         // When/Then: Exception thrown
@@ -141,7 +141,7 @@ class CLIConfigLoaderTest {
 
     @Test
     void findSchedule_shouldReturnScheduleByName(@TempDir Path tempDir) throws IOException {
-        // Given: Config with multiple schedules
+        // given - Config with multiple schedules
         String json = """
             {
               "schedules": [
@@ -156,17 +156,17 @@ class CLIConfigLoaderTest {
         Files.writeString(configFile.toPath(), json);
         CLIConfig config = loader.loadConfig(configFile);
 
-        // When: Finding schedule
+        // when - Finding schedule
         CLIConfig.ScheduleConfig found = config.findSchedule("Beta");
 
-        // Then: Correct schedule returned
+        // then - Correct schedule returned
         assertThat(found).isNotNull();
         assertThat(found.getName()).isEqualTo("Beta");
     }
 
     @Test
     void findSchedule_shouldBeCaseInsensitive(@TempDir Path tempDir) throws IOException {
-        // Given: Schedule with specific casing
+        // given - Schedule with specific casing
         String json = """
             {
               "schedules": [
@@ -179,12 +179,12 @@ class CLIConfigLoaderTest {
         Files.writeString(configFile.toPath(), json);
         CLIConfig config = loader.loadConfig(configFile);
 
-        // When: Searching with different case
+        // when - Searching with different case
         CLIConfig.ScheduleConfig found1 = config.findSchedule("payroll schedule");
         CLIConfig.ScheduleConfig found2 = config.findSchedule("PAYROLL SCHEDULE");
         CLIConfig.ScheduleConfig found3 = config.findSchedule("Payroll Schedule");
 
-        // Then: All variations find the schedule
+        // then - All variations find the schedule
         assertThat(found1).isNotNull();
         assertThat(found2).isNotNull();
         assertThat(found3).isNotNull();
@@ -192,7 +192,7 @@ class CLIConfigLoaderTest {
 
     @Test
     void findSchedule_shouldReturnNullForNonExistent(@TempDir Path tempDir) throws IOException {
-        // Given: Config without target schedule
+        // given - Config without target schedule
         String json = """
             {
               "schedules": [
@@ -205,10 +205,10 @@ class CLIConfigLoaderTest {
         Files.writeString(configFile.toPath(), json);
         CLIConfig config = loader.loadConfig(configFile);
 
-        // When: Searching for non-existent schedule
+        // when - Searching for non-existent schedule
         CLIConfig.ScheduleConfig notFound = config.findSchedule("Does Not Exist");
 
-        // Then: Returns null
+        // then - Returns null
         assertThat(notFound).isNull();
     }
 }

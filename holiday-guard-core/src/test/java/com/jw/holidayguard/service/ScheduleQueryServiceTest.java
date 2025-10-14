@@ -78,7 +78,7 @@ class ScheduleQueryServiceTest {
 
     @Test
     void shouldReturnTrueWhenAllRulesMatch() {
-        // Given: All rules match for the given date
+        // given - All rules match for the given date
         LocalDate queryDate = LocalDate.now().plusDays(5);
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
 
@@ -93,10 +93,10 @@ class ScheduleQueryServiceTest {
         when(queryLogRepository.save(any(QueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When: Querying should I run today
+        // when - Querying should I run today
         ShouldRunQueryResponse response = service.shouldRunToday(scheduleId, request);
 
-        // Then: Should return true with explanation
+        // then - Should return true with explanation
         assertNotNull(response);
         assertTrue(response.isShouldRun());
         assertEquals("Scheduled to run - rule matches", response.getReason());
@@ -114,7 +114,7 @@ class ScheduleQueryServiceTest {
 
     @Test
     void shouldReturnFalseWhenAnyRuleFails() {
-        // Given: At least one rule fails for the given date
+        // given - At least one rule fails for the given date
         LocalDate queryDate = LocalDate.now().plusDays(10);
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
 
@@ -129,10 +129,10 @@ class ScheduleQueryServiceTest {
         when(queryLogRepository.save(any(QueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When: Querying should I run today
+        // when - Querying should I run today
         ShouldRunQueryResponse response = service.shouldRunToday(scheduleId, request);
 
-        // Then: Should return false with explanation
+        // then - Should return false with explanation
         assertNotNull(response);
         assertFalse(response.isShouldRun());
         assertEquals("Not scheduled to run - rule does not match", response.getReason());
@@ -148,7 +148,7 @@ class ScheduleQueryServiceTest {
 
     @Test
     void shouldApplySkipOverrideWhenPresent() {
-        // Given: A date exists in calendar but has a SKIP override
+        // given - A date exists in calendar but has a SKIP override
         LocalDate queryDate = LocalDate.now().plusDays(15); // Future date for holiday simulation
         ShouldRunQueryRequest request = new ShouldRunQueryRequest(queryDate, "payroll-service");
 
@@ -172,10 +172,10 @@ class ScheduleQueryServiceTest {
         when(queryLogRepository.save(any(QueryLog.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When: Querying should I run today
+        // when - Querying should I run today
         ShouldRunQueryResponse response = service.shouldRunToday(scheduleId, request);
 
-        // Then: Should return false due to override
+        // then - Should return false due to override
         assertNotNull(response);
         assertFalse(response.isShouldRun());
         assertEquals("Deviation applied: Independence Day - holiday skip", response.getReason());

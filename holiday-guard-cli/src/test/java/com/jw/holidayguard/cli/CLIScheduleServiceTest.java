@@ -22,7 +22,7 @@ class CLIScheduleServiceTest {
 
     @Test
     void buildCalendar_shouldCreateCalendarFromWeekdaysOnlySchedule() {
-        // Given: Weekdays-only schedule config
+        // given - Weekdays-only schedule config
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Test Schedule");
         config.setDescription("Weekdays only");
@@ -32,10 +32,10 @@ class CLIScheduleServiceTest {
         config.setRule(rule);
         config.setDeviations(new ArrayList<>());
 
-        // When: Building calendar
+        // when - Building calendar
         Calendar calendar = service.buildCalendar(config);
 
-        // Then: Calendar evaluates weekdays correctly
+        // then - Calendar evaluates weekdays correctly
         LocalDate monday = LocalDate.of(2025, 10, 13); // Monday
         LocalDate saturday = LocalDate.of(2025, 10, 18); // Saturday
         LocalDate sunday = LocalDate.of(2025, 10, 19); // Sunday
@@ -47,7 +47,7 @@ class CLIScheduleServiceTest {
 
     @Test
     void buildCalendar_shouldApplyDeviations() {
-        // Given: Schedule with FORCE_SKIP deviation
+        // given - Schedule with FORCE_SKIP deviation
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Test Schedule");
 
@@ -63,16 +63,16 @@ class CLIScheduleServiceTest {
 
         config.setDeviations(List.of(deviation));
 
-        // When: Building calendar
+        // when - Building calendar
         Calendar calendar = service.buildCalendar(config);
 
-        // Then: Deviation overrides weekday rule
+        // then - Deviation overrides weekday rule
         assertThat(calendar.shouldRun(christmas)).isFalse();
     }
 
     @Test
     void buildCalendar_shouldHandleForceRunDeviation() {
-        // Given: Schedule with FORCE_RUN on weekend
+        // given - Schedule with FORCE_RUN on weekend
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Test Schedule");
 
@@ -88,16 +88,16 @@ class CLIScheduleServiceTest {
 
         config.setDeviations(List.of(deviation));
 
-        // When: Building calendar
+        // when - Building calendar
         Calendar calendar = service.buildCalendar(config);
 
-        // Then: Weekend day runs due to FORCE_RUN
+        // then - Weekend day runs due to FORCE_RUN
         assertThat(calendar.shouldRun(saturday)).isTrue();
     }
 
     @Test
     void buildCalendar_shouldHandleCronExpression() {
-        // Given: Daily cron schedule
+        // given - Daily cron schedule
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Daily Backup");
 
@@ -107,10 +107,10 @@ class CLIScheduleServiceTest {
         config.setRule(rule);
         config.setDeviations(new ArrayList<>());
 
-        // When: Building calendar
+        // when - Building calendar
         Calendar calendar = service.buildCalendar(config);
 
-        // Then: Should run every day
+        // then - Should run every day
         LocalDate weekday = LocalDate.of(2025, 10, 13);
         LocalDate weekend = LocalDate.of(2025, 10, 18);
 
@@ -120,7 +120,7 @@ class CLIScheduleServiceTest {
 
     @Test
     void buildCalendar_shouldHandleNoDaysRule() {
-        // Given: NO_DAYS schedule
+        // given - NO_DAYS schedule
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Disabled Schedule");
 
@@ -129,17 +129,17 @@ class CLIScheduleServiceTest {
         config.setRule(rule);
         config.setDeviations(new ArrayList<>());
 
-        // When: Building calendar
+        // when - Building calendar
         Calendar calendar = service.buildCalendar(config);
 
-        // Then: Never runs
+        // then - Never runs
         LocalDate anyDay = LocalDate.of(2025, 10, 13);
         assertThat(calendar.shouldRun(anyDay)).isFalse();
     }
 
     @Test
     void determineRunStatus_shouldReturnRunForWeekday() {
-        // Given: Weekdays-only schedule
+        // given - Weekdays-only schedule
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Test");
 
@@ -151,16 +151,16 @@ class CLIScheduleServiceTest {
         Calendar calendar = service.buildCalendar(config);
         LocalDate monday = LocalDate.of(2025, 10, 13);
 
-        // When: Determining status
+        // when - Determining status
         RunStatus status = service.determineRunStatus(calendar, config, monday);
 
-        // Then: Status is RUN
+        // then - Status is RUN
         assertThat(status).isEqualTo(RunStatus.RUN);
     }
 
     @Test
     void determineRunStatus_shouldReturnSkipForWeekend() {
-        // Given: Weekdays-only schedule
+        // given - Weekdays-only schedule
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Test");
 
@@ -172,16 +172,16 @@ class CLIScheduleServiceTest {
         Calendar calendar = service.buildCalendar(config);
         LocalDate saturday = LocalDate.of(2025, 10, 18);
 
-        // When: Determining status
+        // when - Determining status
         RunStatus status = service.determineRunStatus(calendar, config, saturday);
 
-        // Then: Status is SKIP
+        // then - Status is SKIP
         assertThat(status).isEqualTo(RunStatus.SKIP);
     }
 
     @Test
     void determineRunStatus_shouldReturnForceSkipForDeviation() {
-        // Given: Schedule with FORCE_SKIP deviation
+        // given - Schedule with FORCE_SKIP deviation
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Test");
 
@@ -199,16 +199,16 @@ class CLIScheduleServiceTest {
 
         Calendar calendar = service.buildCalendar(config);
 
-        // When: Determining status
+        // when - Determining status
         RunStatus status = service.determineRunStatus(calendar, config, christmas);
 
-        // Then: Status is FORCE_SKIP
+        // then - Status is FORCE_SKIP
         assertThat(status).isEqualTo(RunStatus.FORCE_SKIP);
     }
 
     @Test
     void determineRunStatus_shouldReturnForceRunForDeviation() {
-        // Given: Schedule with FORCE_RUN on weekend
+        // given - Schedule with FORCE_RUN on weekend
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Test");
 
@@ -226,16 +226,16 @@ class CLIScheduleServiceTest {
 
         Calendar calendar = service.buildCalendar(config);
 
-        // When: Determining status
+        // when - Determining status
         RunStatus status = service.determineRunStatus(calendar, config, saturday);
 
-        // Then: Status is FORCE_RUN
+        // then - Status is FORCE_RUN
         assertThat(status).isEqualTo(RunStatus.FORCE_RUN);
     }
 
     @Test
     void determineRunStatus_shouldHandleMultipleDeviations() {
-        // Given: Schedule with multiple deviations
+        // given - Schedule with multiple deviations
         CLIConfig.ScheduleConfig config = new CLIConfig.ScheduleConfig();
         config.setName("Test");
 
@@ -260,11 +260,11 @@ class CLIScheduleServiceTest {
 
         Calendar calendar = service.buildCalendar(config);
 
-        // When: Checking both dates
+        // when - Checking both dates
         RunStatus status1 = service.determineRunStatus(calendar, config, date1);
         RunStatus status2 = service.determineRunStatus(calendar, config, date2);
 
-        // Then: Both have correct deviation status
+        // then - Both have correct deviation status
         assertThat(status1).isEqualTo(RunStatus.FORCE_SKIP);
         assertThat(status2).isEqualTo(RunStatus.FORCE_SKIP);
     }

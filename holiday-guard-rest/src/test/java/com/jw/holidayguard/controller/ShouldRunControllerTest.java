@@ -1,7 +1,5 @@
 package com.jw.holidayguard.controller;
 
-// TODO: Revisit tests in this file. They are failing due to complex interactions with the MockMvc security context.
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jw.holidayguard.domain.RunStatus;
 import com.jw.holidayguard.dto.request.ShouldRunQueryRequest;
@@ -21,15 +19,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.context.ContextConfiguration;
-import org.junit.jupiter.api.Disabled;
 import org.springframework.context.annotation.Import;
 
-@Disabled // TODO: Re-enable when MockMvc security context issues are resolved.
 @WebMvcTest(controllers = ShouldRunController.class)
 @ContextConfiguration(classes = ControllerTestConfiguration.class)
 @Import(com.jw.holidayguard.exception.GlobalExceptionHandler.class)
@@ -68,13 +65,14 @@ class ShouldRunControllerTest {
 
         // then - controller handles request & response as expected
         mockMvc.perform(get("/api/v1/schedules/{scheduleId}/should-run", scheduleId)
-                .param("client", "payroll-service"))
+                .param("client", "payroll-service")
+                .with(user("user")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.scheduleId").value(scheduleId.toString()))
                 .andExpect(jsonPath("$.queryDate").value(today.toString()))
                 .andExpect(jsonPath("$.shouldRun").value(true))
                 .andExpect(jsonPath("$.reason").value("Scheduled to run - found in materialized calendar"))
-                .andExpect(jsonPath("$.overrideApplied").value(false));
+                .andExpect(jsonPath("$.deviationApplied").value(false));
     }
 
     @Test
@@ -100,14 +98,15 @@ class ShouldRunControllerTest {
             .thenReturn(response);
 
         // then - controller handles request & response as expected
-        mockMvc.perform(get("/api/v1/schedules/{scheduleId}/should-run", scheduleId))
+        mockMvc.perform(get("/api/v1/schedules/{scheduleId}/should-run", scheduleId)
+                .with(user("user")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.shouldRun").value(false));
     }
 
     @Test
     void shouldRunOnSpecificDateWithPostRequest() throws Exception {
-        // Given: POST request with specific date
+        // given - POST request with specific date
         Long scheduleId = 1L;
         Long versionId = 10L;
         LocalDate queryDate = LocalDate.of(2024, 3, 15);
@@ -129,6 +128,7 @@ class ShouldRunControllerTest {
 
         // When & Then: POST request should succeed
         mockMvc.perform(post("/api/v1/schedules/{scheduleId}/should-run", scheduleId)
+                .with(user("user"))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -139,7 +139,7 @@ class ShouldRunControllerTest {
 
     @Test
     void shouldDefaultToTodayWhenQueryDateMissing() throws Exception {
-        // Given: Request with missing queryDate should default to today
+        // given - Request with missing queryDate should default to today
         Long scheduleId = 1L;
         Long versionId = 10L;
         LocalDate today = LocalDate.now();
@@ -163,6 +163,7 @@ class ShouldRunControllerTest {
 
         // When & Then: POST request should succeed and use today
         mockMvc.perform(post("/api/v1/schedules/{scheduleId}/should-run", scheduleId)
+                .with(user("user"))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -173,7 +174,7 @@ class ShouldRunControllerTest {
 
     @Test
     void shouldFailForOutOfBoundsDate() throws Exception {
-        // Given: Request with date too far in future (beyond reasonable planning horizon)
+        // given - Request with date too far in future (beyond reasonable planning horizon)
         Long scheduleId = 1L;
         LocalDate farFuture = LocalDate.now().plusYears(10); // 10 years in future
         
@@ -185,6 +186,7 @@ class ShouldRunControllerTest {
 
         // When & Then: POST request should return bad request for out of bounds date
         mockMvc.perform(post("/api/v1/schedules/{scheduleId}/should-run", scheduleId)
+                .with(user("user"))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))

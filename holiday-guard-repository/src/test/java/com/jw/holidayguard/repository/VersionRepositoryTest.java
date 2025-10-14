@@ -34,17 +34,17 @@ class VersionRepositoryTest {
 
     @Test
     void shouldFindActiveVersionForSchedule() {
-        // Given: A schedule with multiple versions, only one active
+        // given - A schedule with multiple versions, only one active
         Version inactiveVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
         Version activeVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), true);
         
         entityManager.persistAndFlush(inactiveVersion);
         entityManager.persistAndFlush(activeVersion);
 
-        // When: Finding active version
+        // when - Finding active version
         Optional<Version> result = versionRepository.findByScheduleIdAndActiveTrue(testSchedule.getId());
 
-        // Then: Should return the active version
+        // then - Should return the active version
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(activeVersion.getId());
         assertThat(result.get().isActive()).isTrue();
@@ -52,7 +52,7 @@ class VersionRepositoryTest {
 
     @Test
     void shouldReturnAllVersionsOrderedByCreatedAt() {
-        // Given: Multiple versions created at different times
+        // given - Multiple versions created at different times
         Version oldVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
         oldVersion.setCreatedAt(Instant.now().minusSeconds(3600)); // 1 hour ago
         
@@ -62,10 +62,10 @@ class VersionRepositoryTest {
         entityManager.persistAndFlush(oldVersion);
         entityManager.persistAndFlush(newVersion);
 
-        // When: Getting all versions
+        // when - Getting all versions
         List<Version> versions = versionRepository.findByScheduleIdOrderByCreatedAtDesc(testSchedule.getId());
 
-        // Then: Should be ordered by created date descending
+        // then - Should be ordered by created date descending
         assertThat(versions).hasSize(2);
         assertThat(versions.get(0).getId()).isEqualTo(newVersion.getId());
         assertThat(versions.get(1).getId()).isEqualTo(oldVersion.getId());
@@ -73,27 +73,27 @@ class VersionRepositoryTest {
 
     @Test
     void shouldCheckIfActiveVersionExists() {
-        // Given: A schedule with an active version
+        // given - A schedule with an active version
         Version activeVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), true);
         entityManager.persistAndFlush(activeVersion);
 
-        // When: Checking if active version exists
+        // when - Checking if active version exists
         boolean exists = versionRepository.existsByScheduleIdAndActiveTrue(testSchedule.getId());
 
-        // Then: Should return true
+        // then - Should return true
         assertThat(exists).isTrue();
     }
 
     @Test
     void shouldReturnFalseWhenNoActiveVersionExists() {
-        // Given: A schedule with only inactive versions
+        // given - A schedule with only inactive versions
         Version inactiveVersion = ScheduleTestDataFactory.createScheduleVersion(testSchedule.getId(), false);
         entityManager.persistAndFlush(inactiveVersion);
 
-        // When: Checking if active version exists
+        // when - Checking if active version exists
         boolean exists = versionRepository.existsByScheduleIdAndActiveTrue(testSchedule.getId());
 
-        // Then: Should return false
+        // then - Should return false
         assertThat(exists).isFalse();
     }
 }
