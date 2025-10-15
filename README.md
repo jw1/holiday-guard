@@ -24,7 +24,18 @@ The service is designed to run in two modes:
 
 ---
 
-*The majority of this codebase was created using Anthropic Claude and Google Gemini as an evaluation of AI coding tools.*  
+*The majority of this codebase was created using Anthropic Claude and Google Gemini as an evaluation of AI coding tools.*
+
+## 📸 Screenshots
+
+### Dashboard - Today's Run Status
+![Dashboard View](./docs/images/admin_dashboard.png)
+
+### Calendar Viewer - Multi-Schedule Month View
+![Calendar Viewer](./docs/images/admin_schedule_viewer.png)
+
+### CLI Integration
+![CLI Usage](./docs/images/cli.png)
 
 ## 🚀 Quick Start
 
@@ -193,6 +204,11 @@ Response:
 - Deviation management (force run/skip specific dates)
 - Dashboard (today's status for all active schedules)
 - Audit logs (query history)
+
+### Schedule Management
+![Schedule List](./docs/images/admin_schedules_view.png)
+
+*Create, edit, and manage schedules with versioning and audit trails*
 
 **REST API Endpoints**
 - `GET /api/v1/schedules/{id}/should-run` - Query if schedule should run
