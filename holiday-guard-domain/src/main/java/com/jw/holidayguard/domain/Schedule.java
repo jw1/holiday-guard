@@ -63,23 +63,19 @@ public class Schedule {
 
     @PrePersist
     protected void onCreate() {
-        // Note: User tracking uses hardcoded value for v1.0
-        // Future enhancement: Extract from SecurityContext via CurrentUserService
-        // For now, basic auth provides user tracking at API layer
-        var user = "api-user";
         createdAt = Instant.now();
         updatedAt = Instant.now();
-        createdBy = user;
-        updatedBy = user;
+        // Service layer sets createdBy/updatedBy via CurrentUserService.
+        // Fall back to "system" for programmatic creation (e.g. data initializer).
+        if (createdBy == null) createdBy = "system";
+        if (updatedBy == null) updatedBy = "system";
     }
 
     @PreUpdate
     protected void onUpdate() {
-        // Note: User tracking uses hardcoded value for v1.0
-        // Future enhancement: Extract from SecurityContext via CurrentUserService
-        // For now, basic auth provides user tracking at API layer
-        var user = "api-user";
         updatedAt = Instant.now();
-        updatedBy = user;
+        // Service layer sets updatedBy before the transaction commits.
+        // Fall back to "system" only if it was never set.
+        if (updatedBy == null) updatedBy = "system";
     }
 }

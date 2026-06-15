@@ -1,12 +1,14 @@
 package com.jw.holidayguard.service;
 
 import com.jw.holidayguard.domain.Deviation;
-import com.jw.holidayguard.domain.Schedule;
 import com.jw.holidayguard.domain.Rule;
 import com.jw.holidayguard.domain.Version;
 import com.jw.holidayguard.dto.request.CreateDeviationRequest;
 import com.jw.holidayguard.dto.request.CreateRuleRequest;
 import com.jw.holidayguard.dto.request.UpdateRuleRequest;
+import com.jw.holidayguard.dto.response.DeviationResponse;
+import com.jw.holidayguard.dto.response.RuleResponse;
+import com.jw.holidayguard.dto.response.VersionResponse;
 import com.jw.holidayguard.repository.DeviationRepository;
 import com.jw.holidayguard.repository.ScheduleRepository;
 import com.jw.holidayguard.repository.RuleRepository;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -39,8 +43,8 @@ public class ScheduleVersionService {
         this.deviationRepository = deviationRepository;
     }
 
-    public Version updateScheduleRule(Long scheduleId, UpdateRuleRequest request) {
-        Schedule schedule = scheduleRepository.findById(scheduleId)
+    public VersionResponse updateScheduleRule(Long scheduleId, UpdateRuleRequest request) {
+        scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + scheduleId));
 
         // Deactivate current version
@@ -71,17 +75,10 @@ public class ScheduleVersionService {
                 .active(ruleRequest.isActive())
                 .build();
 
-        ruleRepository.save(rule);
-
-        if (null != request.getDeviations()) {
-            log.info("Deviations size:  " + request.getDeviations().size());
-            // log each deviation
-            request.getDeviations().forEach(d -> log.info("asdf " + d));
-        } else {
-            log.warn("devi was null");
-        }
+        Rule savedRule = ruleRepository.save(rule);
 
         // Save deviations for new version (if any)
+        List<Deviation> savedDeviations = new ArrayList<>();
         if (request.getDeviations() != null && !request.getDeviations().isEmpty()) {
             for (CreateDeviationRequest deviationRequest : request.getDeviations()) {
                 Deviation deviation = Deviation.builder()
@@ -94,10 +91,47 @@ public class ScheduleVersionService {
                         .expiresAt(deviationRequest.getExpiresAt())
                         .build();
 
-                deviationRepository.save(deviation);
+                savedDeviations.add(deviationRepository.save(deviation));
             }
         }
 
-        return newVersion;
+        return toVersionResponse(newVersion, savedRule, savedDeviations);
+    }
+
+    private VersionResponse toVersionResponse(Version version, Rule rule, List<Deviation> deviations) {
+        RuleResponse ruleResponse = new RuleResponse(
+                rule.getId(),
+                rule.getScheduleId(),
+                rule.getVersionId(),
+                rule.getRuleType(),
+                rule.getRuleConfig(),
+                rule.getEffectiveFrom(),
+                rule.getCreatedAt(),
+                rule.isActive()
+        );
+
+        List<DeviationResponse> deviationResponses = deviations.stream()
+                .map(d -> new DeviationResponse(
+                        d.getId(),
+                        d.getScheduleId(),
+                        d.getVersionId(),
+                        d.getDeviationDate(),
+                        d.getAction(),
+                        d.getReason(),
+                        d.getCreatedBy(),
+                        d.getCreatedAt(),
+                        d.getExpiresAt()
+                ))
+                .toList();
+
+        return new VersionResponse(
+                version.getId(),
+                version.getScheduleId(),
+                version.getEffectiveFrom(),
+                version.getCreatedAt(),
+                version.isActive(),
+                List.of(ruleResponse),
+                deviationResponses
+        );
     }
 }

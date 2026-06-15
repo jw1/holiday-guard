@@ -85,20 +85,16 @@ class SecurityAuthTest extends ManagementControllerTestBase {
     }
 
     /**
-     * Documents the current PasswordEncoder implementation as a baseline.
+     * Documents the current PasswordEncoder implementation.
      *
-     * <p><strong>This test is a migration forcing function.</strong> It will fail when
-     * Phase 2 of the Spring Boot 4 migration replaces {@code NoOpPasswordEncoder}.
-     * When it fails: update this assertion to reflect the new encoder class name,
-     * and verify the login tests above still pass.
+     * <p>This test is a sentinel: if the encoder changes (e.g. to BCrypt for production),
+     * this fails intentionally — update the assertion and verify login tests still pass.
      */
     @Test
     void passwordEncoder_baseline_documentCurrentEncoder() {
-        // Intentionally uses class name string — NOT an import of NoOpPasswordEncoder —
-        // so this file still compiles after NoOpPasswordEncoder is removed in Spring Security 7.
         assertThat(passwordEncoder.getClass().getSimpleName())
-            .as("PasswordEncoder baseline: currently NoOpPasswordEncoder. " +
-                "UPDATE THIS ASSERTION in Phase 2 when switching to DelegatingPasswordEncoder.")
-            .isEqualTo("NoOpPasswordEncoder");
+            .as("PasswordEncoder is DelegatingPasswordEncoder with {noop} prefix for dev passwords. " +
+                "Update this assertion if switching to a hashing encoder for production.")
+            .isEqualTo("DelegatingPasswordEncoder");
     }
 }

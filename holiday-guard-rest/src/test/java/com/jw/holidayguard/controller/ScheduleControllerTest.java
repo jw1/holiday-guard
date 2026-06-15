@@ -13,8 +13,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -42,30 +40,33 @@ class ScheduleControllerTest extends ManagementControllerTestBase {
 
     @Test
     void createSchedule() throws Exception {
+        // given - a valid create request
         var createRequest = CreateScheduleRequest.builder()
                 .name("US Federal Holidays")
                 .description("Standard US federal holidays")
                 .build();
 
         var savedSchedule = Schedule.builder()
-                .id(null)
                 .name("US Federal Holidays")
                 .description("Standard US federal holidays")
                 .build();
 
         when(service.createSchedule(any(CreateScheduleRequest.class))).thenReturn(savedSchedule);
 
+        // when - posting to create schedule
+        // then - 201 with name in response
         mockMvc.perform(post("/api/v1/schedules")
-                .with(user("admin").roles("ADMIN"))
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createRequest)))
+                        .with(user("admin").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("US Federal Holidays"));
     }
 
     @Test
     void createScheduleWithDuplicateName() throws Exception {
+        // given - a request for a name that already exists
         var createRequest = CreateScheduleRequest.builder()
                 .name("Existing Schedule")
                 .build();
@@ -73,16 +74,19 @@ class ScheduleControllerTest extends ManagementControllerTestBase {
         when(service.createSchedule(any(CreateScheduleRequest.class)))
                 .thenThrow(new DuplicateScheduleException("Existing Schedule"));
 
+        // when - posting to create schedule with duplicate name
+        // then - 409 Conflict
         mockMvc.perform(post("/api/v1/schedules")
-                .with(user("admin").roles("ADMIN"))
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createRequest)))
+                        .with(user("admin").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isConflict());
     }
 
     @Test
     void updateSchedule() throws Exception {
+        // given - an update request for an existing schedule
         Long scheduleId = 1L;
         var updateRequest = UpdateScheduleRequest.builder()
                 .name("Updated Name")
@@ -95,30 +99,33 @@ class ScheduleControllerTest extends ManagementControllerTestBase {
 
         when(service.updateSchedule(eq(scheduleId), any(UpdateScheduleRequest.class))).thenReturn(updatedSchedule);
 
+        // when - putting the updated schedule
+        // then - 200 with the new name
         mockMvc.perform(put("/api/v1/schedules/{id}", scheduleId)
-                .with(user("admin").roles("ADMIN"))
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateRequest)))
+                        .with(user("admin").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Name"));
     }
 
     @Test
     void updateScheduleNotFound() throws Exception {
+        // given - an update request for a schedule that does not exist
         Long scheduleId = 1L;
         var updateRequest = UpdateScheduleRequest.builder().name("Updated Name").build();
 
         when(service.updateSchedule(eq(scheduleId), any(UpdateScheduleRequest.class)))
                 .thenThrow(new ScheduleNotFoundException(scheduleId));
 
+        // when - putting to a non-existent schedule
+        // then - 404
         mockMvc.perform(put("/api/v1/schedules/{id}", scheduleId)
-                .with(user("admin").roles("ADMIN"))
-                .with(csrf())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateRequest)))
+                        .with(user("admin").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound());
     }
-
-    // Other tests omitted for brevity
 }
