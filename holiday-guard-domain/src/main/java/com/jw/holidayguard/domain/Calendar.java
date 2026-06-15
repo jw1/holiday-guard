@@ -1,10 +1,10 @@
 package com.jw.holidayguard.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import lombok.Getter;
+import tools.jackson.core.JacksonException;
 
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
@@ -42,8 +42,7 @@ public class Calendar {
     @JsonIgnore  // Don't serialize the evaluator - it's a strategy, not data
     private final RuleEvaluator ruleEvaluator;
 
-    private static final ObjectMapper mapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+    private static final ObjectMapper mapper = new JsonMapper();
 
     /**
      * Creates a Calendar with the given schedule, rule, and deviations.
@@ -137,7 +136,7 @@ public class Calendar {
     public String toJson() {
         try {
             return mapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Failed to serialize Calendar to JSON", e);
         }
     }
@@ -161,7 +160,7 @@ public class Calendar {
                     data.deviations(),
                     ruleEvaluator);
 
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Failed to deserialize Calendar from JSON", e);
         }
     }

@@ -2,10 +2,13 @@ package com.jw.holidayguard.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
 
 @Data
 @Builder
+@Jacksonized
 public class CreateScheduleRequest {
 
     @NotBlank(message = "Name is required")
@@ -19,7 +22,7 @@ public class CreateScheduleRequest {
 
     @Builder.Default
     private boolean active = true;
-    
+
     private String ruleType;
     private String ruleConfig;
 }

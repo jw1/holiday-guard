@@ -1,17 +1,16 @@
 package com.jw.holidayguard.repository.json;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import tools.jackson.core.JacksonException;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Configuration for JSON file-based repository implementation.
@@ -50,10 +49,7 @@ public class JsonRepositoryConfiguration {
         }
 
         try {
-            ObjectMapper mapper = new ObjectMapper()
-                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-            mapper.registerModule(new JavaTimeModule());
+            ObjectMapper mapper = new JsonMapper();
 
             JsonDataModel data = mapper.readValue(jsonFile, JsonDataModel.class);
 
@@ -65,7 +61,7 @@ public class JsonRepositoryConfiguration {
 
             return data;
 
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Failed to load JSON data from " + jsonFilePath, e);
         }
     }

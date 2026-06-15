@@ -1,13 +1,13 @@
 package com.jw.holidayguard.jackson;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.jw.holidayguard.controller.ControllerTestConfiguration;
 import com.jw.holidayguard.controller.ManagementControllerTestBase;
 import com.jw.holidayguard.controller.ShouldRunController;
 import com.jw.holidayguard.service.ScheduleQueryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
