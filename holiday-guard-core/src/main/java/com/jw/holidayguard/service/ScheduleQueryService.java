@@ -97,9 +97,9 @@ public class ScheduleQueryService {
                     return new ScheduleDashboardView(
                             schedule.getId(),
                             schedule.getName(),
-                            response.getRunStatus(),
-                            response.isShouldRun(),
-                            response.getReason()
+                            response.runStatus(),
+                            response.shouldRun(),
+                            response.reason()
                     );
                 })
                 .collect(Collectors.toList());

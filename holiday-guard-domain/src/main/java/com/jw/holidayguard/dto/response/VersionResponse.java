@@ -1,22 +1,14 @@
 package com.jw.holidayguard.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.Instant;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class VersionResponse {
-
-    private Long id;
-    private Long scheduleId;
-    private Instant effectiveFrom;
-    private Instant createdAt;
-    private boolean active;
-    private List<RuleResponse> rules;
-    private List<DeviationResponse> deviations;
-}
+public record VersionResponse(
+    Long id,
+    Long scheduleId,
+    Instant effectiveFrom,
+    Instant createdAt,
+    boolean active,
+    List<RuleResponse> rules,
+    List<DeviationResponse> deviations
+) {}

@@ -3,6 +3,9 @@ spring:
     name: Holiday Guard
   profiles:
     active: h2  # Default to H2 SQL database. Use -Dspring.profiles.active=json for file-based storage.
+  threads:
+    virtual:
+      enabled: true  # Project Loom: virtual threads for all request handling (Java 21+)
 
 server:
   port: 0  # Random port by default to avoid conflicts
