@@ -55,6 +55,7 @@
 
 	<properties>
 		<java.version>21</java.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
 		<!-- Shared JVM args for tests (Surefire, Failsafe, etc.) -->
 		<argLine>
 			-XX:+EnableDynamicAgentLoading
@@ -111,6 +112,13 @@
 				<artifactId>holiday-guard-app</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
+			<!-- MapStruct: compile-time bean mapping -->
+			<dependency>
+				<groupId>org.mapstruct</groupId>
+				<artifactId>mapstruct</artifactId>
+				<version>${mapstruct.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -126,10 +134,16 @@
 							<arg>-proc:full</arg>
 						</compilerArgs>
 						<annotationProcessorPaths>
+							<!-- Lombok must come before MapStruct so generated getters/setters are visible -->
 							<path>
 								<groupId>org.projectlombok</groupId>
 								<artifactId>lombok</artifactId>
 								<version>${lombok.version}</version>
+							</path>
+							<path>
+								<groupId>org.mapstruct</groupId>
+								<artifactId>mapstruct-processor</artifactId>
+								<version>${mapstruct.version}</version>
 							</path>
 						</annotationProcessorPaths>
 					</configuration>

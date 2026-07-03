@@ -1,13 +1,12 @@
 package com.jw.holidayguard.exception;
 
-import com.jw.holidayguard.controller.ErrorResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ProblemDetail;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,9 +16,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-/**
- * Unit tests for GlobalExceptionHandler to ensure proper error response handling.
- */
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
 
@@ -44,47 +40,39 @@ class GlobalExceptionHandlerTest {
         when(objectError.getDefaultMessage()).thenReturn(errorMessage);
 
         // when
-        ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleValidationError(methodArgumentNotValidException);
+        ProblemDetail problem = globalExceptionHandler.handleValidationError(methodArgumentNotValidException);
 
         // then
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("VALIDATION_ERROR", response.getBody().getError());
-        assertEquals(errorMessage, response.getBody().getMessage());
-        assertNotNull(response.getBody().getTimestamp());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), problem.getStatus());
+        assertEquals("Validation Error", problem.getTitle());
+        assertEquals(errorMessage, problem.getDetail());
     }
 
     @Test
     void shouldHandleIllegalArgumentException() {
         // given
         String errorMessage = "Invalid schedule ID";
-        IllegalArgumentException exception = new IllegalArgumentException(errorMessage);
 
         // when
-        ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleIllegalArgument(exception);
+        ProblemDetail problem = globalExceptionHandler.handleIllegalArgument(new IllegalArgumentException(errorMessage));
 
         // then
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("INVALID_REQUEST", response.getBody().getError());
-        assertEquals(errorMessage, response.getBody().getMessage());
-        assertNotNull(response.getBody().getTimestamp());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), problem.getStatus());
+        assertEquals("Invalid Request", problem.getTitle());
+        assertEquals(errorMessage, problem.getDetail());
     }
 
     @Test
     void shouldHandleIllegalStateException() {
         // given
         String errorMessage = "Schedule is in an invalid state";
-        IllegalStateException exception = new IllegalStateException(errorMessage);
 
         // when
-        ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleIllegalState(exception);
+        ProblemDetail problem = globalExceptionHandler.handleIllegalState(new IllegalStateException(errorMessage));
 
         // then
-        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("INVALID_STATE", response.getBody().getError());
-        assertEquals(errorMessage, response.getBody().getMessage());
-        assertNotNull(response.getBody().getTimestamp());
+        assertEquals(HttpStatus.CONFLICT.value(), problem.getStatus());
+        assertEquals("Invalid State", problem.getTitle());
+        assertEquals(errorMessage, problem.getDetail());
     }
 }

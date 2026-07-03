@@ -191,6 +191,6 @@ class ShouldRunControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("INVALID_REQUEST"));
+                .andExpect(jsonPath("$.title").value("Invalid Request"));
     }
 }

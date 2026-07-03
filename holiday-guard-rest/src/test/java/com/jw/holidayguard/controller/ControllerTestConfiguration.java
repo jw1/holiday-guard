@@ -1,16 +1,15 @@
 package com.jw.holidayguard.controller;
 
+import com.jw.holidayguard.mapper.ScheduleMapperImpl;
 import com.jw.holidayguard.repository.DataProvider;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
+@Import(ScheduleMapperImpl.class)
 public class ControllerTestConfiguration {
 
-    /**
-     * Static initialization to ensure DataProvider is available before condition evaluation.
-     * This bean must be created as early as possible in the context lifecycle.
-     */
     static {
         System.setProperty("holiday-guard.test.management-enabled", "true");
     }

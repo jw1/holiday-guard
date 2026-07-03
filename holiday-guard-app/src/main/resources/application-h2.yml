@@ -6,7 +6,7 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: update  # Use 'update' to preserve data across restarts
+      ddl-auto: validate  # Flyway owns the schema; Hibernate only validates it
     show-sql: false
   h2:
     console:

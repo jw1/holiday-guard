@@ -112,7 +112,7 @@ class VersionControllerTest extends ManagementControllerTestBase {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists())
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").exists())
+                .andExpect(jsonPath("$.detail").exists());
     }
 }

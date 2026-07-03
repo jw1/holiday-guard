@@ -70,6 +70,19 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Flyway: versioned schema migrations (replaces ddl-auto: update) -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+
+		<!-- AOP: required at runtime for Resilience4j @CircuitBreaker proxy -->
+		<!-- spring-boot-starter-aop was removed in Boot 4; spring-aop is bundled in spring-context -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+		</dependency>
+
 		<!-- Test dependencies -->
 		        <dependency>
 		            <groupId>org.springframework.boot</groupId>

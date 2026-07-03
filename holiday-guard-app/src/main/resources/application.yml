@@ -7,5 +7,20 @@ spring:
     virtual:
       enabled: true  # Project Loom: virtual threads for all request handling (Java 21+)
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      shouldRun:
+        # Open circuit after 50% failures in a 10-call sliding window
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        # Stay open for 10s before allowing a probe request through
+        wait-duration-in-open-state: 10s
+        # Allow 3 test calls in half-open state before deciding to close
+        permitted-number-of-calls-in-half-open-state: 3
+        # Count exceptions as failures (IllegalArgumentException is a client error — exclude it)
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+
 server:
   port: 0  # Random port by default to avoid conflicts

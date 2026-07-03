@@ -55,6 +55,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- MapStruct: compile-time mapping for Schedule → ScheduleResponse -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
