@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<version>4.1.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -55,7 +55,17 @@
 
 	<properties>
 		<java.version>25</java.version>
+
+		<!-- Versions for third-party libraries and plugins not managed by the Spring Boot parent BOM.
+		     Declared once here; modules reference the artifacts without a version. -->
 		<mapstruct.version>1.6.3</mapstruct.version>
+		<springdoc.version>3.0.3</springdoc.version>
+		<guava.version>33.6.0-jre</guava.version>
+		<resilience4j.version>2.4.0</resilience4j.version>
+		<picocli.version>4.7.5</picocli.version>
+		<maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
+		<frontend-maven-plugin.version>1.12.1</frontend-maven-plugin.version>
+
 		<!-- Shared JVM args for tests (Surefire, Failsafe, etc.) -->
 		<argLine>
 			-XX:+EnableDynamicAgentLoading
@@ -77,16 +87,16 @@
 				<artifactId>holiday-guard-repository</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-	<dependency>
-		<groupId>com.jw</groupId>
-		<artifactId>holiday-guard-repository-h2</artifactId>
-		<version>${project.version}</version>
-	</dependency>
-	<dependency>
-		<groupId>com.jw</groupId>
-		<artifactId>holiday-guard-repository-json</artifactId>
-		<version>${project.version}</version>
-	</dependency>
+			<dependency>
+				<groupId>com.jw</groupId>
+				<artifactId>holiday-guard-repository-h2</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jw</groupId>
+				<artifactId>holiday-guard-repository-json</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.jw</groupId>
 				<artifactId>holiday-guard-core</artifactId>
@@ -118,6 +128,28 @@
 				<groupId>org.mapstruct</groupId>
 				<artifactId>mapstruct</artifactId>
 				<version>${mapstruct.version}</version>
+			</dependency>
+
+			<!-- Third-party libraries not covered by the Spring Boot BOM -->
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+				<version>${springdoc.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-spring-boot4</artifactId>
+				<version>${resilience4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>info.picocli</groupId>
+				<artifactId>picocli</artifactId>
+				<version>${picocli.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -158,6 +190,18 @@
 				<plugin>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>${maven-assembly-plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>com.github.eirslett</groupId>
+					<artifactId>frontend-maven-plugin</artifactId>
+					<version>${frontend-maven-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
