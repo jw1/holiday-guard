@@ -45,7 +45,7 @@
         <!-- AOP is required at runtime; provided by holiday-guard-app via spring-boot-starter-aop -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-spring-boot3</artifactId>
+            <artifactId>resilience4j-spring-boot4</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
