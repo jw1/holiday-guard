@@ -17,7 +17,7 @@ import jakarta.annotation.PostConstruct;
  */
 @Slf4j
 @Component
-@Profile("h2")
+@Profile({"h2", "postgres"})
 public class H2DataProvider implements DataProvider {
 
     @Value("${spring.datasource.url:jdbc:h2:file:./holiday-guard-data}")
@@ -25,10 +25,10 @@ public class H2DataProvider implements DataProvider {
 
     @PostConstruct
     public void logActivation() {
-        log.info("╔════════════════════════════════════════════════════════╗");
-        log.info("║  H2 Repository Implementation ACTIVE                   ║");
+        log.info("╔════════════════════════════════════════════════════════");
+        log.info("║  H2 Repository Implementation ACTIVE");
         log.info("║  Database: {}  ", datasourceUrl);
-        log.info("╚════════════════════════════════════════════════════════╝");
+        log.info("╚════════════════════════════════════════════════════════");
     }
 
     @Override

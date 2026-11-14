@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:holidayguard}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:holidayguard}
+    password: ${DB_PASSWORD:holidayguard}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    locations: classpath:db/migration/postgresql
+
+server:
+  port: 8080

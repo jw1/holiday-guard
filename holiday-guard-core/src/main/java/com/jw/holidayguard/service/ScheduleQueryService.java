@@ -11,6 +11,7 @@ import com.jw.holidayguard.repository.ScheduleRepository;
 import com.jw.holidayguard.repository.VersionRepository;
 import com.jw.holidayguard.repository.RuleRepository;
 import com.jw.holidayguard.service.rule.RuleEngine;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,14 +98,15 @@ public class ScheduleQueryService {
                     return new ScheduleDashboardView(
                             schedule.getId(),
                             schedule.getName(),
-                            response.getRunStatus(),
-                            response.isShouldRun(),
-                            response.getReason()
+                            response.runStatus(),
+                            response.shouldRun(),
+                            response.reason()
                     );
                 })
                 .collect(Collectors.toList());
     }
 
+    @CircuitBreaker(name = "shouldRun", fallbackMethod = "shouldRunFallback")
     public ShouldRunQueryResponse shouldRunToday(Long scheduleId, ShouldRunQueryRequest request) {
         // Validate schedule exists and is active
         Schedule schedule = scheduleRepository.findById(scheduleId)
@@ -193,6 +195,26 @@ public class ScheduleQueryService {
             reason,
             deviationApplied,
             activeVersion.getId()
+        );
+    }
+
+    /**
+     * Circuit breaker fallback for {@link #shouldRunToday}.
+     *
+     * <p>When the circuit is open (downstream failures exceeded threshold), this returns a
+     * conservative SKIP response rather than propagating an error to callers. Banking convention:
+     * fail safe means "don't run" — it is safer to miss a scheduled job than to run one twice.
+     */
+    @SuppressWarnings("unused") // invoked reflectively by Resilience4j
+    private ShouldRunQueryResponse shouldRunFallback(Long scheduleId, ShouldRunQueryRequest request, Throwable ex) {
+        return new ShouldRunQueryResponse(
+            scheduleId,
+            request.getQueryDate(),
+            false,
+            RunStatus.SKIP,
+            "Circuit breaker open — service temporarily unavailable, defaulting to SKIP",
+            false,
+            null
         );
     }
 }

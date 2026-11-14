@@ -1,25 +1,18 @@
 package com.jw.holidayguard.dto.response;
 
 import com.jw.holidayguard.domain.RunStatus;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class DeviationResponse {
-
-    private Long id;
-    private Long scheduleId;
-    private Long versionId;
-    private LocalDate deviationDate;
-    private RunStatus action;
-    private String reason;
-    private String createdBy;
-    private Instant createdAt;
-    private LocalDate expiresAt;
-}
+public record DeviationResponse(
+    Long id,
+    Long scheduleId,
+    Long versionId,
+    LocalDate deviationDate,
+    RunStatus action,
+    String reason,
+    String createdBy,
+    Instant createdAt,
+    LocalDate expiresAt
+) {}

@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
@@ -53,7 +53,7 @@ import org.springframework.security.web.context.RequestAttributeSecurityContextR
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) {
 
         // custom login filter (POST /login only, no HTML page)
         UsernamePasswordAuthenticationFilter loginFilter = authenticationFilter(authenticationManager);
@@ -70,6 +70,9 @@ public class SecurityConfig {
                         // Health checks / public API
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/api/v1/schedules/*/should-run").permitAll()
+
+                        // Swagger UI / OpenAPI docs
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
 
                         // Admin UI routes (only available with SQL backend via @ConditionalOnManagement)
                         .requestMatchers("/", "/admin/**", "/schedules/**", "/dashboard/**").authenticated()
@@ -117,10 +120,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {
         return config.getAuthenticationManager();
     }
-
 
     /**
      * Just some default users -- it is expected the end user will swap in
@@ -131,13 +133,13 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService users() {
         return new InMemoryUserDetailsManager(
-                User.withUsername("admin").password("admin").roles("ADMIN", "USER").build(),
-                User.withUsername("user").password("user").roles("USER").build()
+                User.withUsername("admin").password("{noop}admin").roles("ADMIN", "USER").build(),
+                User.withUsername("user").password("{noop}user").roles("USER").build()
         );
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }

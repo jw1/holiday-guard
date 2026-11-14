@@ -5,10 +5,13 @@ spring:
     username: sa
     password:
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update  # Use 'update' to preserve data across restarts
+      ddl-auto: validate  # Flyway owns the schema; Hibernate only validates it
     show-sql: false
+  flyway:
+    # Migrations live in vendor subfolders (see application-postgres.yml) so that
+    # Flyway's recursive classpath scan never sees more than one vendor's V1 script.
+    locations: classpath:db/migration/h2
   h2:
     console:
       enabled: true

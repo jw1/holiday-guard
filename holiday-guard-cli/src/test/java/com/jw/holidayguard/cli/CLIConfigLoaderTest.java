@@ -49,13 +49,13 @@ class CLIConfigLoaderTest {
         // then - Config is parsed correctly
         assertThat(config.getSchedules()).hasSize(1);
 
-        CLIConfig.ScheduleConfig schedule = config.getSchedules().get(0);
+        CLIConfig.ScheduleConfig schedule = config.getSchedules().getFirst();
         assertThat(schedule.getName()).isEqualTo("Test Schedule");
         assertThat(schedule.getDescription()).isEqualTo("Test description");
         assertThat(schedule.getRule().getRuleType()).isEqualTo("WEEKDAYS_ONLY");
         assertThat(schedule.getDeviations()).hasSize(1);
 
-        CLIConfig.DeviationConfig deviation = schedule.getDeviations().get(0);
+        CLIConfig.DeviationConfig deviation = schedule.getDeviations().getFirst();
         assertThat(deviation.getDate()).isEqualTo(LocalDate.of(2025, 12, 25));
         assertThat(deviation.getAction()).isEqualTo("FORCE_SKIP");
         assertThat(deviation.getReason()).isEqualTo("Christmas");
@@ -113,7 +113,7 @@ class CLIConfigLoaderTest {
         CLIConfig config = loader.loadConfig(configFile);
 
         // then - Schedule has empty deviations list
-        assertThat(config.getSchedules().get(0).getDeviations()).isEmpty();
+        assertThat(config.getSchedules().getFirst().getDeviations()).isEmpty();
     }
 
     @Test
@@ -212,5 +212,105 @@ class CLIConfigLoaderTest {
 
         // then - nothing is found
         assertThat(notFound).isNull();
+    }
+
+    // --- Baseline tests for Jackson migration (Phase 0c) ---
+
+    @Test
+    void loadConfig_shouldThrowForInvalidDateFormat(@TempDir Path tempDir) throws IOException {
+        // given - deviation with an invalid month (13 is out of range)
+        String json = """
+            {
+              "schedules": [
+                {
+                  "name": "Test Schedule",
+                  "rule": {"ruleType": "WEEKDAYS_ONLY"},
+                  "deviations": [
+                    {
+                      "date": "2025-13-01",
+                      "action": "FORCE_SKIP",
+                      "reason": "Invalid date"
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        File configFile = tempDir.resolve("bad-date.json").toFile();
+        Files.writeString(configFile.toPath(), json);
+
+        // when / then - loader should reject the invalid date and throw IOException
+        assertThatThrownBy(() -> loader.loadConfig(configFile))
+            .isInstanceOf(IOException.class)
+            .hasMessageContaining("Failed to parse configuration file");
+    }
+
+    @Test
+    void loadConfig_shouldHandleNullDate(@TempDir Path tempDir) throws IOException {
+        // given - deviation with an explicit null date field
+        String json = """
+            {
+              "schedules": [
+                {
+                  "name": "Test Schedule",
+                  "rule": {"ruleType": "WEEKDAYS_ONLY"},
+                  "deviations": [
+                    {
+                      "date": null,
+                      "action": "FORCE_SKIP",
+                      "reason": "Null date"
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        File configFile = tempDir.resolve("null-date.json").toFile();
+        Files.writeString(configFile.toPath(), json);
+
+        // when
+        CLIConfig config = loader.loadConfig(configFile);
+
+        // then - parsed successfully, date field is null
+        CLIConfig.DeviationConfig deviation = config.getSchedules().getFirst().getDeviations().getFirst();
+        assertThat(deviation.getDate()).isNull();
+    }
+
+    @Test
+    void loadConfig_dateFormat_shouldMatchLocalDateParse(@TempDir Path tempDir) throws IOException {
+        // given - a known date in ISO-8601 format
+        String isoDate = "2025-12-25";
+        String json = """
+            {
+              "schedules": [
+                {
+                  "name": "Format Contract",
+                  "rule": {"ruleType": "WEEKDAYS_ONLY"},
+                  "deviations": [
+                    {
+                      "date": "%s",
+                      "action": "FORCE_SKIP",
+                      "reason": "Christmas"
+                    }
+                  ]
+                }
+              ]
+            }
+            """.formatted(isoDate);
+
+        File configFile = tempDir.resolve("format-contract.json").toFile();
+        Files.writeString(configFile.toPath(), json);
+
+        // when
+        CLIConfig config = loader.loadConfig(configFile);
+        LocalDate parsed = config.getSchedules().getFirst().getDeviations().getFirst().getDate();
+
+        // then - Jackson-parsed date equals LocalDate.parse() for the same string
+        // This contract must hold after Jackson 2→3 migration
+        assertThat(parsed)
+            .as("Jackson-deserialized LocalDate must match LocalDate.parse() for the same ISO string")
+            .isEqualTo(LocalDate.parse(isoDate));
     }
 }

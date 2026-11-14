@@ -1,7 +1,8 @@
 package com.jw.holidayguard.cli;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,8 +15,7 @@ public class CLIConfigLoader {
     private final ObjectMapper objectMapper;
 
     public CLIConfigLoader() {
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper = new JsonMapper();
     }
 
     /**
@@ -28,7 +28,7 @@ public class CLIConfigLoader {
     public CLIConfig loadConfig(File configFile) throws IOException {
         try {
             return objectMapper.readValue(configFile, CLIConfig.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IOException("Failed to parse configuration file: " + configFile.getAbsolutePath() + ". " + e.getMessage(), e);
         }
     }

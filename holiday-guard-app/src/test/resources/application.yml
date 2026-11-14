@@ -1,5 +1,7 @@
 # Test-specific configuration to reduce console noise
 spring:
+  flyway:
+    enabled: false  # Tests use ddl-auto: create-drop; Flyway only runs in the app
   jpa:
     show-sql: false
     properties:

@@ -1,6 +1,5 @@
 package com.jw.holidayguard.controller;
 
-import com.jw.holidayguard.domain.Version;
 import com.jw.holidayguard.dto.request.UpdateRuleRequest;
 import com.jw.holidayguard.dto.response.VersionResponse;
 import com.jw.holidayguard.repository.ConditionalOnManagement;
@@ -34,18 +33,7 @@ public class ScheduleVersionController {
             @PathVariable Long scheduleId,
             @Valid @RequestBody UpdateRuleRequest request) {
 
-        Version newVersion = scheduleVersionService.updateScheduleRule(scheduleId, request);
-
-        VersionResponse response = new VersionResponse(
-                newVersion.getId(),
-                newVersion.getScheduleId(),
-                newVersion.getEffectiveFrom(),
-                newVersion.getCreatedAt(),
-                newVersion.isActive(),
-                null, // rules - would populate in full implementation
-                null  // deviations - would populate in full implementation
-        );
-
+        VersionResponse response = scheduleVersionService.updateScheduleRule(scheduleId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

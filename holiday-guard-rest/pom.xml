@@ -14,6 +14,7 @@
     <description>REST API for Holiday Guard</description>
 
     <dependencies>
+
         <!-- Internal modules -->
         <dependency>
             <groupId>com.jw</groupId>
@@ -31,6 +32,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- OpenAPI / Swagger UI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
         <!-- Spring Boot starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -41,11 +49,16 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- MapStruct: compile-time mapping for Schedule → ScheduleResponse -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
@@ -55,10 +68,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>

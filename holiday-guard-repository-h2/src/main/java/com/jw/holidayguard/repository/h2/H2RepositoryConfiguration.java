@@ -1,6 +1,6 @@
 package com.jw.holidayguard.repository.h2;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -16,7 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * repository interfaces in the parent com.jw.holidayguard.repository package.
  */
 @Configuration
-@Profile("h2")
+@Profile({"h2", "postgres"})
 @EnableJpaRepositories(basePackages = "com.jw.holidayguard.repository")
 @EntityScan(basePackages = "com.jw.holidayguard.domain")
 @ComponentScan(basePackages = "com.jw.holidayguard.repository.h2")
