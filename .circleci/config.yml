@@ -6,7 +6,7 @@ orbs:
 jobs:
   test:
     docker:
-      - image: cimg/openjdk:21.0
+      - image: cimg/openjdk:25.0
     steps:
       - checkout
       - run:
@@ -22,7 +22,7 @@ jobs:
 
   build:
     docker:
-      - image: cimg/openjdk:21.0
+      - image: cimg/openjdk:25.0
     steps:
       - checkout
       - run:
