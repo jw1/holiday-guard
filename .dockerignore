@@ -1,0 +1,6 @@
+**/target/
+.git/
+.idea/
+**/*.iml
+holiday-guard-react/node_modules/
+holiday-guard-react/node/

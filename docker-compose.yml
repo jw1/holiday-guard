@@ -1,0 +1,55 @@
+services:
+
+  # H2 in-memory database with demo data loaded on startup.
+  # Usage: docker compose --profile h2-demo up --build
+  app-h2-demo:
+    profiles: [h2-demo]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: holiday-guard:h2-demo
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: h2,docker,demo
+
+  # PostgreSQL database with demo data loaded on startup.
+  # Usage: docker compose --profile postgres up --build
+  app-postgres:
+    profiles: [postgres]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: holiday-guard:postgres
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres,demo
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: holidayguard
+      DB_USER: holidayguard
+      DB_PASSWORD: holidayguard
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    profiles: [postgres]
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: holidayguard
+      POSTGRES_USER: holidayguard
+      POSTGRES_PASSWORD: holidayguard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U holidayguard -d holidayguard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
