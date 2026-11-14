@@ -54,7 +54,7 @@
 	</modules>
 
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<!-- Shared JVM args for tests (Surefire, Failsafe, etc.) -->
 		<argLine>

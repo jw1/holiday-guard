@@ -221,7 +221,7 @@ Response:
 
 ## 🏗️ Architecture
 
-- **Spring Boot 3.x** + **Java 21** + **React** admin UI
+- **Spring Boot 4.1** + **Java 25** + **React** admin UI
 - **Pluggable Repository**: H2 (SQL with CRUD) or JSON (read-only file)
 - **Schedule Versioning**: Complete audit trail of rule changes
 - **Calendar Domain Object**: Encapsulates shouldRun business logic with rule evaluation
