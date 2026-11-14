@@ -69,11 +69,23 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
 		<!-- Flyway: versioned schema migrations (replaces ddl-auto: update) -->
+		<!-- Boot 4 split Flyway autoconfiguration out of spring-boot-autoconfigure; the starter
+		     pulls in flyway-core plus FlywayAutoConfiguration/FlywayMigrationInitializer -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<!-- Flyway 10+ requires explicit database modules for non-H2 databases -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
+			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
 
 		<!-- AOP: required at runtime for Resilience4j @CircuitBreaker proxy -->

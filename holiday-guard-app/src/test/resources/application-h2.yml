@@ -1,0 +1,7 @@
+# Test-scoped H2 profile overrides.
+# The main application-h2.yml sets ddl-auto: validate (Flyway owns the schema).
+# In tests, Flyway is disabled (see application.yml) so Hibernate must create the schema itself.
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

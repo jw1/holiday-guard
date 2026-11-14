@@ -37,11 +37,12 @@ public class ManagementSupportCondition implements Condition {
         }
 
         // Strategy 2: Check active Spring profiles
-        // H2 profile supports management, JSON profile does not
+        // H2 and Postgres profiles both use the JPA-backed DataProvider and support
+        // management; JSON profile is read-only and does not.
         String[] activeProfiles = context.getEnvironment().getActiveProfiles();
         for (String profile : activeProfiles) {
-            if ("h2".equals(profile)) {
-                System.out.println("[ManagementSupport] Management operations ENABLED - H2 profile active");
+            if ("h2".equals(profile) || "postgres".equals(profile)) {
+                System.out.println("[ManagementSupport] Management operations ENABLED - " + profile + " profile active");
                 return true;
             }
             if ("json".equals(profile)) {
