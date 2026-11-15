@@ -64,3 +64,6 @@ frontend.sh
 backend.sh
 start.sh
 holiday-guard-app/src/test/resources/data.json
+
+### claude uses worktrees sometimes
+.claude/worktrees/
